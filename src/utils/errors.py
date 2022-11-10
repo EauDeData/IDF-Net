@@ -3,3 +3,6 @@ class ModelNotTrainedError(Exception):
 
 class WrongTypeReturnedeError(Exception):
     pass
+
+class InvalidModelNameError(Exception):
+    pass

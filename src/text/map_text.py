@@ -4,7 +4,7 @@ from typing import *
 
 from src.utils.errors import *
 from src.dataloaders.base import IDFNetDataLoader
-from src.text.preprocess import StringCleaner
+from src.text.preprocess import StringCleaner, WordToVector, StringCleanAndTrim
 
 # https://open.spotify.com/track/2QLrYSnATJYuRThUZtdhH3?si=faed86630309414a
 
@@ -28,7 +28,7 @@ class TF_IDFLoader:
     def _train_precondition(self) -> None:
         if isinstance(self.model, int): raise(ModelNotTrainedError)
 
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleaner, *args, **kwargs) -> None:
+    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, *args, **kwargs) -> None:
         self.dataset = dataset
         self.prep = string_preprocess
         self.model = 0 # IF it's an int, a not trained error will be rised
@@ -39,7 +39,7 @@ class TF_IDFLoader:
 
     def fit(self) -> None:
 
-        dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep) # TODO: NCols (number of terms) if HUGE. Reduce to NN feasible manner.
+        dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
         dct = gensim.corpora.Dictionary(dataset)
         self.corpus = [dct.doc2bow(line) for line in dataset]
         self.model = gensim.models.TfidfModel(self.corpus)
@@ -53,5 +53,10 @@ class TF_IDFLoader:
 class BOWLoader:
     name = 'BOW_mapper'
     def __init__(self, dataset: IDFNetDataLoader, *args, **kwargs) -> None:
+        pass
+
+class SVDLoader:
+    name = 'SVD_mapper'
+    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, word_to_vect: Callable = WordToVector) -> None:
         pass
 

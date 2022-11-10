@@ -6,6 +6,7 @@ from gensim.utils import simple_preprocess
 from nltk.stem.porter import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from src.utils.errors import *
 nltk.download('punkt')
 
 # https://open.spotify.com/track/31i56LZnwE6uSu3exoHjtB?si=1e5e0d5080404042
@@ -59,6 +60,10 @@ class StringCleanAndTrim:
         
         return basic_cleaner(shorty)
 
-if __name__ == '__main__':
-    cleaner_obj = StringCleanAndTrim()
-    print(cleaner_obj(["I'm Diffie, congrats!", "Hello, why?", "Nick likes to play football, however he is not too fond of tennis."]))
+class WordToVector:
+    def __init__(self, model:str) -> None:
+        if model == 'model 1': pass
+        elif model == 'model 2': pass
+        else: raise InvalidModelNameError
+            
+        raise NotImplementedError
