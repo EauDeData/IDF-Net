@@ -60,10 +60,4 @@ class StringCleanAndTrim:
         
         return basic_cleaner(shorty)
 
-class WordToVector:
-    def __init__(self, model:str) -> None:
-        if model == 'model 1': pass
-        elif model == 'model 2': pass
-        else: raise InvalidModelNameError
-            
-        raise NotImplementedError
+
