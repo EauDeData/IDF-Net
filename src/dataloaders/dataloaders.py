@@ -1,7 +1,8 @@
-import torch
-from typing import *
-import numpy as np
 import os
+from typing import *
+
+import numpy as np
+import torch
 
 from src.dataloaders.base import IDFNetDataLoader
 from src.text.ocr import TesseractOCR
@@ -18,7 +19,7 @@ class DummyDataset(IDFNetDataLoader):
         return 10
     
     def iter_text(self) -> Iterable:
-        for _ in range(len(self)): yield "I'm a Cat named diffie, my name is not cat but diffie and i like going in the train"
+        for _ in range(len(self)): yield "I'm a cat named diffie, my name is not cat but diffie and i like going in the train"
 
 class PubLayNetDataset(IDFNetDataLoader):
     name = 'pubLayNet_dataset'

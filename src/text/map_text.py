@@ -98,4 +98,3 @@ class LSALoader:
                 self.model.save(datapath)
 
         else: raise InvalidModelNameError
-
