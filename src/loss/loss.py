@@ -19,7 +19,8 @@ class MatchTopologyLoss(nn.Module):
 
 def match_distance_loss(features: torch.tensor, gt_distances: torch.tensor, similarity: Callable = CosineSimilarityMatrix, p_norm: int = 2, margin: float = 0) -> torch.tensor:
     '''
-    This loss proposes an ismoetry between spaces.
+    This loss proposes an ismoetry between spaces. We want to measure isomorfism and minimize it.
+    Distances1 = Distances2
         features: Torch.tensor: (bs, feature_size)
         gt_distances Torch.tensor: (bs, bs)
 
