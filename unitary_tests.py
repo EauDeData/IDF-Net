@@ -6,6 +6,7 @@ from src.utils.errors import *
 from src.dataloaders.dataloaders import DummyDataset
 from src.text.map_text import LSALoader, TF_IDFLoader
 from src.loss.loss import NormLoss, PearsonLoss
+from src.models.models import VisualTransformer
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
@@ -45,6 +46,14 @@ if __name__ == '__main__':
     
     except Exception as e:
         print(f"3 - Loss test not passed, reason: {e}")
+        
+    try:
+        input_tensor = torch.rand((1, 3, 256, 32*2))
+        vit = VisualTransformer(256, embedding_size=8)
+        print(vit(input_tensor).shape)
+    
+    except Exception as e:
+        print(f"4 - Model (simple ViT) test not passed, reason: {e}")
     
 
     
