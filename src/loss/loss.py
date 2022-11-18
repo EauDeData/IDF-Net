@@ -53,7 +53,7 @@ def norm_loss(features: torch.tensor, gt_distances: torch.tensor, similarity: Ca
     if orth:
         X = torch.matmul(h_distances_eyed, h_distances_eyed.T)
         V, _, U = torch.linalg.svd(X) # Why X? How do we deal with Non-Square matrices?
-        W = torch.matmul(U, V.T)
+        W = torch.matmul(U, V.T) # TODO: Check this issue
         sqrd = (torch.matmul(W, h_distances_eyed).view(-1) - gt)**p_norm
     else: sqrd = (h_distances_eyed - gt)**p_norm
     loss = torch.sum(sqrd) ** (1/p_norm) + margin # Limitation of this, you are immitating distances, not topology.
