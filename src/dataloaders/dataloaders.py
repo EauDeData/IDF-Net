@@ -63,8 +63,9 @@ class PubLayNetDataset(IDFNetDataLoader):
                          **{x['id']: x['file_name'] for x in self.test_json['images']}, 
                          **{x['id']: x['file_name'] for x in self.val_json['images']}}
 
-        if not os.path.exists(transcriptions): 
-            os.mkdir('./dataset/PubLayNetOCR/')
+        if not os.path.exists(transcriptions):
+            try: os.mkdir('./dataset/PubLayNetOCR/')
+            except FileExistsError: pass
             self.build_transcriptions(transcriptions)
         else: self.gt = json.load(transcriptions)
     
