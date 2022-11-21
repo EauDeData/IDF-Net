@@ -7,7 +7,7 @@ from typing import *
 class TesseractOCR:
 
     name = 'tesseract_ocr'
-    def __init__(self, lang: str = 'en', nice: int = 1, *args, **kwargs) -> None:
+    def __init__(self, lang: str = 'eng', nice: int = 1, *args, **kwargs) -> None:
         self.lang = lang
         self.nice = nice
 
