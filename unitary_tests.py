@@ -7,6 +7,7 @@ from src.dataloaders.dataloaders import DummyDataset
 from src.text.map_text import LSALoader, TF_IDFLoader
 from src.loss.loss import NormLoss, PearsonLoss
 from src.models.models import VisualTransformer
+from src.dataloaders.dataloaders import PubLayNetDataset
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
@@ -54,6 +55,10 @@ if __name__ == '__main__':
     
     except Exception as e:
         print(f"4 - Model (simple ViT) test not passed, reason: {e}")
+    
+    dataset = PubLayNetDataset('/home/adria/Desktop/data/publaynet/',)
+    print(dataset.gt['gt'][0])
+    print(dataset[0])
     
 
     
