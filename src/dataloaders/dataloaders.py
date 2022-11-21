@@ -55,9 +55,9 @@ class PubLayNetDataset(IDFNetDataLoader):
         self.ocr_path = transcriptions
         self.ocr = ocr(**kwargs)
 
-        self.train_json = json.load(base_folder + 'train.json')
-        self.test_json = json.load(base_folder + 'test.json')
-        self.val_json = json.load(base_folder + 'val.json')
+        self.train_json = json.load(open(base_folder + 'train.json'))
+        self.test_json = json.load(open(base_folder + 'test.json'))
+        self.val_json = json.load(open(base_folder + 'val.json'))
 
         self.idToPath = {**{x['id']: x['file_name'] for x in self.train_json['images']},
                          **{x['id']: x['file_name'] for x in self.test_json['images']}, 
@@ -97,13 +97,13 @@ class PubLayNetDataset(IDFNetDataLoader):
                     text = self.ocr.run(image[y:y+h, x:x+w, :])['result']
                     yield {image: self.idToPath[element['id']], 'bbx': (x, y, w, h), 'text': text}
         
-        for n, element in enumerate(_iter_json(self.train_json)):
+        for n, element in enumerate(_iter_json(self.train_json, 'train')):
             print(f"OCRing element {n}/{len(n)} in train set\t", end = '\r')
             self.gt['gt'].append(element)
         self.gt['train_ends'] = n
         print()
         # Do we need test? Or is val the fair comparison?
-        for n, element in enumerate(_iter_json(self.val_json)):
+        for n, element in enumerate(_iter_json(self.val_json, 'test')):
             print(f"OCRing element {n}/{len(n)} in test set\t", end = '\r')
             self.gt['gt'].append(element)
         print()
