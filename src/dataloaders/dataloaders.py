@@ -99,13 +99,13 @@ class PubLayNetDataset(IDFNetDataLoader):
                     yield {'image': self.idToPath[element['id']], 'bbx': (x, y, w, h), 'text': text}
         
         for n, element in enumerate(_iter_json(self.train_json, 'train')):
-            print(f"OCRing element {n}/{len(n)} in train set\t", end = '\r')
+            print(f"OCRing element {n}/{len(self.train_json['annotations'])} in train set\t", end = '\r')
             self.gt['gt'].append(element)
         self.gt['train_ends'] = n
         print()
         # Do we need test? Or is val the fair comparison?
         for n, element in enumerate(_iter_json(self.val_json, 'test')):
-            print(f"OCRing element {n}/{len(n)} in test set\t", end = '\r')
+            print(f"OCRing element {n}/{len(self.val_json['annotations'])} in test set\t", end = '\r')
             self.gt['gt'].append(element)
         print()
         with open(path, 'w', encoding='utf-8') as f:
