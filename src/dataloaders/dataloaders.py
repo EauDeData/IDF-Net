@@ -96,7 +96,7 @@ class PubLayNetDataset(IDFNetDataLoader):
                     if not isinstance(image, np.ndarray): raise FileNotFoundError
                     x, y, w, h = [int(u) for u in element['bbox']] # TODO: Possible source of conclict, x or y when indexing
                     text = self.ocr.run(image[y:y+h, x:x+w, :])['result']
-                    yield {image: self.idToPath[element['id']], 'bbx': (x, y, w, h), 'text': text}
+                    yield {'image': self.idToPath[element['id']], 'bbx': (x, y, w, h), 'text': text}
         
         for n, element in enumerate(_iter_json(self.train_json, 'train')):
             print(f"OCRing element {n}/{len(n)} in train set\t", end = '\r')
