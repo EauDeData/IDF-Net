@@ -86,26 +86,31 @@ class PubLayNetDataset(IDFNetDataLoader):
             'train_ends': 0
         }
         print(f"Transcriptions not found in {path}; OCRing your database.")
+        DOCS_DONE = set()
         def _iter_json(fold, name):
             for element in fold['annotations']:
 
                 # Just Text Category
-                if element['category_id'] == 1:
+                if element['category_id'] == 1 and element['id'] in self.idToPath:
 
                     image = cv2.imread(f"{self.data_folder}{name}/{self.idToPath[element['id']]}", cv2.IMREAD_COLOR)
                     if not isinstance(image, np.ndarray): raise FileNotFoundError
-                    x, y, w, h = [int(u) for u in element['bbox']] # TODO: Possible source of conclict, x or y when indexing
-                    text = self.ocr.run(image[y:y+h, x:x+w, :])['result']
+                    x, y, w, h = [int(u) for u in element['bbox']] 
+                    crop = image[y:y+h, x:x+w, :]
+                    if (not crop.shape[0]*crop.shape[1]) or (element['id'] in DOCS_DONE): continue
+                    text = self.ocr.run(crop)['result']
                     yield {'image': self.idToPath[element['id']], 'bbx': (x, y, w, h), 'text': text}
+                    DOCS_DONE.add(element['id'])
         
         for n, element in enumerate(_iter_json(self.train_json, 'train')):
-            print(f"OCRing element {n}/{len(self.train_json['annotations'])} in train set\t", end = '\r')
+            print(f"OCRing element {n} in train set\t", end = '\r')
             self.gt['gt'].append(element)
         self.gt['train_ends'] = n
         print()
+        DOCS_DONE = set()
         # Do we need test? Or is val the fair comparison?
         for n, element in enumerate(_iter_json(self.val_json, 'test')):
-            print(f"OCRing element {n}/{len(self.val_json['annotations'])} in test set\t", end = '\r')
+            print(f"OCRing element {n} in test set\t", end = '\r')
             self.gt['gt'].append(element)
         print()
         with open(path, 'w', encoding='utf-8') as f:
