@@ -3,6 +3,8 @@ from src.utils.metrics import CosineSimilarityMatrix
 import torch
 import torch.nn as nn
 from typing import *
+from torch.linalg import norm
+
 
 class CustomLoss:
     def __init__(self) -> None:
@@ -10,7 +12,7 @@ class CustomLoss:
     def __call__(self, h, gt): return self.forward(h, gt)
 
 class NormLoss(CustomLoss):
-    def __init__(self, similarity: Callable = CosineSimilarityMatrix(), p_norm: int = 2, margin: float = 0, procrustes = True, *args, **kwargs) -> None:
+    def __init__(self, similarity: Callable = CosineSimilarityMatrix(), p_norm: int = 2, margin: float = 0, procrustes = False, *args, **kwargs) -> None:
         self.similarity = similarity
         self.p_norm = p_norm
         self.margin = margin
@@ -27,6 +29,12 @@ class PearsonLoss(CustomLoss):
     def forward(self, h, gt):
         return pearson_correlation_loss(h, gt_distances=gt, similarity=self.similarity, p_norm=self.p_norm)
 
+class OrthAligment(CustomLoss):
+    def __init__(self, p = 2) -> None:
+        self.p = p
+
+    def forward(self, x, gt):
+        return orth_aligment(x, gt, self.p)
 
 class MatchTopologyLoss(nn.Module):
     pass
@@ -64,13 +72,19 @@ def pearson_correlation_loss(features: torch.tensor, gt_distances: torch.tensor,
     # From: https://arxiv.org/pdf/2210.05098.pdf
     raise NotImplementedError
     
-def minimum_transform_loss(features: torch.tensor, gt: torch.tensor, similarity: Callable = CosineSimilarityMatrix, eye: bool = False) -> torch.tensor:
+def orth_aligment(features: torch.tensor, target: torch.tensor, p = 2) -> torch.tensor:
     '''
-    This loss proposes an homeomorphism between spaces.
+    This loss proposes an isomorphism between spaces.
     
     '''
+    # GT Has to be a bunch of vectors
+    # TODO: Revisit whats happening here (weird)
+    # TODO: Proscrutes doesnt work
 
     # Calculate transformation matrix
-    T = torch.matmul(torch.linalg.pinv(features), gt)
-    # Ara el loss hauria d'expresar com de "dura" es la matriu de transformació, si és tot 1s genial, si no, problema
-    raise NotImplementedError
+    pinv = torch.linalg.pinv(features)
+    R = pinv@target
+    dist = (features@R - target) 
+    norm = torch.sum(dist ** p, dim=0) ** (1/p)
+
+    return torch.sum(norm)  / features.shape[0] # Normalize for batch size

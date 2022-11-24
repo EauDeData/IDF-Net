@@ -94,7 +94,7 @@ class PubLayNetDataset(IDFNetDataLoader):
                 if element['category_id'] == 1 and element['id'] in self.idToPath:
 
                     image = cv2.imread(f"{self.data_folder}{name}/{self.idToPath[element['id']]}", cv2.IMREAD_COLOR)
-                    if not isinstance(image, np.ndarray): raise FileNotFoundError
+                    if not isinstance(image, np.ndarray): continue
                     x, y, w, h = [int(u) for u in element['bbox']] 
                     crop = image[y:y+h, x:x+w, :]
                     if (not crop.shape[0]*crop.shape[1]) or (element['id'] in DOCS_DONE): continue
