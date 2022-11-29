@@ -67,7 +67,7 @@ class PubLayNetDataset(IDFNetDataLoader):
             try: os.mkdir('./dataset/PubLayNetOCR/')
             except FileExistsError: pass
             self.build_transcriptions(transcriptions)
-        else: self.gt = json.load(transcriptions)
+        else: self.gt = json.load(open(transcriptions, 'r'))
     
     def _total_len(self):
         return len(self.gt['gt']) 
@@ -93,12 +93,14 @@ class PubLayNetDataset(IDFNetDataLoader):
                 # Just Text Category
                 if element['category_id'] == 1 and element['id'] in self.idToPath:
 
-                    image = cv2.imread(f"{self.data_folder}{name}/{self.idToPath[element['id']]}", cv2.IMREAD_COLOR)
+                    image = cv2.imread(f"{self.data_folder}{name}/{self.idToPath[element['id']]}", cv2.IMREAD_GRAYSCALE)
                     if not isinstance(image, np.ndarray): continue
-                    x, y, w, h = [int(u) for u in element['bbox']] 
-                    crop = image[y:y+h, x:x+w, :]
+                    x, y, w, h = [int(round(u)) for u in element['bbox']] 
+                    crop = image[y:y+h, x:x+w]
                     if (not crop.shape[0]*crop.shape[1]) or (element['id'] in DOCS_DONE): continue
                     text = self.ocr.run(crop)['result']
+                    print(text)
+                    0/0
                     yield {'image': self.idToPath[element['id']], 'bbx': (x, y, w, h), 'text': text}
                     DOCS_DONE.add(element['id'])
         
@@ -127,8 +129,11 @@ class PubLayNetDataset(IDFNetDataLoader):
         for element in self.gt['gt']:
             yield element['text']
 
-    def __gettitem__(self, index: int) -> Tuple[torch.tensor, str]:
-        if not self.train: index_image = index + len(self)
-        index_text = index
-        raise NotImplementedError
-        
+    def __getitem__(self, index: int) -> Tuple[torch.tensor, str]:
+        if not self.train: index = index + len(self)
+        item = self.gt['gt'][index]
+        impath = f"{self.data_folder}{'train/' if self.train else 'val/'}{item['image']}"
+        image = cv2.imread(impath, cv2.IMREAD_GRAYSCALE)
+        bbx = item['bbx']
+        image = image[bbx[1]:bbx[1]+bbx[3], bbx[0]:bbx[0]+bbx[2]]
+        return image, item['text']
