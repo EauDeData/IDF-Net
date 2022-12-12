@@ -174,11 +174,8 @@ class AbstractsDataset:
 
             print(f"Image number {num}\t", end = '\r')
             tex = self.default_format.format(title_input = title, abstract_input = abstract)
-            try:
-                pnglatex(re.sub(r"[^A-Za-z]+", '', tex), f'{path}/{num}.png')
-            except:
-                print(tex)
-                raise NotImplementedError("wtf happens now")
+            pnglatex(re.sub(r"[^A-Za-z]+", ' ', tex), f'{path}/{num}.png')
+
         
     def __len__(self):
         if self.fold: return int(.8*len(self.dataframe))
