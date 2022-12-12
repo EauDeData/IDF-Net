@@ -5,6 +5,10 @@ import numpy as np
 import torch
 import json
 import cv2
+import pandas as pd
+from pnglatex import pnglatex
+import string
+import re
 
 from src.dataloaders.base import IDFNetDataLoader
 from src.text.ocr import TesseractOCR
@@ -137,3 +141,65 @@ class PubLayNetDataset(IDFNetDataLoader):
         bbx = item['bbx']
         image = image[bbx[1]:bbx[1]+bbx[3], bbx[0]:bbx[0]+bbx[2]]
         return image, item['text']
+
+class AbstractsDataset:
+
+    def __init__(self, csv_path, data_folder, train = True) -> None:
+
+        # My Frame https://www.kaggle.com/datasets/spsayakpaul/arxiv-paper-abstracts?resource=download
+
+        self.dataframe = pd.read_csv(csv_path)
+
+        # TODO: More variate format
+        self.default_format = \
+            r'''
+            {title_input}
+            \n
+            {abstract_input}
+
+            '''
+        
+        if not (os.path.exists(data_folder) and len(os.listdir(data_folder))): self.generate_db(data_folder)
+        
+        self.images = data_folder
+        self.fold = train
+        self.offset = int(.8*len(self.dataframe)) if not train else 0
+
+    def generate_db(self, path) -> None:
+
+        printable = set(string.printable)
+        print(f"Database not found, generating it on {path}...")
+        if not os.path.exists(path): os.mkdir(path)
+        for num, (title, abstract) in enumerate(zip(self.dataframe['titles'], self.dataframe['summaries'])):
+
+            print(f"Image number {num}\t", end = '\r')
+            tex = self.default_format.format(title_input = title, abstract_input = abstract)
+            try:
+                pnglatex(re.sub(r"[^A-Za-z]+", '', tex), f'{path}/{num}.png')
+            except:
+                print(tex)
+                raise NotImplementedError("wtf happens now")
+        
+    def __len__(self):
+        if self.fold: return int(.8*len(self.dataframe))
+        return int(.2*len(self.dataframe))
+
+    
+    def iter_text(self):
+        '''
+        No train-test difference, iterate over the wole dataset.
+        
+        '''
+        for num, (title, abstract) in enumerate(zip(self.dataframe['titles'], self.dataframe['summaries'])):
+
+            yield f"{title} {abstract}"
+    
+    def __getitem__(self, index):
+        index = index + self.offset
+        image = cv2.imread(f"{self.images}/{index}.png")
+        text = self.dataframe['titles'][index] + ' ' + \
+            self.dataframe['summaries'][index]
+        
+        return image, text
+
+    
