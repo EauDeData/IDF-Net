@@ -154,7 +154,9 @@ class AbstractsDataset:
         self.default_format = \
             r'''
             {title_input}
-            \n
+            
+
+            
             {abstract_input}
 
             '''
@@ -173,8 +175,8 @@ class AbstractsDataset:
         for num, (title, abstract) in enumerate(zip(self.dataframe['titles'], self.dataframe['summaries'])):
 
             print(f"Image number {num}\t", end = '\r')
-            tex = self.default_format.format(title_input = title, abstract_input = abstract)
-            pnglatex(re.sub(r"[^A-Za-z]+", ' ', tex), f'{path}/{num}.png')
+            tex = self.default_format.format(title_input = re.sub(r"[^A-Za-z]+", ' ', title), abstract_input = re.sub(r"[^A-Za-z]+", ' ', abstract))
+            pnglatex(tex, f'{path}/{num}.png')
 
         
     def __len__(self):
