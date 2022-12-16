@@ -49,9 +49,10 @@ def norm_loss(features: torch.tensor, gt_distances: torch.tensor, similarity: Ca
     '''
     if similarity.name == 'cosine_matrix':
         h_distances = 1 - similarity(features, features) # Shape: (Bs x Bs)
+        gt_distances = 1 - similarity(gt_distances, gt_distances)
     else: raise NotImplementedError
 
-    mask_diagonal = ~ torch.eye(h_distances.shape[0]).bool()
+    mask_diagonal = ~torch.eye(h_distances.shape[0]).bool()
     h_distances_eyed = h_distances[mask_diagonal].view(gt_distances.shape[0], gt_distances.shape[0]-1) # Shape: (Bs-1*Bs-1)?
     # We remove the diagonal
 

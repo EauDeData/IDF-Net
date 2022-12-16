@@ -66,8 +66,16 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"5 - Loss test not passed, reason: {e}")
 
-    data = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images')
-    print(data[100][-1])
+    try:
+        data = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images')
+        print(data[34999][-1])
+        plt.imshow(data[34999][0])
+        plt.show()
+
+    
+    except Exception as e:
+        print(f"6 - Dataset test not passed, reason: {e}")
+
 
     '''
 

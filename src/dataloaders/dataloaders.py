@@ -144,7 +144,8 @@ class PubLayNetDataset(IDFNetDataLoader):
 
 class AbstractsDataset:
 
-    def __init__(self, csv_path, data_folder, train = True) -> None:
+    name = 'abstracts_dataset'
+    def __init__(self, csv_path, data_folder, train = True, imsize = 512) -> None:
 
         # My Frame https://www.kaggle.com/datasets/spsayakpaul/arxiv-paper-abstracts?resource=download
 
@@ -166,6 +167,8 @@ class AbstractsDataset:
         self.images = data_folder
         self.fold = train
         self.offset = int(.8*len(self.dataframe)) if not train else 0
+        self.tokenizer = 0
+        self.imsize = imsize
 
     def generate_db(self, path) -> None:
 
@@ -195,10 +198,15 @@ class AbstractsDataset:
     
     def __getitem__(self, index):
         index = index + self.offset
-        image = cv2.imread(f"{self.images}/{index}.png")
+        image = cv2.imread(f"{self.images}/{index}.png") / 255
+        image = cv2.resize(image, (self.imsize, self.imsize)).transpose(2, 0, 1)
+        image = image.astype(np.float32)
         text = self.dataframe['titles'][index] + ' ' + \
             self.dataframe['summaries'][index]
+
+        if isinstance(self.tokenizer, int):
+            return image, text
         
-        return image, text
+        return image, self.tokenizer[index]
 
     
