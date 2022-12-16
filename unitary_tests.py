@@ -69,12 +69,21 @@ if __name__ == '__main__':
     try:
         data = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images')
         print(data[34999][-1])
-        plt.imshow(data[34999][0])
+        plt.imshow(data[34999][0][0])
         plt.show()
 
-    
     except Exception as e:
         print(f"6 - Dataset test not passed, reason: {e}")
+    
+    try:
+        data = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images')
+        data.fold = False
+        for i in range(len(data)):
+            d, t = data[i]
+            print(i, end = '\r')
+
+    except Exception as e:
+        print(f"7 - Dataset test not passed, reason: {e}")
 
 
     '''
