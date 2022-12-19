@@ -5,12 +5,10 @@ import copy
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
-from src.dataloaders.dataloaders import DummyDataset
 from src.text.map_text import LSALoader, TF_IDFLoader
-from src.loss.loss import NormLoss, PearsonLoss, OrthAligment
+from src.loss.loss import NormLoss
 from src.models.models import VisualTransformer
-from src.dataloaders.dataloaders import PubLayNetDataset, AbstractsDataset
-from src.text.ocr import EasyOCR, TesseractOCR, MsOCR, MMOCRWrapper
+from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test
 nltk.download('stopwords')
 
@@ -20,7 +18,7 @@ IMSIZE = 256
 DEVICE = 'cuda' # TODO: Implement cuda execution
 
 ### First we select the dataset ###
-dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
+dataset = AbstractsDataset('/home/adri/Downloads/archive/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
 
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")

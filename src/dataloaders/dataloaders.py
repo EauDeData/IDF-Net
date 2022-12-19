@@ -11,7 +11,6 @@ import string
 import re
 
 from src.dataloaders.base import IDFNetDataLoader
-from src.text.ocr import TesseractOCR
 
 # https://open.spotify.com/track/31i56LZnwE6uSu3exoHjtB?si=1e5e0d5080404042
 
@@ -49,7 +48,7 @@ class PubLayNetDataset(IDFNetDataLoader):
 
     '''
 
-    def __init__(self, base_folder: str = '', transcriptions: str = './dataset/PubLayNetOCR/annot.json', ocr: Any = TesseractOCR, train: bool = True, train_p: float = .8, *args, **kwargs) -> None:
+    def __init__(self, base_folder: str = '', transcriptions: str = './dataset/PubLayNetOCR/annot.json', ocr: Any = None, train: bool = True, train_p: float = .8, *args, **kwargs) -> None:
         super(PubLayNetDataset).__init__()
 
         self.train = train
