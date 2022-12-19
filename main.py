@@ -23,7 +23,7 @@ dataset = AbstractsDataset('/home/adri/Downloads/archive/arxiv_data.csv', './dat
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-loader = LSALoader(dataset, StringCleaner())
+loader = LSALoaderGLOVE(dataset, StringCleaner())
 loader.fit()
 
 ### Now we setup the tokenizer on the dataset ###
