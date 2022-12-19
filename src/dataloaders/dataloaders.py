@@ -207,7 +207,7 @@ class AbstractsDataset:
         if isinstance(self.tokenizer, int):
             return image, text
         
-        print(self.tokenizer[index])
+        print(self.tokenizer[index].shape)
         return image, self.tokenizer[index]
 
     
