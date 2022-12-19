@@ -39,7 +39,8 @@ class TF_IDFLoader:
     def __getitem__(self, index: int) -> np.ndarray:
         _train_precondition(self)
         instance = self.model[self.corpus[index]]
-        return np.array(instance)
+        gensim_vector = gensim.matutils.corpus2csc(instance)
+        return gensim_vector.T.toarray()
 
     def fit(self) -> None:
 
