@@ -5,7 +5,7 @@ import copy
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
-from src.text.map_text import LSALoader, TF_IDFLoader
+from src.text.map_text import LSALoader, TF_IDFLoader, LSALoaderGLOVE
 from src.loss.loss import NormLoss
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import AbstractsDataset
@@ -18,12 +18,12 @@ IMSIZE = 256
 DEVICE = 'cuda' # TODO: Implement cuda execution
 
 ### First we select the dataset ###
-dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
+dataset = AbstractsDataset('/home/adri/Downloads/archive/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
 
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-loader = TF_IDFLoader(dataset, StringCleaner())
+loader = LSALoaderGLOVE(dataset, StringCleaner())
 loader.fit()
 
 ### Now we setup the tokenizer on the dataset ###
