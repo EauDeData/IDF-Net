@@ -76,8 +76,9 @@ class LSALoader:
         _train_precondition(self)
 
         if self.lsa == 'svd':
-            words = np.array([self.model[w] for w in self.corpus[index]])
+            words = np.array([self.model[w] for w in self.corpus[index] if w in self.model.key_to_index.keys()])
             _, document, _ = np.linalg.svd(words) # Get Eigenvalues of the SVD
+            document = np.concatenate((document, document))[:100]
             return document
 
         else: raise InvalidModelNameError
