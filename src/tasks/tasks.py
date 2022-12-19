@@ -26,7 +26,7 @@ class Train:
     
     def epoch(self, logger_freq, epoch):
         
-        print(f"Testing... Epoch {epoch}")
+        print(f"Training... Epoch {epoch}")
         for n, (images, text_emb) in enumerate(self.loader):
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
