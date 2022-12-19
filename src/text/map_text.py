@@ -38,7 +38,7 @@ class TF_IDFLoader:
 
     def __getitem__(self, index: int) -> np.ndarray:
         _train_precondition(self)
-        return self.model[self.corpus[0]]
+        return np.array(self.model[self.corpus[index]])
 
     def fit(self) -> None:
 

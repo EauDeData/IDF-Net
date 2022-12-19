@@ -25,7 +25,7 @@ dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-loader = LSALoader(dataset, StringCleaner())
+loader = TF_IDFLoader(dataset, StringCleaner())
 loader.fit()
 
 ### Now we setup the tokenizer on the dataset ###
