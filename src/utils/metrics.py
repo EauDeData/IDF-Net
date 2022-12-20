@@ -46,6 +46,7 @@ def euclidean_similarity_matrix(x1, x2, eps):
 def mutual_knn(distances, k):
 
     # Define the value of k
+    # TODO: I think this is not ok
     k = 3
     n = distances.shape[0]
 

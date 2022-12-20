@@ -1,4 +1,5 @@
-from src.utils.metrics import CosineSimilarityMatrix
+from src.utils.metrics import CosineSimilarityMatrix, EuclideanSimilarityMatrix
+from src.utils.metrics import mutual_knn
 
 import torch
 import torch.nn as nn
@@ -25,11 +26,7 @@ class PearsonLoss(CustomLoss):
     pass
 
 class OrthAligment(CustomLoss):
-    def __init__(self, p = 2) -> None:
-        self.p = p
-
-    def forward(self, x, gt):
-        return orth_aligment(x, gt, self.p)
+    pass
 
 
 def norm_loss(features: torch.tensor, gt_distances: torch.tensor, similarity: Callable = CosineSimilarityMatrix(), p_norm: int = 2, margin: float = 0, orth = True) -> torch.tensor:
@@ -55,7 +52,7 @@ def norm_loss(features: torch.tensor, gt_distances: torch.tensor, similarity: Ca
     loss = torch.sum(sqrd) ** (1/p_norm) + margin # Limitation of this, you are immitating distances, not topology.
     return loss
 
-def pairwise_atractors_loss():
+def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5):
 
     #############################################
     # Demonstrated in whiteboard (i think)      #
@@ -70,14 +67,18 @@ def pairwise_atractors_loss():
     # Loss will be 0 if E is 0                  #
     # and Nm, Nn are 0-similar to Nx            #
     #                                           #
-    # Question:                                 #
-    #    In some situations Nx is mutual to Nm  #
-    # Because it only takes into consideration  #  
-    # Nodes in the triplet. How do we scale to  #
-    # A continuous scenario?                    #
     #############################################
 
-    pass
+    x_distances = similarity(X, X)
+    y_distances = similarity(Y, Y)
+    adj_matrix = torch.tensor(mutual_knn(y_distances.cpu().numpy(), k))
+
+    atractor = -2 * x_distances * adj_matrix
+    repelent = x_distances * abs(adj_matrix - 1)
+
+    L = mu1 * torch.sum(atractor, dim = 0) + mu2 * torch.sum(repelent)
+
+    return torch.sum(L) / L.shape[0]
 
 
 def logprop():
