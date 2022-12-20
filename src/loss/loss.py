@@ -55,7 +55,7 @@ def norm_loss(features: torch.tensor, gt_distances: torch.tensor, similarity: Ca
     loss = torch.sum(sqrd) ** (1/p_norm) + margin # Limitation of this, you are immitating distances, not topology.
     return loss
 
-def inequality_satisfied_loss():
+def pairwise_atractors_loss():
 
     #############################################
     # Demonstrated in whiteboard (i think)      #
@@ -65,7 +65,7 @@ def inequality_satisfied_loss():
     # S is a similarity function.               #
     # E = S(Nn, Nx)                             #
     #                                           #
-    # Loss = -2E + [S(Nm, Nx) + S(Nn, Nx)]      #
+    # Loss = -2sum(atractors) + sum(detractors) #
     #                                           #
     # Loss will be 0 if E is 0                  #
     # and Nm, Nn are 0-similar to Nx            #
