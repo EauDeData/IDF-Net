@@ -18,7 +18,7 @@ IMSIZE = 256
 DEVICE = 'cuda' # TODO: Implement cuda execution
 
 ### First we select the dataset ###
-dataset = AbstractsDataset('/home/adri/Downloads/archive/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
+dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
 
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
@@ -34,7 +34,7 @@ loss_function = NormLoss()
 model = VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 1e-3)
+optim = torch.optim.Adam(model.parameters(), lr = 1e-5)
 
 ### Tasks ###
 test_data = copy.deepcopy(dataset)
