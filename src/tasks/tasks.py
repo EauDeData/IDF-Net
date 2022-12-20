@@ -27,6 +27,7 @@ class Train:
     def epoch(self, logger_freq, epoch):
         
         print(f"Training... Epoch {epoch}")
+        buffer = 0
         for n, (images, text_emb) in enumerate(self.loader):
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
@@ -35,17 +36,20 @@ class Train:
             loss = self.loss_f(h, text_emb)
             loss.backward()
             self.optimizer.step()
+            buffer += loss.item()
 
             if not (n*self.bs) % logger_freq:
-                WRITER.add_scalar('Loss/train', loss.item(), epoch*n)
+                
                 print(f"Current loss: {loss.item()}")
+
+        WRITER.add_scalar('Loss/train', buffer/n, epoch)
 
 
     def run(self, epoches = 30, logger_freq = 1000):
 
         for epoch in range(epoches):
-
-            self.test.epoch(500, epoch)
+            with torch.no_grad():
+                self.test.epoch(500, epoch)
             self.epoch(logger_freq, epoch)
 
         self.test.epoch(500, epoch+1)
@@ -71,16 +75,19 @@ class Test:
     
     def epoch(self, logger_freq, epoch):
         print(f"Testing... Epoch {epoch}")
+        buffer = 0
         for n, (images, text_emb) in enumerate(self.loader):
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
             h = self.model(images)
             loss = self.loss_f(h, text_emb)
+            buffer += loss.item()
 
 
             if not (n*self.bs) % logger_freq:
-                WRITER.add_scalar('Loss/test', loss.item(), epoch*n)
+                
                 print(f"Current loss: {loss.item()}")
+        WRITER.add_scalar('Loss/test', buffer/n, epoch)
 
     def run(self, epoches = 30, logger_freq = 500):
 
