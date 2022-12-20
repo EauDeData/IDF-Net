@@ -95,6 +95,11 @@ def clique_potential_loss():
     # The definitive potential loss
     # The thing in the bottom of here, with the scheme bottom-right
     # https://github.com/EauDeData/IDF-Net/blob/main/maths/loss_function_formulation.pdf
+
+
+    # You will have troubles finding cliques from adj matrix
+    # Use this https://www.math.ucdavis.edu/~daddel/linear_algebra_appl/Applications/GraphTheory/GraphTheory_9_17/node10.html
+    
     pass
 
 def logprop():
