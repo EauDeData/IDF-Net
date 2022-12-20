@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch
 from torch import Tensor
 from typing import *
+import numpy as np
 
 class CosineSimilarityMatrix(nn.Module):
     name = 'cosine_matrix'
@@ -12,6 +13,16 @@ class CosineSimilarityMatrix(nn.Module):
 
     def forward(self, x1: Tensor, x2: Tensor) -> Tensor:
         return cosine_similarity_matrix(x1, x2, self.dim, self.eps)
+
+class EuclideanSimilarityMatrix(nn.Module):
+    name = 'euclidean_matrix'
+    def __init__(self, dim: int = 1, eps: float = 1) -> None:
+        super(EuclideanSimilarityMatrix, self).__init__()
+        self.dim = dim
+        self.eps = eps
+
+    def forward(self, x1: Tensor, x2: Tensor) -> Tensor:
+        return euclidean_similarity_matrix(x1, x2, self.eps)
 
 def cosine_similarity_matrix(x1: Tensor, x2: Tensor, dim: int = 1, eps: float = 1e-8) -> Tensor:
     '''
@@ -28,3 +39,26 @@ def cosine_similarity_matrix(x1: Tensor, x2: Tensor, dim: int = 1, eps: float = 
     sim = (sim + 1)/2 #range: [-1, 1] -> [0, 2] -> [0, 1]
 
     return sim
+
+def euclidean_similarity_matrix(x1, x2, eps):
+    return 1/(eps + torch.cdist(x1, x2))
+
+def mutual_knn(distances, k):
+
+    # Define the value of k
+    k = 3
+    n = distances.shape[0]
+
+    # Find the indices of the k nearest neighbors for each point
+    nearest_neighbors = np.argsort(distances, axis=1)[:, :k]
+
+    # Create a boolean mask indicating whether each pair of points is mutual nearest neighbors
+    mask = np.zeros(distances.shape, dtype=bool)
+    mask[np.arange(n)[:, np.newaxis], nearest_neighbors] = True
+    mask[nearest_neighbors, np.arange(n)[:, np.newaxis]] = True
+
+    # Use the boolean mask to create the mutual KNN adjacency matrix
+    adjacency_matrix = mask.astype(int)
+    np.fill_diagonal(adjacency_matrix, 0)
+
+    return adjacency_matrix
