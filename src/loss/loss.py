@@ -22,6 +22,17 @@ class NormLoss(CustomLoss):
     def forward(self, h, gt):
         return norm_loss(h, gt, self.similarity, self.p_norm, self.margin, self.orthogonality_solver)
 
+
+class PairwisePotential(CustomLoss):
+    def __init__(self, similarity: Callable = EuclideanSimilarityMatrix(), k = 3, mu1 = .5, mu2 = .5, *args, **kwargs) -> None:
+        self.similarity = similarity
+        self.mu1 = mu1
+        self.mu2 = mu2
+        self.k = k
+
+    def forward(self, h, gt):
+        return pairwise_atractors_loss(h, gt, self.similarity, self.k, self.mu1, self.mu2)
+
 class PearsonLoss(CustomLoss):
     pass
 
@@ -80,6 +91,11 @@ def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 
 
     return torch.sum(L) / L.shape[0]
 
+def clique_potential_loss():
+    # The definitive potential loss
+    # The thing in the bottom of here, with the scheme bottom-right
+    # https://github.com/EauDeData/IDF-Net/blob/main/maths/loss_function_formulation.pdf
+    pass
 
 def logprop():
 
