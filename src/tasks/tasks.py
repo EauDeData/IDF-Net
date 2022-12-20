@@ -1,4 +1,5 @@
 import torch.utils.data.dataloader as dataloader
+import torch
 from torch.utils.tensorboard import SummaryWriter
 
 WRITER = SummaryWriter()
