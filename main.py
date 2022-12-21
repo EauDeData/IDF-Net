@@ -35,7 +35,7 @@ model = VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 gd = torch.optim.Adam(model.parameters(), lr = 1e-4)
-optim = ReduceLROnPlateau(gd, 'min')
+optim = torch.optim.lr_scheduler.ReduceLROnPlateau(gd, 'min')
 
 ### Tasks ###
 test_data = copy.deepcopy(dataset)
