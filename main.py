@@ -34,7 +34,8 @@ loss_function = NormLoss()
 model = VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 1e-5)
+gd = torch.optim.Adam(model.parameters(), lr = 1e-4)
+optim = ReduceLROnPlateau(gd, 'min')
 
 ### Tasks ###
 test_data = copy.deepcopy(dataset)

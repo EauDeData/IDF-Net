@@ -46,7 +46,7 @@ class Train:
         WRITER.add_scalar('Loss/train', buffer/n, epoch)
 
 
-    def run(self, epoches = 30, logger_freq = 1000):
+    def run(self, epoches = 60, logger_freq = 1000):
 
         for epoch in range(epoches):
             with torch.no_grad():
