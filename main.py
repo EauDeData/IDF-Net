@@ -34,14 +34,14 @@ loss_function = NormLoss()
 model = VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-gd = torch.optim.Adam(model.parameters(), lr = 1e-4)
-optim = torch.optim.lr_scheduler.ReduceLROnPlateau(gd, 'min')
+optim = torch.optim.Adam(model.parameters(), lr = 1e-4)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 ### Tasks ###
 test_data = copy.deepcopy(dataset)
 test_data.fold = False
 
-test_task = Test(test_data, model, loss_function, loader, cleaner, optim, device = DEVICE)
+test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE)
 train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE)
 
 train_task.run()

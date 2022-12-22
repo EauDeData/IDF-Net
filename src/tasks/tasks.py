@@ -56,7 +56,7 @@ class Train:
         self.test.epoch(500, epoch+1)
 
 class Test:
-    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, bsize = 5, device = 'cuda'):
+    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, bsize = 5, scheduler = False, device = 'cuda'):
         
         if isinstance(dataset.tokenizer, int): 
             raise NotImplementedError(
@@ -72,6 +72,7 @@ class Test:
         self.text_prep = text_prepocess
         self.optimizer = optimizer
         self.device = device
+        self.scheduler = scheduler
         self.model.to(device)
     
     def epoch(self, logger_freq, epoch):
@@ -89,6 +90,7 @@ class Test:
                 
                 print(f"Current loss: {loss.item()}")
         WRITER.add_scalar('Loss/test', buffer/n, epoch)
+        if not isinstance(self.scheduler, bool): self.scheduler.step(buffer / n)
 
     def run(self, epoches = 30, logger_freq = 500):
 
