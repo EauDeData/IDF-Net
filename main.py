@@ -6,7 +6,7 @@ import copy
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LSALoaderGLOVE
-from src.loss.loss import NormLoss
+from src.loss.loss import NormLoss, PairwisePotential
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test
@@ -30,7 +30,7 @@ loader.fit()
 dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
-loss_function = NormLoss()
+loss_function = PairwisePotential()
 model = VisualTransformer(IMSIZE)
 
 ### Optimizer ###

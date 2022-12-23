@@ -24,14 +24,14 @@ class NormLoss(CustomLoss):
 
 
 class PairwisePotential(CustomLoss):
-    def __init__(self, similarity: Callable = EuclideanSimilarityMatrix(), k = 3, mu1 = .5, mu2 = .5, *args, **kwargs) -> None:
+    def __init__(self, similarity: Callable = EuclideanSimilarityMatrix(), k = 3, mu1 = .5, mu2 = .5, device = 'cuda', *args, **kwargs) -> None:
         self.similarity = similarity
         self.mu1 = mu1
         self.mu2 = mu2
-        self.k = k
+        self.k, self.device = k, device
 
     def forward(self, h, gt):
-        return pairwise_atractors_loss(h, gt, self.similarity, self.k, self.mu1, self.mu2)
+        return pairwise_atractors_loss(h, gt, self.similarity, self.k, self.mu1, self.mu2, self.device)
 
 class PearsonLoss(CustomLoss):
     pass
@@ -63,7 +63,7 @@ def norm_loss(features: torch.tensor, gt_distances: torch.tensor, similarity: Ca
     loss = torch.sum(sqrd) ** (1/p_norm) + margin # Limitation of this, you are immitating distances, not topology.
     return loss
 
-def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5):
+def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5, device = 'cuda'):
 
     #############################################
     # Demonstrated in whiteboard (i think)      #
@@ -82,7 +82,7 @@ def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 
 
     x_distances = similarity(X, X)
     y_distances = similarity(Y, Y)
-    adj_matrix = torch.tensor(mutual_knn(y_distances.cpu().numpy(), k))
+    adj_matrix = torch.tensor(mutual_knn(y_distances.cpu().numpy(), k)).to(device)
 
     atractor = -2 * x_distances * adj_matrix
     repelent = x_distances * abs(adj_matrix - 1)
