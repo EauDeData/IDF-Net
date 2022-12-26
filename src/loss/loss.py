@@ -87,7 +87,7 @@ def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 
     atractor = -2 * x_distances * adj_matrix
     repelent = x_distances * abs(adj_matrix - 1)
 
-    L = mu1 * torch.sum(atractor, dim = 0) + mu2 * torch.sum(repelent)
+    L = mu1 * torch.sum(atractor, dim = 0) + mu2 * torch.sum(repelent, dim = 0)
 
     return torch.sum(L) / L.shape[0]
 

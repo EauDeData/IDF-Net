@@ -30,7 +30,7 @@ loader.fit()
 dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
-loss_function = NormLoss()
+loss_function = PairwisePotential()
 model = VisualTransformer(IMSIZE)
 
 ### Optimizer ###
