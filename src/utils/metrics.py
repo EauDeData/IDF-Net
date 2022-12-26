@@ -41,7 +41,7 @@ def cosine_similarity_matrix(x1: Tensor, x2: Tensor, dim: int = 1, eps: float = 
     return sim
 
 def euclidean_similarity_matrix(x1, x2, eps):
-    return -torch.cdist(x1, x2)
+    return 1/(1+torch.cdist(x1, x2)+eps)
 
 def mutual_knn(distances, k):
 
