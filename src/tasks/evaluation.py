@@ -34,6 +34,7 @@ class IOUEvaluation:
 class MAPEvaluation:
 
     '''
-    idk how to manage this one
+    Use categories for MAP Evaluation maybe.
+    
     '''
     pass

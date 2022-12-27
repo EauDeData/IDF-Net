@@ -194,6 +194,12 @@ class AbstractsDataset:
         for num, (title, abstract) in enumerate(zip(self.dataframe['titles'], self.dataframe['summaries'])):
 
             yield f"{title} {abstract}"
+
+    def get_with_category(self, index):
+        
+        ret =  self[index]
+        index = index + self.offset
+        return ret[0], ret[1], eval(self.dataframe['terms'][index])
     
     def __getitem__(self, index):
         index = index + self.offset

@@ -9,7 +9,8 @@ from src.text.map_text import LSALoader, TF_IDFLoader
 from src.loss.loss import NormLoss, PearsonLoss, OrthAligment
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import PubLayNetDataset, AbstractsDataset
-from src.text.ocr import EasyOCR, TesseractOCR, MsOCR, MMOCRWrapper
+from src.dataloaders.annoyify import Annoyifier
+
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
@@ -86,16 +87,18 @@ if __name__ == '__main__':
         print(f"7 - Dataset test not passed, reason: {e}")
 
 
-    '''
+    IMSIZE = 256
+    DEVICE = 'cuda'
 
-    annoying part
-
-    dataset = PubLayNetDataset('/home/adria/Desktop/data/publaynet/', ocr=MMOCRWrapper)
-    print(dataset.gt['gt'][100])
-    img, text = dataset[0]
-    plt.imshow(img)
-    print(text)
-    plt.show()
-    '''
-
-    
+    ### First we select the dataset ###
+    dataset = AbstractsDataset('/home/adri/Downloads/archive/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
+    print("Tokenizing text!")
+    cleaner = StringCleanAndTrim()
+    loader = TF_IDFLoader(dataset, StringCleaner())
+    loader.fit()
+    dataset.tokenizer = loader
+    model = VisualTransformer(IMSIZE).eval()
+    print('IDF-Vectors with size:', len(dataset[0][1]))
+    print('Images with shape', dataset[0][0].shape)
+    ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE)
+    print(ann.retrieve_image(dataset[0][0]))
