@@ -86,19 +86,23 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"7 - Dataset test not passed, reason: {e}")
 
+    try: 
 
-    IMSIZE = 256
-    DEVICE = 'cuda'
+        IMSIZE = 256
+        DEVICE = 'cuda'
 
-    ### First we select the dataset ###
-    dataset = AbstractsDataset('/home/adri/Downloads/archive/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
-    print("Tokenizing text!")
-    cleaner = StringCleanAndTrim()
-    loader = TF_IDFLoader(dataset, StringCleaner())
-    loader.fit()
-    dataset.tokenizer = loader
-    model = VisualTransformer(IMSIZE).eval()
-    print('IDF-Vectors with size:', len(dataset[0][1]))
-    print('Images with shape', dataset[0][0].shape)
-    ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE)
-    print(ann.retrieve_image(dataset[0][0]))
+        ### First we select the dataset ###
+        dataset = AbstractsDataset('/home/adri/Downloads/archive/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
+        print("Tokenizing text!")
+        cleaner = StringCleanAndTrim()
+        loader = TF_IDFLoader(dataset, StringCleaner())
+        loader.fit()
+        dataset.tokenizer = loader
+        model = VisualTransformer(IMSIZE).eval()
+        print('IDF-Vectors with size:', len(dataset[0][1]))
+        print('Images with shape', dataset[0][0].shape)
+        ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE)
+        print(ann.retrieve_image(dataset[0][0]))
+    
+    except Exception as e:
+        print(f"8 - Evaluation test not passed, reason: {e}")

@@ -35,6 +35,7 @@ class MAPEvaluation:
 
     '''
     Use categories for MAP Evaluation maybe.
+    It should consider only 1 modal (visual and textual separately) and hopefully it should be the same
     
     '''
     pass
