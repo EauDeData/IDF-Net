@@ -201,6 +201,10 @@ class AbstractsDataset:
         index = index + self.offset
         return ret[0], ret[1], eval(self.dataframe['terms'][index])
     
+    def get_only_category(self, index):
+        index = index + self.offset
+        return eval(self.dataframe['terms'][index])
+    
     def __getitem__(self, index):
         index = index + self.offset
         image = cv2.imread(f"{self.images}/{index}.png") / 255

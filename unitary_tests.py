@@ -1,6 +1,7 @@
 import torch
 import nltk 
 import matplotlib.pyplot as plt
+import copy
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
@@ -10,6 +11,7 @@ from src.loss.loss import NormLoss, PearsonLoss, OrthAligment
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import PubLayNetDataset, AbstractsDataset
 from src.dataloaders.annoyify import Annoyifier
+from src.tasks.evaluation import MAPEvaluation
 
 nltk.download('stopwords')
 
@@ -101,8 +103,12 @@ if __name__ == '__main__':
         model = VisualTransformer(IMSIZE).eval()
         print('IDF-Vectors with size:', len(dataset[0][1]))
         print('Images with shape', dataset[0][0].shape)
-        ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE)
+        ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-LARGE.ann', text='./dataset/text-LARGE.ann')
         print(ann.retrieve_image(dataset[0][0]))
+
+        test_data = copy.deepcopy(dataset)
+        test_data.fold = False
+        print(MAPEvaluation(test_data, dataset, ann).run())
     
     except Exception as e:
         print(f"8 - Evaluation test not passed, reason: {e}")
