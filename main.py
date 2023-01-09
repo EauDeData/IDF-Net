@@ -10,6 +10,7 @@ from src.loss.loss import NormLoss, PairwisePotential
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test
+from src.tasks.evaluation import MAPEvaluation
 nltk.download('stopwords')
 
 # TODO: Use a config file
@@ -45,4 +46,7 @@ test_task = Test(test_data, model, loss_function, loader, cleaner, optim, schedu
 train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE)
 
 train_task.run()
+ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-LARGE.ann', text='./dataset/text-LARGE.ann')
+evaluator = MAPEvaluation(test_data, dataset, ann)
+print(evaluator.run())
 
