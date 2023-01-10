@@ -11,6 +11,7 @@ from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test
 from src.tasks.evaluation import MAPEvaluation
+from src.dataloaders.annoyify import Annoyifier
 nltk.download('stopwords')
 
 # TODO: Use a config file
