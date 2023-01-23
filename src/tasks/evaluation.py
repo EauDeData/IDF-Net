@@ -52,6 +52,7 @@ class MAPEvaluation:
         # TODO: This should be 10 times faster
         buffer_visual = 0
         buffer_textual = 0
+        count_visual, count_textual = 0, 0
         print("Running MAP Evaluation...")
         for idx in range(len(self.dataset)):
             print(idx, '\t', end = '\r')
@@ -64,6 +65,7 @@ class MAPEvaluation:
 
             labels = [0 for _ in retrieved]
             labels_textual = [0 for _ in retrieved]
+            
             for num, (item, item_textual) in enumerate(zip(retrieved, retrieved_textual)):
                 
                 cats = self.train_set.get_only_category(item)
@@ -72,10 +74,14 @@ class MAPEvaluation:
                 labels[num] = bool(len(category.intersection(cats)))
                 labels_textual[num] = bool(len(category.intersection(cats_textual)))
 
-                if (sum(labels)): buffer_visual += average_precision_score(labels, distances)
-                if (sum(labels_textual)): buffer_textual += average_precision_score(labels_textual, distances_textual)
+                if (sum(labels)): 
+                    count_visual +=1
+                    buffer_visual += average_precision_score(labels, distances)
+                if (sum(labels_textual)):
+                    count_textual += 1
+                    buffer_textual += average_precision_score(labels_textual, distances_textual)
         
         return {
-            'visual-map': buffer_visual / (idx + 1),
-            'textual-map': buffer_textual / (idx + 1)
+            'visual-map': buffer_visual / count_visual,
+            'textual-map': buffer_textual / count_textual
         }
