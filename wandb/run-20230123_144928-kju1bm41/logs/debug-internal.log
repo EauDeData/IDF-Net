@@ -79,3 +79,54 @@
 2023-01-23 14:49:53,956 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
 2023-01-23 14:49:53,956 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
 2023-01-23 14:49:55,436 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:49:55,613 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:49:55,634 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:49:55,957 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:55,957 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:57,958 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:57,958 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:00,022 ERROR   gpu       :167580 [interfaces.py:aggregate():146] Failed to serialize metric: division by zero
+2023-01-23 14:50:00,023 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:00,023 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:00,439 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:50:00,650 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:50:00,802 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/config.yaml
+2023-01-23 14:50:02,024 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:02,025 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:04,026 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:04,026 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:05,632 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:50:05,688 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:50:06,027 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:06,027 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:08,028 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:08,028 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:10,029 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:10,029 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:10,633 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:50:10,742 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:50:12,030 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:12,030 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:14,031 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:14,031 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:15,634 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:50:15,778 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:50:16,033 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:16,033 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:18,035 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:18,035 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:20,036 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:20,036 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:20,635 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:50:20,816 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:50:22,037 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:22,037 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:24,038 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:24,039 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:25,832 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:50:26,040 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:26,040 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:26,200 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:50:26,811 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/output.log
+2023-01-23 14:50:28,042 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:50:28,042 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
