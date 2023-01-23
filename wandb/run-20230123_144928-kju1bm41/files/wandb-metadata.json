@@ -1,0 +1,89 @@
+{
+    "os": "Linux-5.15.0-58-generic-x86_64-with-glibc2.35",
+    "python": "3.9.12",
+    "heartbeatAt": "2023-01-23T13:49:30.104245",
+    "startedAt": "2023-01-23T13:49:28.825497",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/adria/Desktop/IDF-Net/main.py",
+    "codePath": "main.py",
+    "git": {
+        "remote": "git@github.com:EauDeData/IDF-Net.git",
+        "commit": "10ce52884de58ce4152d351c23236a01e0bf195c"
+    },
+    "email": "evabot505@gmail.com",
+    "root": "/home/adria/Desktop/IDF-Net",
+    "host": "CVC-181",
+    "username": "adria",
+    "executable": "/home/adria/anaconda3/bin/python",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 2253.567,
+        "min": 1200.0,
+        "max": 3900.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2522.589,
+            "min": 1200.0,
+            "max": 3900.0
+        },
+        {
+            "current": 1329.189,
+            "min": 1200.0,
+            "max": 3900.0
+        },
+        {
+            "current": 2217.132,
+            "min": 1200.0,
+            "max": 3900.0
+        },
+        {
+            "current": 1369.347,
+            "min": 1200.0,
+            "max": 3900.0
+        },
+        {
+            "current": 2071.941,
+            "min": 1200.0,
+            "max": 3900.0
+        },
+        {
+            "current": 1200.979,
+            "min": 1200.0,
+            "max": 3900.0
+        },
+        {
+            "current": 2004.299,
+            "min": 1200.0,
+            "max": 3900.0
+        },
+        {
+            "current": 1556.484,
+            "min": 1200.0,
+            "max": 3900.0
+        }
+    ],
+    "disk": {
+        "total": 1828.9457321166992,
+        "used": 15.886528015136719
+    },
+    "gpu": "Quadro P400",
+    "gpu_count": 2,
+    "gpu_devices": [
+        {
+            "name": "Quadro P400",
+            "memory_total": 2147483648
+        },
+        {
+            "name": "NVIDIA TITAN V",
+            "memory_total": 12884901888
+        }
+    ],
+    "memory": {
+        "total": 31.03691864013672
+    }
+}

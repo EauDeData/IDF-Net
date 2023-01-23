@@ -1,7 +1,9 @@
 import torch.utils.data.dataloader as dataloader
 import torch
 from torch.utils.tensorboard import SummaryWriter
+import wandb
 
+wandb.init(project="IDF-NET Logger")
 WRITER = SummaryWriter()
 
 class Train:
@@ -44,6 +46,7 @@ class Train:
                 print(f"Current loss: {loss.item()}")
 
         WRITER.add_scalar('Loss/train', buffer/n, epoch)
+        wandb.log({'train-loss': buffer / n})
 
 
     def run(self, epoches = 60, logger_freq = 1000):
@@ -90,6 +93,7 @@ class Test:
                 
                 print(f"Current loss: {loss.item()}")
         WRITER.add_scalar('Loss/test', buffer/n, epoch)
+        wandb.log({'test-loss': buffer / n})
         if not isinstance(self.scheduler, bool): self.scheduler.step(buffer / n)
 
     def run(self, epoches = 30, logger_freq = 500):

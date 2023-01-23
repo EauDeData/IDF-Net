@@ -1,0 +1,81 @@
+2023-01-23 14:49:28,936 INFO    StreamThr :167580 [internal.py:wandb_internal():87] W&B internal server running at pid: 167580, started at: 2023-01-23 14:49:28.935828
+2023-01-23 14:49:28,937 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status
+2023-01-23 14:49:28,939 INFO    WriterThread:167580 [datastore.py:open_for_write():85] open: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/run-kju1bm41.wandb
+2023-01-23 14:49:28,939 DEBUG   SenderThread:167580 [sender.py:send():334] send: header
+2023-01-23 14:49:28,958 DEBUG   SenderThread:167580 [sender.py:send():334] send: run
+2023-01-23 14:49:29,788 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: check_version
+2023-01-23 14:49:29,790 INFO    SenderThread:167580 [dir_watcher.py:__init__():216] watching files in: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files
+2023-01-23 14:49:29,790 INFO    SenderThread:167580 [sender.py:_start_run_threads():1065] run started: kju1bm41 with start time 1674481768.934278
+2023-01-23 14:49:29,790 DEBUG   SenderThread:167580 [sender.py:send_request():361] send_request: summary_record
+2023-01-23 14:49:29,790 INFO    SenderThread:167580 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-01-23 14:49:29,790 DEBUG   SenderThread:167580 [sender.py:send_request():361] send_request: check_version
+2023-01-23 14:49:29,871 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: run_start
+2023-01-23 14:49:29,928 DEBUG   HandlerThread:167580 [system_info.py:__init__():31] System info init
+2023-01-23 14:49:29,928 DEBUG   HandlerThread:167580 [system_info.py:__init__():46] System info init done
+2023-01-23 14:49:29,928 INFO    HandlerThread:167580 [system_monitor.py:start():151] Starting system monitor
+2023-01-23 14:49:29,929 INFO    SystemMonitor:167580 [system_monitor.py:_start():116] Starting system asset monitoring threads
+2023-01-23 14:49:29,929 INFO    HandlerThread:167580 [system_monitor.py:probe():172] Collecting system info
+2023-01-23 14:49:29,929 INFO    SystemMonitor:167580 [interfaces.py:start():168] Started cpu
+2023-01-23 14:49:29,929 INFO    SystemMonitor:167580 [interfaces.py:start():168] Started disk
+2023-01-23 14:49:29,930 INFO    SystemMonitor:167580 [interfaces.py:start():168] Started gpu
+2023-01-23 14:49:29,930 INFO    SystemMonitor:167580 [interfaces.py:start():168] Started memory
+2023-01-23 14:49:29,931 INFO    SystemMonitor:167580 [interfaces.py:start():168] Started network
+2023-01-23 14:49:29,943 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:29,943 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:30,104 DEBUG   HandlerThread:167580 [system_info.py:probe():195] Probing system
+2023-01-23 14:49:30,114 DEBUG   HandlerThread:167580 [system_info.py:_probe_git():180] Probing git
+2023-01-23 14:49:30,128 DEBUG   HandlerThread:167580 [system_info.py:_probe_git():188] Probing git done
+2023-01-23 14:49:30,128 DEBUG   HandlerThread:167580 [system_info.py:probe():241] Probing system done
+2023-01-23 14:49:30,128 DEBUG   HandlerThread:167580 [system_monitor.py:probe():181] {'os': 'Linux-5.15.0-58-generic-x86_64-with-glibc2.35', 'python': '3.9.12', 'heartbeatAt': '2023-01-23T13:49:30.104245', 'startedAt': '2023-01-23T13:49:28.825497', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/adria/Desktop/IDF-Net/main.py', 'codePath': 'main.py', 'git': {'remote': 'git@github.com:EauDeData/IDF-Net.git', 'commit': '10ce52884de58ce4152d351c23236a01e0bf195c'}, 'email': 'evabot505@gmail.com', 'root': '/home/adria/Desktop/IDF-Net', 'host': 'CVC-181', 'username': 'adria', 'executable': '/home/adria/anaconda3/bin/python', 'cpu_count': 4, 'cpu_count_logical': 8, 'cpu_freq': {'current': 2253.567, 'min': 1200.0, 'max': 3900.0}, 'cpu_freq_per_core': [{'current': 2522.589, 'min': 1200.0, 'max': 3900.0}, {'current': 1329.189, 'min': 1200.0, 'max': 3900.0}, {'current': 2217.132, 'min': 1200.0, 'max': 3900.0}, {'current': 1369.347, 'min': 1200.0, 'max': 3900.0}, {'current': 2071.941, 'min': 1200.0, 'max': 3900.0}, {'current': 1200.979, 'min': 1200.0, 'max': 3900.0}, {'current': 2004.299, 'min': 1200.0, 'max': 3900.0}, {'current': 1556.484, 'min': 1200.0, 'max': 3900.0}], 'disk': {'total': 1828.9457321166992, 'used': 15.886528015136719}, 'gpu': 'Quadro P400', 'gpu_count': 2, 'gpu_devices': [{'name': 'Quadro P400', 'memory_total': 2147483648}, {'name': 'NVIDIA TITAN V', 'memory_total': 12884901888}], 'memory': {'total': 31.03691864013672}}
+2023-01-23 14:49:30,128 INFO    HandlerThread:167580 [system_monitor.py:probe():182] Finished collecting system info
+2023-01-23 14:49:30,128 INFO    HandlerThread:167580 [system_monitor.py:probe():185] Publishing system info
+2023-01-23 14:49:30,128 DEBUG   HandlerThread:167580 [system_info.py:_save_pip():51] Saving list of pip packages installed into the current environment
+2023-01-23 14:49:30,129 DEBUG   HandlerThread:167580 [system_info.py:_save_pip():67] Saving pip packages done
+2023-01-23 14:49:30,129 DEBUG   HandlerThread:167580 [system_info.py:_save_conda():74] Saving list of conda packages installed into the current environment
+2023-01-23 14:49:30,791 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_created():275] file/dir created: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/conda-environment.yaml
+2023-01-23 14:49:30,792 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_created():275] file/dir created: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/requirements.txt
+2023-01-23 14:49:30,792 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_created():275] file/dir created: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/wandb-summary.json
+2023-01-23 14:49:31,944 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:31,944 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:33,945 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:33,945 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:35,946 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:35,946 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:37,947 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:37,947 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:39,948 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:39,948 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:40,592 DEBUG   HandlerThread:167580 [system_info.py:_save_conda():86] Saving conda packages done
+2023-01-23 14:49:40,593 INFO    HandlerThread:167580 [system_monitor.py:probe():187] Finished publishing system info
+2023-01-23 14:49:40,598 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:49:40,599 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:49:40,599 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:49:40,599 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: keepalive
+2023-01-23 14:49:40,599 DEBUG   SenderThread:167580 [sender.py:send():334] send: files
+2023-01-23 14:49:40,600 INFO    SenderThread:167580 [sender.py:_save_file():1319] saving file wandb-metadata.json with policy now
+2023-01-23 14:49:40,603 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: stop_status
+2023-01-23 14:49:40,603 DEBUG   SenderThread:167580 [sender.py:send_request():361] send_request: stop_status
+2023-01-23 14:49:40,760 DEBUG   SenderThread:167580 [sender.py:send():334] send: telemetry
+2023-01-23 14:49:40,796 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/conda-environment.yaml
+2023-01-23 14:49:40,796 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_created():275] file/dir created: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/wandb-metadata.json
+2023-01-23 14:49:41,796 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_created():275] file/dir created: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/output.log
+2023-01-23 14:49:41,949 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:41,949 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:41,968 INFO    Thread-16 :167580 [upload_job.py:push():143] Uploaded file /tmp/tmpag7qyln8wandb/z2li1nux-wandb-metadata.json
+2023-01-23 14:49:43,797 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/output.log
+2023-01-23 14:49:43,950 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:43,950 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:44,797 INFO    Thread-13 :167580 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/adria/Desktop/IDF-Net/wandb/run-20230123_144928-kju1bm41/files/output.log
+2023-01-23 14:49:45,434 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:49:45,952 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:45,952 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:47,953 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:47,953 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:49,954 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:49,954 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:50,435 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report
+2023-01-23 14:49:51,955 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:51,955 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:53,956 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:53,956 ERROR   gpu       :167580 [interfaces.py:monitor():129] Failed to sample metric: Not Supported
+2023-01-23 14:49:55,436 DEBUG   HandlerThread:167580 [handler.py:handle_request():144] handle_request: status_report

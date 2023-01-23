@@ -6,7 +6,7 @@ import copy
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LSALoaderGLOVE
-from src.loss.loss import NormLoss, PairwisePotential
+from src.loss.loss import PairwisePotential
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test
