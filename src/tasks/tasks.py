@@ -8,7 +8,7 @@ WRITER = SummaryWriter()
 
 class Train:
 
-    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize = 5, device = 'cuda'):
+    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize = 5, device = 'cuda',):
         
         if isinstance(dataset.tokenizer, int): 
             raise NotImplementedError(

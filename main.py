@@ -2,6 +2,7 @@ import torch
 import nltk 
 import matplotlib.pyplot as plt
 import copy
+import wandb
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
@@ -43,11 +44,16 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 test_data = copy.deepcopy(dataset)
 test_data.fold = False
 
+ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[pre]-LARGE.ann', text='./dataset/text-LARGE.ann')
+evaluator = MAPEvaluation(test_data, dataset, ann)
+wandb.log(evaluator.run())
+
 test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE)
 train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE)
 
 train_task.run()
-ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-LARGE.ann', text='./dataset/text-LARGE.ann')
+ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[post]-LARGE.ann', text='./dataset/text-LARGE.ann')
 evaluator = MAPEvaluation(test_data, dataset, ann)
-print(evaluator.run())
-
+res = evaluator.run()
+wandb.log(res)
+print(res)
