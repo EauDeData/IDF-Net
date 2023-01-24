@@ -46,7 +46,8 @@ test_data.fold = False
 
 ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[pre]-LARGE.ann', text='./dataset/text-LARGE.ann')
 evaluator = MAPEvaluation(test_data, dataset, ann)
-wandb.log(evaluator.run())
+res = evaluator.run()
+wandb.log(res)
 
 test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE)
 train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE)
