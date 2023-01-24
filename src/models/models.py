@@ -30,3 +30,8 @@ class Resnet50(torch.nn.Module):
         pass
         
 
+class VisualConvTransformer(torch.nn.Module):
+    def __init__(self) -> None:
+        pass
+    def forward(self, batch):
+        pass
