@@ -57,6 +57,20 @@ class TF_IDFLoader:
             "result": self[index]
         }
 
+class LDALoader:
+    # https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
+    name = 'LDA_mapper'
+    def __init__(self):
+        pass
+
+    def __getitem__(self, index):
+        pass
+
+    def infer(self, index):
+        pass
+
+
+
 class BOWLoader:
     name = 'BOW_mapper'
     def __init__(self, dataset: IDFNetDataLoader, *args, **kwargs) -> None:
@@ -102,32 +116,3 @@ class LSALoader:
                 self.model.save(datapath)
 
         else: raise InvalidModelNameError
-
-
-class LSALoaderGLOVE:
-    name = 'LSA_mapper'
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, word_to_vect: str = 'word2vect', lsa: str = 'svd') -> None:
-        
-        self.dataset = dataset
-        self.prep = string_preprocess
-        self.model = 0 # IF it's an int, a not trained error will be rised
-        self.w2v_model = word_to_vect
-        self.lsa = lsa
-
-    def __getitem__(self, index: int) -> np.ndarray:
-        _train_precondition(self)
-
-        if self.lsa == 'svd':
-            words = np.array([self.model[w] for w in self.corpus[index] if w in self.model.key_to_index.keys()])
-            _, document, _ = np.linalg.svd(words) # Get Eigenvalues of the SVD
-            document = np.concatenate((document, document))[:100]
-            return document
-
-        else: raise InvalidModelNameError
-
-    def fit(self):
-        
-        self.model = api.load("glove-wiki-gigaword-100")
-        dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
-        sentences = [' '.join(x[0]) for x in dataset]
-        self.corpus = self.prep(sentences)

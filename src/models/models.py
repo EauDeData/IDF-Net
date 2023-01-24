@@ -21,5 +21,12 @@ class VisualTransformer(torch.nn.Module):
     
     def forward(self, batch):
         return self.extractor(batch)
+
+class Resnet50(torch.nn.Module):
+    def __init__(self, ):
+        pass
+
+    def forward(self, batch):
+        pass
         
 
