@@ -207,7 +207,8 @@ class AbstractsDataset:
     
     def __getitem__(self, index):
         index = index + self.offset
-        image = cv2.imread(f"{self.images}/{index}.png") / 255
+        image = cv2.imread(f"{self.images}/{index}.png")
+        image = (image - image.mean()) / image.std()
         image = cv2.resize(image, (self.imsize, self.imsize)).transpose(2, 0, 1)
         image = image.astype(np.float32)
         text = self.dataframe['titles'][index] + ' ' + \

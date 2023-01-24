@@ -8,7 +8,7 @@ from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader
 from src.loss.loss import PairwisePotential
-from src.models.models import VisualTransformer
+from src.models.models import VisualTransformer, Resnet50
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test
 from src.tasks.evaluation import MAPEvaluation
@@ -34,7 +34,7 @@ dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
 loss_function = PairwisePotential()
-model = VisualTransformer(IMSIZE)
+model = Resnet50(128) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 1e-4)
@@ -43,11 +43,6 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 ### Tasks ###
 test_data = copy.deepcopy(dataset)
 test_data.fold = False
-
-ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[pre]-LARGE.ann', text='./dataset/text-LARGE.ann')
-evaluator = MAPEvaluation(test_data, dataset, ann)
-res = evaluator.run()
-wandb.log(res)
 
 test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE)
 train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE)

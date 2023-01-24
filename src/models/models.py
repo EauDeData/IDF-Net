@@ -23,11 +23,12 @@ class VisualTransformer(torch.nn.Module):
         return self.extractor(batch)
 
 class Resnet50(torch.nn.Module):
-    def __init__(self, ):
-        pass
-
+    def __init__(self, embedding_size = 128):
+        super(Resnet50, self).__init__()
+        self.resnet50 = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_resnet50', pretrained=False)
+        self.resnet50.fc = torch.nn.Linear(2048, embedding_size)
     def forward(self, batch):
-        pass
+        return self.resnet50(batch)
         
 
 class VisualConvTransformer(torch.nn.Module):
