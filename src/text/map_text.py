@@ -41,15 +41,14 @@ class TF_IDFLoader:
     def __getitem__(self, index: int) -> np.ndarray:
         _train_precondition(self)
         instance = self.model[self.corpus[index]]
-        gensim_vector = gensim.matutils.sparse2full(instance, max(self.model.dfs) + 1)
+        gensim_vector = gensim.matutils.sparse2full(instance, len(self.dct))
         return gensim_vector
 
     def fit(self) -> None:
 
         dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
         sentences = self.prep([' '.join(x[0]) for x in dataset])
-        words = set([word for words in sentences for word in words])
-        self.dct = gensim.corpora.Dictionary(words)
+        self.dct = gensim.corpora.Dictionary(documents=sentences)
         self.corpus = [self.dct.doc2bow(line) for line in sentences]
         self.model = gensim.models.TfidfModel(self.corpus, smartirs='ntc')
 
@@ -62,23 +61,26 @@ class TF_IDFLoader:
 class LDALoader:
     # https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
     name = 'LDA_mapper'
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim):
+    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, num_topics = 10):
 
         self.dataset = dataset
         self.prep = string_preprocess
+        self.ntopics = num_topics
         self.model = 0
 
     def __getitem__(self, index):
-        pass
+        _train_precondition(self)
+        instance = self.model[self.corpus[index]]
+        return gensim.matutils.sparse2full(instance, self.ntopics)
 
     def fit(self):
         dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
         sentences = self.prep([' '.join(x[0]) for x in dataset])
-        words = set([word for words in sentences for word in words])
-        self.dct = gensim.corpora.Dictionary(words)
-
-        raise NotImplementedError
-
+        self.dct = gensim.corpora.Dictionary(documents=sentences)
+        self.corpus = [self.dct.doc2bow(line) for line in sentences]
+        self.model = gensim.models.LdaMulticore(corpus=self.corpus,
+                                       id2word=self.dct,
+                                       num_topics=self.ntopics)
     def infer(self, index):
         return {
             "result": self[index]

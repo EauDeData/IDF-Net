@@ -6,7 +6,7 @@ import copy
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.dataloaders.dataloaders import DummyDataset
-from src.text.map_text import LSALoader, TF_IDFLoader
+from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import PubLayNetDataset, AbstractsDataset
 from src.dataloaders.annoyify import Annoyifier
@@ -37,9 +37,18 @@ if __name__ == '__main__':
         cleaner = StringCleanAndTrim()
         loader = TF_IDFLoader(dataset, cleaner)
         loader.fit()
-        print(loader[0])
+        print('IDF Output:', loader[0])
     except Exception as e:
         print(f"2 - Preprocess test not passed, reason: {e}")
+    
+    try:
+        dataset = DummyDataset()
+        cleaner = StringCleanAndTrim()
+        loader = LDALoader(dataset, cleaner)
+        loader.fit()
+        print('LDA Output:', loader[0])
+    except Exception as e:
+        print(f"3 - Preprocess test not passed, reason: {e}")
     
     try:
         input_tensor = torch.rand((1, 3, 256, 32*2))
