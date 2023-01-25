@@ -61,7 +61,9 @@ def clique_potential_loss():
     
     pass
 
-def nns_loss():
-    # From " With a Little Help from My Friends" paper
+def nns_loss(h, gt, similarity):
+    # From " With a Little Help from My Friends" paper (insptiration)
+
+
     
     pass

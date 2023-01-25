@@ -24,6 +24,14 @@ class EuclideanSimilarityMatrix(nn.Module):
     def forward(self, x1: Tensor, x2: Tensor) -> Tensor:
         return euclidean_similarity_matrix(x1, x2, self.eps)
 
+class EuclideanDistanceMatrix(nn.Module):
+    name = 'euclidean_distance_matrix'
+    def __init__(self,) -> None:
+        super(EuclideanDistanceMatrix, self).__init__()
+
+    def forward(self, x1: Tensor, x2: Tensor) -> Tensor:
+        return euclidean_distance_matrix(x1, x2,)
+
 def cosine_similarity_matrix(x1: Tensor, x2: Tensor, dim: int = 1, eps: float = 1e-8) -> Tensor:
     '''
     When using cosine similarity the constant value must be positive
@@ -42,6 +50,9 @@ def cosine_similarity_matrix(x1: Tensor, x2: Tensor, dim: int = 1, eps: float = 
 
 def euclidean_similarity_matrix(x1, x2, eps):
     return 1/(1+torch.cdist(x1, x2)+eps)
+
+def euclidean_distance_matrix(x1, x2):
+    return torch.cdist(x1, x2)
 
 def knn(distances, k = 1):
 
