@@ -1,5 +1,5 @@
 from src.utils.metrics import CosineSimilarityMatrix, EuclideanSimilarityMatrix
-from src.utils.metrics import mutual_knn
+from src.utils.metrics import mutual_knn, knn
 
 import torch
 import torch.nn as nn
@@ -61,9 +61,9 @@ def clique_potential_loss():
     
     pass
 
-def nns_loss(h, gt, similarity):
+def nns_loss(h, gt, distance_function):
     # From " With a Little Help from My Friends" paper (insptiration)
+    distances = distance_function(gt, gt)
+    friends = knn(distances)
 
-
-    
-    pass
+    return None
