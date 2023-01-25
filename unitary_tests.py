@@ -51,6 +51,15 @@ if __name__ == '__main__':
         print(f"3 - Preprocess test not passed, reason: {e}")
     
     try:
+        dataset = DummyDataset()
+        cleaner = StringCleanAndTrim()
+        loader = LSALoader(dataset, cleaner)
+        loader.fit()
+        print('LSA Output:', loader[0])
+    except Exception as e:
+        print(f"3.5 - Preprocess test not passed, reason: {e}")
+    
+    try:
         input_tensor = torch.rand((1, 3, 256, 32*2))
         vit = VisualTransformer(256, embedding_size=8)
         print(vit(input_tensor).shape)

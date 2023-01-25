@@ -61,7 +61,7 @@ class TF_IDFLoader:
 class LDALoader:
     # https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
     name = 'LDA_mapper'
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, num_topics = 10):
+    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, num_topics = 28):
 
         self.dataset = dataset
         self.prep = string_preprocess
@@ -93,41 +93,30 @@ class BOWLoader:
 
 class LSALoader:
     name = 'LSA_mapper'
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, word_to_vect: str = 'word2vect', lsa: str = 'svd') -> None:
+    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, ntopics = 200) -> None:
         
         self.dataset = dataset
         self.prep = string_preprocess
         self.model = 0 # IF it's an int, a not trained error will be rised
-        self.w2v_model = word_to_vect
-        self.lsa = lsa
+        self.ntopics = ntopics
 
     def __getitem__(self, index: int) -> np.ndarray:
         _train_precondition(self)
+        instance = self.model[self.corpus[index]]
+        gensim_vector = gensim.matutils.sparse2full(instance, self.ntopics)
+        return gensim_vector
 
-        if self.lsa == 'svd':
-            words = np.array([self.model[w] for w in self.corpus[index] if w in self.model.key_to_index.keys()])
-            _, document, _ = np.linalg.svd(words) # Get Eigenvalues of the SVD
-            document = np.concatenate((document, document))[:100]
-            return document
-
-        else: raise InvalidModelNameError
 
     def fit(self):
-
+        
         dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
-        sentences = [' '.join(x[0]) for x in dataset]
-        self.corpus = self.prep(sentences)
-        if self.w2v_model == 'word2vect':
+        sentences = self.prep([' '.join(x[0]) for x in dataset])
+        self.dct = gensim.corpora.Dictionary(documents=sentences)
 
-            datapath = f'dataset/w2v_{self.dataset.name}.wordvectors'
-            if os.path.exists(datapath): 
-                self.model = KeyedVectors.load(datapath, mmap='r')
-
-            else:
-
-                model = Word2Vec(sentences=self.corpus, vector_size=100, window=5, min_count=1, workers=4)
-                model.train(self.corpus, total_examples=len(self.dataset), epochs=1)
-                self.model = model.wv
-                self.model.save(datapath)
-
-        else: raise InvalidModelNameError
+        self.corpus = [self.dct.doc2bow(line) for line in sentences]
+        self.model = gensim.models.lsimodel.LsiModel(
+            corpus=self.corpus, id2word=self.dct, num_topics=self.ntopics,
+            )
+        
+        
+    
