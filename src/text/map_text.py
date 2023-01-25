@@ -1,5 +1,6 @@
 import gensim
 import gensim.downloader as api
+import gensim.corpora as corpora
 import numpy as np
 from typing import *
 from gensim.models import Word2Vec, KeyedVectors
@@ -47,7 +48,8 @@ class TF_IDFLoader:
 
         dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
         sentences = self.prep([' '.join(x[0]) for x in dataset])
-        self.dct = gensim.corpora.Dictionary(sentences)
+        words = set([word for words in sentences for word in words])
+        self.dct = gensim.corpora.Dictionary(words)
         self.corpus = [self.dct.doc2bow(line) for line in sentences]
         self.model = gensim.models.TfidfModel(self.corpus, smartirs='ntc')
 
@@ -60,16 +62,27 @@ class TF_IDFLoader:
 class LDALoader:
     # https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
     name = 'LDA_mapper'
-    def __init__(self):
-        pass
+    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim):
+
+        self.dataset = dataset
+        self.prep = string_preprocess
+        self.model = 0
 
     def __getitem__(self, index):
         pass
 
+    def fit(self):
+        dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
+        sentences = self.prep([' '.join(x[0]) for x in dataset])
+        words = set([word for words in sentences for word in words])
+        self.dct = gensim.corpora.Dictionary(words)
+
+        raise NotImplementedError
+
     def infer(self, index):
-        pass
-
-
+        return {
+            "result": self[index]
+        }
 
 class BOWLoader:
     name = 'BOW_mapper'

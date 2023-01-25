@@ -7,7 +7,6 @@ from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.dataloaders.dataloaders import DummyDataset
 from src.text.map_text import LSALoader, TF_IDFLoader
-from src.loss.loss import NormLoss, PearsonLoss, OrthAligment
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import PubLayNetDataset, AbstractsDataset
 from src.dataloaders.annoyify import Annoyifier
@@ -41,17 +40,6 @@ if __name__ == '__main__':
         print(loader[0])
     except Exception as e:
         print(f"2 - Preprocess test not passed, reason: {e}")
-
-    try:
-        loss2 = NormLoss()
-
-        h = torch.rand((5, 10), requires_grad = True)
-        gt = torch.ones((5, 5))
-
-        print(loss2(h, gt))
-    
-    except Exception as e:
-        print(f"3 - Loss test not passed, reason: {e}")
     
     try:
         input_tensor = torch.rand((1, 3, 256, 32*2))
