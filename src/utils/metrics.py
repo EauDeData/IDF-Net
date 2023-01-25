@@ -43,19 +43,20 @@ def cosine_similarity_matrix(x1: Tensor, x2: Tensor, dim: int = 1, eps: float = 
 def euclidean_similarity_matrix(x1, x2, eps):
     return 1/(1+torch.cdist(x1, x2)+eps)
 
-def knn(distances, k):
+def knn(distances, k = 1):
 
-    # TODO: This is absolutely wrong
+    # Returns the K-th NN mask
+    # Default: 1st NN for "with a little help from my friend"
+
     shape = distances.shape
     n = shape[0]
     nns = distances.argsort()[:, k]
 
     mask = torch.zeros(shape, dtype=bool)
-    diag = torch.eye(n)
 
-    mask[torch.arange(n)[:, None], nns] = True
+    mask[torch.arange(n), nns] = True
 
-    return diag * mask
+    return mask * 1
 
 def mutual_knn(distances, k):
 
