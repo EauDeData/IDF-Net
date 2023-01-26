@@ -2,6 +2,9 @@
 
 ## TODO: 
 
+* Augmentation
+> By removing / adding sentences you can perfom some kinf of simCLR
+
 * Topic Models
 > TF-IDF
 
@@ -26,3 +29,4 @@
 * Evaluation
 
 > Compute evluation metrics
+
