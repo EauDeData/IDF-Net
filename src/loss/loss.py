@@ -1,4 +1,4 @@
-from src.utils.metrics import CosineSimilarityMatrix, EuclideanSimilarityMatrix
+from src.utils.metrics import CosineSimilarityMatrix, EuclideanSimilarityMatrix, EuclideanDistanceMatrix
 from src.utils.metrics import mutual_knn, knn
 
 import torch
@@ -21,6 +21,13 @@ class PairwisePotential(CustomLoss):
 
     def forward(self, h, gt):
         return pairwise_atractors_loss(h, gt, self.similarity, self.k, self.mu1, self.mu2, self.device)
+
+class NNCLR(CustomLoss):
+    def __init__(self, similarity = EuclideanDistanceMatrix()):
+        self.similarity = similarity
+    
+    def forward(self, h, gt):
+        return nns_loss(h, gt, self.similarity)
 
 def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5, device = 'cuda'):
 
@@ -61,14 +68,20 @@ def clique_potential_loss():
     
     pass
 
-def nns_loss(h, gt, distance_function):
+def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix()):
     # From " With a Little Help from My Friends" paper (insptiration)
+    n = h.shape[0]
+
     distances = distance_function(gt, gt)
-    distances_predicted = distance_function(h, h)
+    friends = knn(distances) * 1
+    eyed = torch.eye(n, dtype = bool)
 
-    friends = knn(distances)
+    closest = h[torch.argmax(friends, dim = 1)]
+    diag = h[torch.argmax(eyed * 1, dim = 1)]
+
+    numerator = torch.bmm(closest[:, None, :], diag[:, :, None]).view(-1).exp()
+    denominator = torch.matmul(h, h.T)[~eyed].view(n, n-1).exp().sum(dim = 1)
     
-    positives = torch.sum((friends * distances_predicted).exp(), dim = 1)
-    negatives = torch.sum((distances_predicted).exp(), dim = 1)
+    nn_clr = -torch.log(numerator / denominator)
 
-    return torch.mean(-torch.log(positives/negatives))
+    return nn_clr.mean()

@@ -11,11 +11,20 @@ from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import PubLayNetDataset, AbstractsDataset
 from src.dataloaders.annoyify import Annoyifier
 from src.tasks.evaluation import MAPEvaluation
+from src.loss.loss import nns_loss
 
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
     
+
+    gt = torch.rand(5, 10)
+    h = torch.rand(5, 10)
+
+    print(nns_loss(h, gt))
+
+    exit()
+
     try:
         cleaner_obj = StringCleanAndTrim()
         returned = (cleaner_obj(["I'm Diffie, congrats!", "Hello, why?", "Nick likes to play football, however he is not too fond of tennis."]))

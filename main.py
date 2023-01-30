@@ -7,7 +7,7 @@ import wandb
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader
-from src.loss.loss import PairwisePotential
+from src.loss.loss import PairwisePotential, NNCLR
 from src.models.models import VisualTransformer, Resnet50
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test
@@ -33,7 +33,7 @@ loader.fit()
 dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
-loss_function = PairwisePotential()
+loss_function = NNCLR()
 model = Resnet50(128) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
