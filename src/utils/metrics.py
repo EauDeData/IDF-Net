@@ -67,7 +67,7 @@ def knn(distances, k = 1):
 
     mask[torch.arange(n), nns] = True
 
-    return mask * 1
+    return mask
 
 def mutual_knn(distances, k):
 

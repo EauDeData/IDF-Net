@@ -64,6 +64,11 @@ def clique_potential_loss():
 def nns_loss(h, gt, distance_function):
     # From " With a Little Help from My Friends" paper (insptiration)
     distances = distance_function(gt, gt)
-    friends = knn(distances)
+    distances_predicted = distance_function(h, h)
 
-    return None
+    friends = knn(distances)
+    
+    positives = torch.sum((friends * distances_predicted).exp(), dim = 1)
+    negatives = torch.sum((distances_predicted).exp(), dim = 1)
+
+    return torch.mean(-torch.log(positives/negatives))
