@@ -141,6 +141,17 @@ class PubLayNetDataset(IDFNetDataLoader):
         image = image[bbx[1]:bbx[1]+bbx[3], bbx[0]:bbx[0]+bbx[2]]
         return image, item['text']
 
+class TwinAbstractsDataset:
+    name = 'twin_dataset'
+    def __init__(self, original_df, imsize, data_folder = 'dataset/augm_images/', csv_path = 'dataset/arxiv_augm.csv' ):
+        pass
+
+    def generate_db(self, folder):
+        pass
+
+    def __getitem__(self, index):
+        pass
+
 class AbstractsDataset:
 
     name = 'abstracts_dataset'
