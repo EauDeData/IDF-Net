@@ -19,6 +19,7 @@ nltk.download('stopwords')
 # Some constants
 IMSIZE = 256
 DEVICE = 'cuda' # TODO: Implement cuda execution
+BSIZE = 32
 
 ### First we select the dataset ###
 dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
@@ -44,8 +45,8 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 test_data = copy.deepcopy(dataset)
 test_data.fold = False
 
-test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE)
-train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE)
+test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE, bsize = BSIZE)
+train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE)
 
 train_task.run()
 ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[post]-LARGE.ann', text='./dataset/text-LARGE.ann')
