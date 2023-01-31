@@ -68,7 +68,7 @@ def clique_potential_loss():
     
     pass
 
-def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix()):
+def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix(), temperature = 0.75):
     # From " With a Little Help from My Friends" paper (insptiration)
     n = h.shape[0]
 
@@ -79,8 +79,11 @@ def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix()):
     closest = h[torch.argmax(friends, dim = 1)]
     diag = h[torch.argmax(eyed * 1, dim = 1)]
 
-    numerator = torch.bmm(closest[:, None, :], diag[:, :, None]).view(-1).exp()
-    denominator = torch.matmul(h, h.T)[~eyed].view(n, n-1).exp().sum(dim = 1)
+    numerator = torch.bmm(closest[:, None, :], diag[:, :, None]).view(-1)
+    numerator = (numerator/temperature).exp()
+    
+    denominator = torch.matmul(h, h.T)[~eyed].view(n, n-1)
+    denominator = (denominator/temperature).exp().sum(dim = 1)
     
     nn_clr = -torch.log(numerator / denominator)
 

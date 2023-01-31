@@ -76,7 +76,7 @@ class Resnet50(torch.nn.Module):
         self.resnet50 = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_resnet50', pretrained=False)
         self.resnet50.fc = torch.nn.Linear(2048, embedding_size)
     def forward(self, batch):
-        return self.resnet50(batch)
+        return torch.nn.functional.normalize(self.resnet50(batch))
         
 
 class VisualConvTransformer(torch.nn.Module):

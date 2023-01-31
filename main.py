@@ -37,7 +37,7 @@ loss_function = NNCLR()
 model = Resnet50(128) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 1e-4)
+optim = torch.optim.Adam(model.parameters(), lr = 1e-5)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 ### Tasks ###
