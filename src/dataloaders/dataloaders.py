@@ -2,6 +2,7 @@ import os
 from typing import *
 
 import numpy as np
+import random
 import torch
 import json
 import cv2
@@ -143,19 +144,52 @@ class PubLayNetDataset(IDFNetDataLoader):
 
 class TwinAbstractsDataset:
     name = 'twin_dataset'
-    def __init__(self, original_df, imsize, data_folder = 'dataset/augm_images/', csv_path = 'dataset/arxiv_augm.csv' ):
-        pass
+    def __init__(self, original_df, imsize, data_folder = 'dataset/augm_images/', level = 'sentence', num = 1):
+        
+        self.default_format = \
+            r'''
+            {title_input}
+            
+
+            
+            {abstract_input}
+
+            '''
+        
+        self.dataframe = original_df
+        self.separator = '. ' if level == 'sentence' else (' ' if level == 'word' else None)
+        self.num = num
+        self.imsize = imsize
+        if not (os.path.exists(data_folder) and len(os.listdir(data_folder))): self.generate_db(data_folder)
 
     def generate_db(self, folder):
-        pass
+        printable = set(string.printable)
+        print(f"Aux Database not found, generating it on {path}...")
+        if not os.path.exists(path): os.mkdir(path)
+        for num, (title, abstract) in enumerate(zip(self.dataframe['titles'], self.dataframe['summaries'])):
+
+            print(f"Image number {num}\t", end = '\r')
+            sentences = abstract.split(self.separator)
+
+            for _ in range(self.num): sentences.pop(random.randint(0, len(sentences) - 1))
+            abstract = self.separator.join(sentences)
+
+            tex = self.default_format.format(title_input = re.sub(r"[^A-Za-z]+", ' ', title), abstract_input = re.sub(r"[^A-Za-z]+", ' ', abstract))
+            pnglatex(tex, f'{path}/{num}.png')
 
     def __getitem__(self, index):
-        pass
+        
+        image = cv2.imread(f"{self.images}/{index}.png")
+        image = (image - image.mean()) / image.std()
+        image = cv2.resize(image, (self.imsize, self.imsize)).transpose(2, 0, 1)
+        image = image.astype(np.float32)
+
+        return image
 
 class AbstractsDataset:
 
     name = 'abstracts_dataset'
-    def __init__(self, csv_path, data_folder, train = True, imsize = 512) -> None:
+    def __init__(self, csv_path, data_folder, train = True, imsize = 512, twin = False) -> None:
 
         # My Frame https://www.kaggle.com/datasets/spsayakpaul/arxiv-paper-abstracts?resource=download
 
@@ -179,6 +213,9 @@ class AbstractsDataset:
         self.offset = int(.8*len(self.dataframe)) if not train else 0
         self.tokenizer = 0
         self.imsize = imsize
+
+        self.twin = twin
+        if self.twin: self.twin_dataset = TwinAbstractsDataset(self.dataframe, self.imsize)
 
     def generate_db(self, path) -> None:
 
@@ -227,6 +264,8 @@ class AbstractsDataset:
 
         if isinstance(self.tokenizer, int):
             return image, text
+        
+        if self.twin: return image, self.tokenizer[index], self.twin_dataset[index]
         return image, self.tokenizer[index]
 
     

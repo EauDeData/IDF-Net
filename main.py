@@ -19,7 +19,7 @@ nltk.download('stopwords')
 # Some constants
 IMSIZE = 256
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 32
+BSIZE = 64
 
 ### First we select the dataset ###
 dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
@@ -35,7 +35,7 @@ dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
 loss_function = NNCLR()
-model = Resnet50(128) # VisualTransformer(IMSIZE)
+model = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 1e-4)
@@ -48,8 +48,8 @@ test_data.fold = False
 test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE, bsize = BSIZE)
 train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE)
 
-train_task.run()
-ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[post]-LARGE.ann', text='./dataset/text-LARGE.ann')
+train_task.run(epoches = 120)
+ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[post]-LARGE2.ann', text='./dataset/text-LARGE.ann')
 evaluator = MAPEvaluation(test_data, dataset, ann)
 res = evaluator.run()
 wandb.log(res)

@@ -71,12 +71,19 @@ class VisualConvAttention(torch.nn.Module):
 
 
 class Resnet50(torch.nn.Module):
-    def __init__(self, embedding_size = 128):
+    def __init__(self, embedding_size = 128, norm = None):
         super(Resnet50, self).__init__()
         self.resnet50 = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_resnet50', pretrained=False)
         self.resnet50.fc = torch.nn.Linear(2048, embedding_size)
+        self.norm = norm #lambda x: x if norm is None else lambda x: torch.nn.functional.normalize(x, p = norm, dim = 1)
+
+
     def forward(self, batch):
-        return self.resnet50(batch)
+
+        h = self.resnet50(batch)
+        if self.norm is not None: h =  torch.nn.functional.normalize(h, p = self.norm, dim = 1)
+        return h
+        
         
 
 class VisualConvTransformer(torch.nn.Module):
