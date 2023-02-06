@@ -4,7 +4,7 @@ from vit_pytorch import ViT
 
 
 class VisualTransformer(torch.nn.Module):
-    def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 1, heads = 1, dropout = 0.1) -> None:
+    def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 1, heads = 1, dropout = 0.1, norm = 2) -> None:
         super(VisualTransformer, self).__init__()
         self.extractor = ViT(
             image_size = image_size,
@@ -18,10 +18,13 @@ class VisualTransformer(torch.nn.Module):
             emb_dropout = dropout
         )
         self.extractor.mlp_head = list(self.extractor.mlp_head.children())[-2]
+        self.norm = norm
 
     
     def forward(self, batch):
-        return self.extractor(batch)
+        h =  self.extractor(batch)
+        if self.norm is not None: h =  torch.nn.functional.normalize(h, p = self.norm, dim = 1)
+        return h
 
 
 class SelfAttention(torch.nn.Module):

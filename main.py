@@ -35,7 +35,7 @@ dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
 loss_function = NNCLR()
-model = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
+model = VisualTransformer(IMSIZE) # Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 1e-4)

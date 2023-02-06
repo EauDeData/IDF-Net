@@ -68,7 +68,7 @@ def clique_potential_loss():
     
     pass
 
-def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix(), temperature = 0.75):
+def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix(), temperature = 0.1):
     # From " With a Little Help from My Friends" paper (insptiration)
     n = h.shape[0]
 
