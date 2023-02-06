@@ -14,6 +14,7 @@ from src.tasks.tasks import Train, Test
 from src.tasks.evaluation import MAPEvaluation
 from src.dataloaders.annoyify import Annoyifier
 nltk.download('stopwords')
+torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
@@ -35,7 +36,7 @@ dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
 loss_function = NNCLR()
-model = VisualTransformer(IMSIZE) # Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
+model = VisualTransformer(IMSIZE, depth = 6, heads = 8) # Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 1e-4)
