@@ -50,8 +50,8 @@ test_task = Test(test_data, model, loss_function, loader, cleaner, optim, schedu
 train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE)
 
 train_task.run(epoches = 120)
-ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[post]-LARGE2.ann', text='./dataset/text-LARGE.ann')
-#evaluator = MAPEvaluation(test_data, dataset, ann)
-#res = evaluator.run()
+ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[post]-LDA.ann', text='./dataset/text-LDA.ann')
+evaluator = MAPEvaluation(test_data, dataset, ann)
+res = evaluator.run()
 wandb.log(res)
 print(res)
