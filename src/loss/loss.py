@@ -68,7 +68,7 @@ def clique_potential_loss():
     
     pass
 
-def sim_clr_loss(h, h_augm, temperature, = 0.1):
+def sim_clr_loss(h, h_augm, temperature = 0.1):
     pass
 
 def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix(), temperature = 0.1):
