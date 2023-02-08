@@ -28,7 +28,7 @@ dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-loader = TF_IDFLoader(dataset, StringCleaner())
+loader = LSALoader(dataset, StringCleaner(), num_topics = 224)
 loader.fit()
 
 ### Now we setup the tokenizer on the dataset ###
@@ -36,7 +36,7 @@ dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
 loss_function = NNCLR()
-model = VisualTransformer(IMSIZE, depth = 6, heads = 8) # Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
+model = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 1e-4)
@@ -51,7 +51,7 @@ train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_t
 
 train_task.run(epoches = 120)
 ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[post]-LARGE2.ann', text='./dataset/text-LARGE.ann')
-evaluator = MAPEvaluation(test_data, dataset, ann)
-res = evaluator.run()
+#evaluator = MAPEvaluation(test_data, dataset, ann)
+#res = evaluator.run()
 wandb.log(res)
 print(res)
