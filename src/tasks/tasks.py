@@ -102,7 +102,7 @@ class Test:
 
         wandb.log({'test-loss': buffer / n})
         wandb.log({'rank-corr': stats_buffer / n})
-        wandb.log({{'rank-corr-pvalue': pbuffer / n}})
+        wandb.log({'rank-corr-pvalue': pbuffer / n})
         if not isinstance(self.scheduler, bool): self.scheduler.step(buffer / n)
 
     def run(self, epoches = 30, logger_freq = 500):
