@@ -1,5 +1,5 @@
 from src.utils.metrics import CosineSimilarityMatrix, EuclideanSimilarityMatrix, EuclideanDistanceMatrix
-from src.utils.metrics import mutual_knn, knn
+from src.utils.metrics import mutual_knn, knn, batched_spearman_rank
 
 import torch
 import torch.nn as nn
@@ -91,3 +91,18 @@ def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix(), temperature =
     nn_clr = -torch.log(numerator / denominator)
 
     return nn_clr.mean()
+
+
+### Evaluation Metrics ###
+def rank_correlation(h, gt, distance_function = EuclideanDistanceMatrix()):
+
+    gt_rank = distance_function(gt, gt).argsort()[1:].cpu().numpy()
+    h_rank = distance_function(h, h).argsort()[1:].cpu().numpy()
+
+    statistics, pvalues = batched_spearman_rank(gt_rank, h_rank)
+
+    return np.mean(statistic), np.mean(pvalues)
+
+
+def raw_accuracy(h, gt, distance_function = EuclideanDistanceMatrix()):
+    pass

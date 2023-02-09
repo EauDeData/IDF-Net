@@ -3,6 +3,7 @@ import torch
 from torch import Tensor
 from typing import *
 import numpy as np
+from scipy import stats
 
 class CosineSimilarityMatrix(nn.Module):
     name = 'cosine_matrix'
@@ -89,3 +90,9 @@ def mutual_knn(distances, k):
     np.fill_diagonal(adjacency_matrix, 0)
 
     return adjacency_matrix
+
+def batched_spearman_rank(h_rank, gt_rank):
+
+    data = [stats.spearmanr(x, y) for x, y in zip(h_rank, gt_rank)]
+
+    return [z.statistic for z in data], [z.pvalue for z in data]
