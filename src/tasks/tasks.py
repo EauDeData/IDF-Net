@@ -33,6 +33,7 @@ class Train:
         
         print(f"Training... Epoch {epoch}")
         buffer = 0
+        self.model.train()
         for n, (images, text_emb) in enumerate(self.loader):
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)

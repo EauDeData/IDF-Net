@@ -28,7 +28,7 @@ dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-loader = LDALoader(dataset, StringCleaner(), num_topics = 224)
+loader = LSALoader(dataset, cleaner, num_topics = 224)
 loader.fit()
 
 ### Now we setup the tokenizer on the dataset ###
