@@ -167,6 +167,8 @@ class TwinAbstractsDataset:
         self.images = datafolder
 
     def generate_db(self, folder):
+
+        # TODO: Font, salts de linies... Augmentacions exclusives en lo visual.
         printable = set(string.printable)
         print(f"Aux Database not found, generating it on {path}...")
         if not os.path.exists(path): os.mkdir(path)
