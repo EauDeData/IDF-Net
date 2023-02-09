@@ -3,6 +3,8 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 import wandb
 
+from src.loss.loss import rank_correlation, raw_accuracy
+
 wandb.init(project="IDF-NET Logger")
 WRITER = SummaryWriter()
 
@@ -80,7 +82,8 @@ class Test:
     
     def epoch(self, logger_freq, epoch):
         print(f"Testing... Epoch {epoch}")
-        buffer = 0
+        buffer, pbuffer, stats_buffer = 0, 0, 0
+
         for n, (images, text_emb) in enumerate(self.loader):
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
@@ -88,12 +91,18 @@ class Test:
             loss = self.loss_f(h, text_emb)
             buffer += loss.item()
 
+            statistics, pvalues = rank_correlation(h, text_emb,)
+            stats_buffer += statistics
+            pbuffer += pvalues
 
             if not (n*self.bs) % logger_freq:
                 
                 print(f"Current loss: {loss.item()}")
         WRITER.add_scalar('Loss/test', buffer/n, epoch)
+
         wandb.log({'test-loss': buffer / n})
+        wandb.log({'rank-corr': stats_buffer / n})
+        wandb.log({{'rank-corr-pvalue': pbuffer / n}})
         if not isinstance(self.scheduler, bool): self.scheduler.step(buffer / n)
 
     def run(self, epoches = 30, logger_freq = 500):

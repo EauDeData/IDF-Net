@@ -93,6 +93,6 @@ def mutual_knn(distances, k):
 
 def batched_spearman_rank(h_rank, gt_rank):
 
-    data = [stats.spearmanr(x, y) for x, y in zip(h_rank, gt_rank)]
+    data = [stats.spearmanr(h_rank[m], gt_rank[m]) for m in range(h_rank.shape[0])]
 
-    return [z.statistic for z in data], [z.pvalue for z in data]
+    return [z.correlation for z in data], [z.pvalue for z in data]
