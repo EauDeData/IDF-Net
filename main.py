@@ -6,7 +6,7 @@ import wandb
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
-from src.text.map_text import LSALoader, TF_IDFLoader
+from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
 from src.loss.loss import PairwisePotential, NNCLR
 from src.models.models import VisualTransformer, Resnet50
 from src.dataloaders.dataloaders import AbstractsDataset
@@ -28,7 +28,7 @@ dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-loader = LSALoader(dataset, StringCleaner(), ntopics = 224)
+loader = LDALoader(dataset, StringCleaner(), num_topics = 224)
 loader.fit()
 
 ### Now we setup the tokenizer on the dataset ###
