@@ -14,7 +14,7 @@ from src.tasks.tasks import Train, Test
 from src.tasks.evaluation import MAPEvaluation
 from src.dataloaders.annoyify import Annoyifier
 nltk.download('stopwords')
-torch.manual_seed(42)
+#torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
