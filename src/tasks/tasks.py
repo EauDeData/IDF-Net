@@ -18,7 +18,7 @@ class Train:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True)
         self.bs = bsize
         self.model = model
         self.loss_f = loss_function
@@ -70,7 +70,7 @@ class Test:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True)
         self.bs = bsize
         self.model = model
         self.loss_f = loss_function

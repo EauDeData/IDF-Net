@@ -14,13 +14,13 @@ from src.tasks.tasks import Train, Test
 from src.tasks.evaluation import MAPEvaluation
 from src.dataloaders.annoyify import Annoyifier
 nltk.download('stopwords')
-#torch.manual_seed(42)
+torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
 IMSIZE = 256
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 64
+BSIZE = 16
 
 ### First we select the dataset ###
 dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
@@ -28,7 +28,7 @@ dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-loader = LSALoader(dataset, cleaner, num_topics = 224)
+loader = LSALoader(dataset, cleaner, ntopics = 224)
 loader.fit()
 
 ### Now we setup the tokenizer on the dataset ###
