@@ -1,5 +1,5 @@
 from src.utils.metrics import CosineSimilarityMatrix, EuclideanSimilarityMatrix, EuclideanDistanceMatrix
-from src.utils.metrics import mutual_knn, knn, batched_spearman_rank
+from src.utils.metrics import mutual_knn, knn, batched_spearman_rank, sigmoid
 
 import torch
 import torch.nn as nn
@@ -28,6 +28,18 @@ class NNCLR(CustomLoss):
     
     def forward(self, h, gt):
         return nns_loss(h, gt, self.similarity)
+    
+class SpearmanRankLoss(CustomLoss):
+    def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5):
+
+        self.ind = indicator_function
+        self.sim = similarity
+        self.scale = scale
+        self.k = k 
+        self.k_gt = k_gt
+
+    def forward(self, h, gt):
+        return rank_correlation_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt)
 
 def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5, device = 'cuda'):
 
@@ -92,6 +104,38 @@ def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix(), temperature =
 
     return nn_clr.mean()
 
+def smooth_rank(sm, temperature, indicator_function):
+    mask_diagonal = ~ torch.eye(sm.shape[0]).bool()
+    ranking = sm[mask_diagonal].view(sm.shape[0], sm.shape[0]-1)
+
+    # Prepare indicator function
+    dij = ranking.unsqueeze(1) - ranking.unsqueeze(-1)
+    mask_diagonal = ~ torch.eye(dij.shape[-1]).bool()
+    dij = dij[:,mask_diagonal].view(dij.shape[0], dij.shape[1], -1)
+
+    # Smooth indicator function
+    indicator = indicator_function(dij, k=temperature)
+    indicator = indicator.sum(-1) + 1
+    return indicator
+
+
+def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5):
+
+    n = h.shape[0]
+    scalator = 6 / (n * (n*n - 1))
+
+    sm = similarity(h, h)
+    indicator = smooth_rank(sm, k, indicator_function)
+    
+    # Ground-truth Ranking function
+    gt_sim = similarity(target, target)
+    gt_indicator = smooth_rank(gt_sim, k_gt, indicator_function)
+
+    diff = (indicator - gt_indicator)
+    diff = torch.square(diff).sum(dim = 1)
+    if scale: diff = diff * scalator
+
+    return torch.mean(diff)
 
 ### Evaluation Metrics ###
 def rank_correlation(h, gt, distance_function = EuclideanDistanceMatrix()):

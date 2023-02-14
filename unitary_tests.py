@@ -11,7 +11,7 @@ from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import PubLayNetDataset, AbstractsDataset
 from src.dataloaders.annoyify import Annoyifier
 from src.tasks.evaluation import MAPEvaluation
-from src.loss.loss import nns_loss, rank_correlation
+from src.loss.loss import nns_loss, rank_correlation, rank_correlation_loss
 
 nltk.download('stopwords')
 
@@ -21,7 +21,8 @@ if __name__ == '__main__':
     gt = torch.rand(5, 10)
     h = torch.rand(5, 15)
 
-    print(rank_correlation(h, gt))
+    print(rank_correlation_loss(h, gt))
+    #print(rank_correlation(h, gt))
 
     exit()
 

@@ -55,6 +55,12 @@ def euclidean_similarity_matrix(x1, x2, eps):
 def euclidean_distance_matrix(x1, x2):
     return torch.cdist(x1, x2)
 
+def sigmoid(x, k=1.0):
+    exponent = -x/k
+    exponent = torch.clamp(exponent, min=-50, max=50)
+    y = 1./(1. + torch.exp(exponent))
+    return y
+
 def knn(distances, k = 1):
 
     # Returns the K-th NN mask
