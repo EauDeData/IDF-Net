@@ -113,6 +113,7 @@ def cov(m):
 
 
 def corrcoef(x, y):
+    # thanks https://discuss.pytorch.org/t/spearmans-correlation/91931/2
     batch_size = x.shape[0]
     x = torch.stack((x, y), 1)
     # calculate covariance matrix of rows
