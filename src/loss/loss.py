@@ -1,5 +1,5 @@
 from src.utils.metrics import CosineSimilarityMatrix, EuclideanSimilarityMatrix, EuclideanDistanceMatrix
-from src.utils.metrics import mutual_knn, knn, batched_spearman_rank, sigmoid
+from src.utils.metrics import mutual_knn, knn, batched_spearman_rank, sigmoid, corrcoef, cov
 
 import torch
 import torch.nn as nn
@@ -116,13 +116,10 @@ def smooth_rank(sm, temperature, indicator_function):
     # Smooth indicator function
     indicator = indicator_function(dij, k=temperature)
     indicator = indicator.sum(-1) + 1
-    return indicator
+    return sm.shape[0] - indicator
 
 
 def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5):
-
-    n = h.shape[0]
-    scalator = 6 / (n * (n*n - 1))
 
     sm = similarity(h, h)
     indicator = smooth_rank(sm, k, indicator_function)
@@ -131,19 +128,21 @@ def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = 
     gt_sim = similarity(target, target)
     gt_indicator = smooth_rank(gt_sim, k_gt, indicator_function)
 
-    diff = (indicator - gt_indicator)
-    diff = torch.square(diff).sum(dim = 1)
-    if scale: diff = diff * scalator
+    n = h.shape[0] if scale else 1
 
-    return torch.mean(diff)
+    return 1 - (torch.sum(corrcoef(gt_indicator, indicator)) / n)
 
+    
 ### Evaluation Metrics ###
-def rank_correlation(h, gt, distance_function = EuclideanDistanceMatrix()):
+def rank_correlation(a, b, distance_function = CosineSimilarityMatrix()):
+    
+    sim_a = CosineSimilarityMatrix()(a, a)
+    sim_b = CosineSimilarityMatrix()(b, b)
 
-    gt_rank = distance_function(gt, gt).argsort()[:, 1:].cpu().numpy()
-    h_rank = distance_function(h, h).argsort()[:, 1:].cpu().numpy()
+    rank_a = smooth_rank(sim_a, 1e-5, sigmoid)
+    rank_b = smooth_rank(sim_b, 1e-5, sigmoid)
 
-    statistics, pvalues = batched_spearman_rank(gt_rank, h_rank)
+    statistics, pvalues = batched_spearman_rank(rank_a, rank_b)
 
     return np.mean(statistics), np.mean(pvalues)
 

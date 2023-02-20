@@ -2,6 +2,7 @@ import torch
 import nltk 
 import matplotlib.pyplot as plt
 import copy
+from scipy import stats
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
@@ -11,18 +12,25 @@ from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import PubLayNetDataset, AbstractsDataset
 from src.dataloaders.annoyify import Annoyifier
 from src.tasks.evaluation import MAPEvaluation
-from src.loss.loss import nns_loss, rank_correlation, rank_correlation_loss
+from src.loss.loss import (nns_loss, rank_correlation, rank_correlation_loss, CosineSimilarityMatrix,
+                           smooth_rank, sigmoid, batched_spearman_rank, corrcoef)
+
 
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
-    
 
-    gt = torch.rand(5, 10)
-    h = torch.rand(5, 15)
+    a, b = torch.rand(5, 5), torch.rand(5, 15)
+    sim_a = CosineSimilarityMatrix()(a, a)
+    sim_b = CosineSimilarityMatrix()(b, b)
 
-    print(rank_correlation_loss(h, gt))
-    #print(rank_correlation(h, gt))
+    rank_a = smooth_rank(sim_a, 1e-5, sigmoid)
+    rank_b = smooth_rank(sim_b, 1e-5, sigmoid)
+
+    print(sum(corrcoef(rank_a, rank_b))/5)
+    z, y = batched_spearman_rank(rank_a, rank_b)
+    print(sum(z) / len(z))
+    print(rank_correlation_loss(a, b))
 
     exit()
 

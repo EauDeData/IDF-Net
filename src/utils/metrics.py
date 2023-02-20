@@ -102,3 +102,25 @@ def batched_spearman_rank(h_rank, gt_rank):
     data = [stats.spearmanr(h_rank[m], gt_rank[m]) for m in range(h_rank.shape[0])]
 
     return [z.correlation for z in data], [z.pvalue for z in data]
+
+def cov(m):
+    # m = m.type(torch.double)  # uncomment this line if desired
+    fact = 1.0 / (m.shape[-1] - 1)  # 1 / N
+    m -= torch.mean(m, dim=(1, 2), keepdim=True)
+    mt = torch.transpose(m, 1, 2)  # if complex: mt = m.t().conj()
+    return fact * m.matmul(mt).squeeze()
+
+
+
+def corrcoef(x, y):
+    batch_size = x.shape[0]
+    x = torch.stack((x, y), 1)
+    # calculate covariance matrix of rows
+    c = cov(x)
+    # normalize covariance matrix
+    d = torch.diagonal(c, dim1=1, dim2=2)
+    stddev = torch.pow(d, 0.5)
+    stddev = stddev.repeat(1, 2).view(batch_size, 2, 2)
+    c = c.div(stddev)
+    c = c.div(torch.transpose(stddev, 1, 2))
+    return c[:, 1, 0]
