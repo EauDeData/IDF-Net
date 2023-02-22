@@ -23,7 +23,7 @@ DEVICE = 'cuda' # TODO: Implement cuda execution
 BSIZE = 64
 
 ### First we select the dataset ###
-dataset = AbstractsDataset('/home/adria/Desktop/data/arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
+dataset = AbstractsDataset('./arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
 
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
