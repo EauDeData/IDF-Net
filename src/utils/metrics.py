@@ -99,16 +99,16 @@ def mutual_knn(distances, k):
 
 def batched_spearman_rank(h_rank, gt_rank):
 
-    data = [stats.spearmanr(h_rank[m], gt_rank[m]) for m in range(h_rank.shape[0])]
+    data = [stats.spearmanr(h_rank[m].cpu(), gt_rank[m].cpu()) for m in range(h_rank.shape[0])]
 
     return [z.correlation for z in data], [z.pvalue for z in data]
 
 def cov(m):
     # m = m.type(torch.double)  # uncomment this line if desired
     fact = 1.0 / (m.shape[-1] - 1)  # 1 / N
-    m -= torch.mean(m, dim=(1, 2), keepdim=True)
-    mt = torch.transpose(m, 1, 2)  # if complex: mt = m.t().conj()
-    return fact * m.matmul(mt).squeeze()
+    meant = m - torch.mean(m, dim=(1, 2), keepdim=True)
+    mt = torch.transpose(meant, 1, 2)  # if complex: mt = m.t().conj()
+    return fact * meant.matmul(mt).squeeze()
 
 
 
