@@ -36,7 +36,7 @@ dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss()
-model = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
+model = Resnet50(224, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 1e-2)
