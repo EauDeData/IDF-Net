@@ -119,7 +119,7 @@ def smooth_rank(sm, temperature, indicator_function):
     return sm.shape[0] - indicator
 
 
-def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5):
+def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, weighting = 'sigmoid', maxy = 3):
 
     sm = similarity(h, h)
     indicator = smooth_rank(sm, k, indicator_function)
@@ -129,8 +129,22 @@ def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = 
     gt_indicator = smooth_rank(gt_sim, k_gt, indicator_function)
 
     n = h.shape[0] if scale else 1
+    C = corrcoef(gt_indicator, indicator)
+    if weighting is not None:
 
-    return 1 - (torch.sum(corrcoef(gt_indicator, indicator)) / n)
+        bins = (torch.arange(h.shape[0] - 1) + 1) 
+        delta = bins.repeat(h.shape[0], 1) *  maxy / (h.shape[0] - 1)        
+        if weighting == 'sigmoid':
+
+            W = 1 / (1 + torch.exp(delta))
+        
+        Idiff = torch.abs(indicator - gt_indicator) * W
+        scalator = Idiff.sum(1) / W.sum(1) + 1
+    
+    else:
+        scalator = 1
+
+    return 1 - (torch.sum(C * scalator/ n))
 
     
 ### Evaluation Metrics ###
