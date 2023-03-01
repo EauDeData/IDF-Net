@@ -30,16 +30,19 @@ class NNCLR(CustomLoss):
         return nns_loss(h, gt, self.similarity)
     
 class SpearmanRankLoss(CustomLoss):
-    def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5):
+    def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, device = 'cuda', weighted = None, maxy = 3):
 
         self.ind = indicator_function
         self.sim = similarity
         self.scale = scale
         self.k = k 
         self.k_gt = k_gt
+        self.weight = weighted
+        self.device = device
+        self.maxy = maxy
 
     def forward(self, h, gt):
-        return rank_correlation_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt)
+        return rank_correlation_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt, self.weight, self.maxy, self.device)
 
 def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5, device = 'cuda'):
 
