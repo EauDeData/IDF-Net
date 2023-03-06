@@ -143,6 +143,7 @@ def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = 
 
         Idiff = torch.abs(indicator - gt_indicator) * W.unsqueeze(0)
         scalator = Idiff.sum(1) / W.sum() + 1
+        scalator.requires_grad = False
     
     else:
         scalator = 1
