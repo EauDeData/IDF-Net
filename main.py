@@ -35,11 +35,11 @@ loader.fit()
 dataset.tokenizer = loader
 
 ### DL Time: The loss function and model ###
-loss_function = SpearmanRankLoss()
+loss_function = SpearmanRankLoss(weighted = 'sigmoid')
 model = Resnet50(224, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 1e-2)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 ### Tasks ###
