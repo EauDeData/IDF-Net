@@ -135,7 +135,7 @@ def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = 
     C = corrcoef(gt_indicator, indicator)
     if weighting is not None:
 
-        bins = (torch.arange(h.shape[0] - 1).to(device) + 1) 
+        bins = (torch.arange(h.shape[0] - 1).to(device) + 1)[::-1] 
         delta = bins *  maxy / (h.shape[0] - 1)        
         if weighting == 'sigmoid':
 
@@ -144,7 +144,7 @@ def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = 
         Idiff = torch.abs(indicator - gt_indicator) * W.unsqueeze(0)
         scalator = Idiff.sum(1) / W.sum() + 1
         scalator.detach()
-        scalator.requires_grad = False
+        #scalator.requires_grad = False
     
     else:
         scalator = 1
