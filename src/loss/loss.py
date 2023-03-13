@@ -177,7 +177,7 @@ def mse_rank_loss(h, target, indicator_function = sigmoid, similarity = CosineSi
 
     n = h.shape[0] if scale else 1
 
-    return torch.mean(torch.pow(indicator - gt_indicator, 2).sum(1) ** .5)
+    return torch.mean(torch.pow(indicator - gt_indicator, 2).sum(1))
 
 ### Evaluation Metrics ###
 def rank_correlation(a, b, distance_function = CosineSimilarityMatrix()):
