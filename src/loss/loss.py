@@ -44,6 +44,22 @@ class SpearmanRankLoss(CustomLoss):
     def forward(self, h, gt):
         return rank_correlation_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt, self.weight, self.maxy, self.device)
 
+
+class MSERankLoss(CustomLoss):
+    def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, device = 'cuda', weighted = None, maxy = 3):
+
+        self.ind = indicator_function
+        self.sim = similarity
+        self.scale = scale
+        self.k = k 
+        self.k_gt = k_gt
+        self.weight = weighted
+        self.device = device
+        self.maxy = maxy
+
+    def forward(self, h, gt):
+        return mse_rank_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt, self.weight, self.maxy, self.device)
+
 def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5, device = 'cuda'):
 
     #############################################
@@ -144,14 +160,25 @@ def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = 
         Idiff = torch.abs(indicator - gt_indicator) * W.unsqueeze(0)
         scalator = Idiff.sum(1) / W.sum() + 1
         scalator.detach()
-        #scalator.requires_grad = False
     
     else:
         scalator = 1
 
     return 1 - (torch.sum(C * scalator/ n))
 
+def mse_rank_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5,):
+
+    sm = similarity(h, h)
+    indicator = smooth_rank(sm, k, indicator_function)
     
+    # Ground-truth Ranking function
+    gt_sim = similarity(target, target)
+    gt_indicator = smooth_rank(gt_sim, k_gt, indicator_function)
+
+    n = h.shape[0] if scale else 1
+
+    return torch.sum(torch.pow(indicator - gt_indicator, 2)) / n
+
 ### Evaluation Metrics ###
 def rank_correlation(a, b, distance_function = CosineSimilarityMatrix()):
     
