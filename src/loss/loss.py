@@ -58,7 +58,7 @@ class MSERankLoss(CustomLoss):
         self.maxy = maxy
 
     def forward(self, h, gt):
-        return mse_rank_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt, self.weight, self.maxy, self.device)
+        return mse_rank_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt)
 
 def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5, device = 'cuda'):
 
