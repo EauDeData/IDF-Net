@@ -2,6 +2,7 @@ import torch.utils.data.dataloader as dataloader
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import wandb
+import os
 
 from src.loss.loss import rank_correlation, raw_accuracy
 
@@ -62,7 +63,7 @@ class Train:
         self.test.epoch(500, epoch+1)
 
 class Test:
-    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, bsize = 5, scheduler = False, device = 'cuda'):
+    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, bsize = 5, scheduler = False, save = True, device = 'cuda'):
         
         if isinstance(dataset.tokenizer, int): 
             raise NotImplementedError(
@@ -80,10 +81,16 @@ class Test:
         self.device = device
         self.scheduler = scheduler
         self.model.to(device)
+        self.save = save
     
     def epoch(self, logger_freq, epoch):
         print(f"Testing... Epoch {epoch}")
         buffer, pbuffer, stats_buffer = 0, 0, 0
+
+        if self.save:
+            if not os.path.exists('./output/'): os.mkdir('./output')
+            if not os.path.exists('./output/models/'):  os.mkdir('./output/models/')
+            torch.save(f'./output/models/{epoch}')
 
         for n, (images, text_emb) in enumerate(self.loader):
 
@@ -107,6 +114,8 @@ class Test:
         if not isinstance(self.scheduler, bool): self.scheduler.step(buffer / n)
 
     def run(self, epoches = 30, logger_freq = 500):
+        
+
 
         for epoch in range(epoches):
             self.epoch(logger_freq, epoch)
