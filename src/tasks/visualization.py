@@ -8,6 +8,9 @@ from pytorch_grad_cam import GradCAM
 # TODO: Test it :-3
 
 class SimilarityToConceptTarget:
+
+    # Source: https://github.com/jacobgil/pytorch-grad-cam/blob/master/tutorials/Pixel%20Attribution%20for%20embeddings.ipynb
+
     def __init__(self, features):
         self.features = features
     
