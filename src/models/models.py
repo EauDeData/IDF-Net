@@ -99,7 +99,7 @@ class Resnet(torch.nn.Module):
 
 
         self.resnet.fc = torch.nn.Linear(2048, embedding_size)
-        self.norm = norm #lambda x: x if norm is None else lambda x: torch.nn.functional.normalize(x, p = norm, dim = 1)
+        self.norm = norm
 
 
     def forward(self, batch):
