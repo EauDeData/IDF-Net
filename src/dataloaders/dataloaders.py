@@ -155,7 +155,7 @@ class AbstractsDataset:
         text = self.dataframe['titles'][index] + ' ' + \
             self.dataframe['summaries'][index]
         
-        if self.cleaner is not None: text = self.cleaner([text])[0]
+        if self.cleaner is not None: text = ' '.join(self.cleaner([text])[0])
 
         if isinstance(self.tokenizer, int):
             return image, text
