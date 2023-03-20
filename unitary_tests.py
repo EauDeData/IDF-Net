@@ -9,7 +9,7 @@ from src.utils.errors import *
 from src.dataloaders.dataloaders import DummyDataset
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
 from src.models.models import VisualTransformer
-from src.dataloaders.dataloaders import PubLayNetDataset, AbstractsDataset
+from src.dataloaders.dataloaders import AbstractsDataset
 from src.dataloaders.annoyify import Annoyifier
 from src.tasks.evaluation import MAPEvaluation
 from src.loss.loss import (nns_loss, rank_correlation, rank_correlation_loss, CosineSimilarityMatrix,
@@ -20,19 +20,21 @@ nltk.download('stopwords')
 
 if __name__ == '__main__': 
 
-    a, b = torch.rand(5, 5), torch.rand(5, 15)
-    sim_a = CosineSimilarityMatrix()(a, a)
-    sim_b = CosineSimilarityMatrix()(b, b)
+    try:
+        a, b = torch.rand(5, 5), torch.rand(5, 15)
+        sim_a = CosineSimilarityMatrix()(a, a)
+        sim_b = CosineSimilarityMatrix()(b, b)
 
-    rank_a = smooth_rank(sim_a, 1e-5, sigmoid)
-    rank_b = smooth_rank(sim_b, 1e-5, sigmoid)
+        rank_a = smooth_rank(sim_a, 1e-5, sigmoid)
+        rank_b = smooth_rank(sim_b, 1e-5, sigmoid)
 
-    print(sum(corrcoef(rank_a, rank_b))/5)
-    z, y = batched_spearman_rank(rank_a, rank_b)
-    print(sum(z) / len(z))
-    print(rank_correlation_loss(a, b))
+        print(sum(corrcoef(rank_a, rank_b))/5)
+        z, y = batched_spearman_rank(rank_a, rank_b)
+        print(sum(z) / len(z))
+        print(rank_correlation_loss(a, b))
+    except: pass
 
-    exit()
+
 
     try:
         cleaner_obj = StringCleanAndTrim()
@@ -47,7 +49,7 @@ if __name__ == '__main__':
         cleaner = StringCleanAndTrim()
         loader = LSALoader(dataset, StringCleaner())
         loader.fit()
-        print(loader[0])
+        print('predicted:, ',loader.predict('cat'))
     except Exception as e:
         print(f"1 - Preprocess test not passed, reason: {e}")
     try:

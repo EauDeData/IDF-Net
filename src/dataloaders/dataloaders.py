@@ -27,121 +27,6 @@ class DummyDataset(IDFNetDataLoader):
     def iter_text(self) -> Iterable:
         for _ in range(len(self)): yield "I'm a cat named diffie, my name is not cat but diffie and i like going in the train"
 
-class PubLayNetDataset(IDFNetDataLoader):
-    name = 'pubLayNet_dataset'
-
-    '''
-    Expected tree:
-
-        publaynet/
-                val/*.jpg
-                train/*.jpg
-                test/*.jpg
-                {val, train, test}.json
-                README.txt
-                LICENSE.txt
-    
-    src/../dataset/PubLayNetOCR/annot.json
-        {
-            'gt': [annots...]
-            train_ends: index
-        }
-
-    '''
-
-    def __init__(self, base_folder: str = '', transcriptions: str = './dataset/PubLayNetOCR/annot.json', ocr: Any = None, train: bool = True, train_p: float = .8, *args, **kwargs) -> None:
-        super(PubLayNetDataset).__init__()
-
-        self.train = train
-        self.train_p = train_p
-
-        self.data_folder = base_folder if base_folder[-1] == '/' else base_folder+'/'
-        self.ocr_path = transcriptions
-        self.ocr = ocr(**kwargs)
-
-        self.train_json = json.load(open(base_folder + 'train.json'))
-        self.test_json = json.load(open(base_folder + 'test.json'))
-        self.val_json = json.load(open(base_folder + 'val.json'))
-
-        self.idToPath = {**{x['id']: x['file_name'] for x in self.train_json['images']},
-                         **{x['id']: x['file_name'] for x in self.test_json['images']}, 
-                         **{x['id']: x['file_name'] for x in self.val_json['images']}}
-
-        if not os.path.exists(transcriptions):
-            try: os.mkdir('./dataset/PubLayNetOCR/')
-            except FileExistsError: pass
-            self.build_transcriptions(transcriptions)
-        else: self.gt = json.load(open(transcriptions, 'r'))
-    
-    def _total_len(self):
-        return len(self.gt['gt']) 
-
-    def __len__(self) -> int:
-        '''
-        Same class will manage train and test split, therefore we can compute properly the TF-IDF matrix without merging anything.
-        '''
-        
-        if self.train: return(self.gt['train_ends'])
-        return(self._total_len() - self.gt['train_ends'])
-
-    def build_transcriptions(self, path):
-        self.gt = {
-            'gt': [],
-            'train_ends': 0
-        }
-        print(f"Transcriptions not found in {path}; OCRing your database.")
-        DOCS_DONE = set()
-        def _iter_json(fold, name):
-            for element in fold['annotations']:
-
-                # Just Text Category
-                if element['category_id'] == 1 and element['id'] in self.idToPath:
-
-                    image = cv2.imread(f"{self.data_folder}{name}/{self.idToPath[element['id']]}", cv2.IMREAD_GRAYSCALE)
-                    if not isinstance(image, np.ndarray): continue
-                    x, y, w, h = [int(round(u)) for u in element['bbox']] 
-                    crop = image[y:y+h, x:x+w]
-                    if (not crop.shape[0]*crop.shape[1]) or (element['id'] in DOCS_DONE): continue
-                    text = self.ocr.run(crop)['result']
-                    print(text)
-                    0/0
-                    yield {'image': self.idToPath[element['id']], 'bbx': (x, y, w, h), 'text': text}
-                    DOCS_DONE.add(element['id'])
-        
-        for n, element in enumerate(_iter_json(self.train_json, 'train')):
-            print(f"OCRing element {n} in train set\t", end = '\r')
-            self.gt['gt'].append(element)
-        self.gt['train_ends'] = n
-        print()
-        DOCS_DONE = set()
-        # Do we need test? Or is val the fair comparison?
-        for n, element in enumerate(_iter_json(self.val_json, 'test')):
-            print(f"OCRing element {n} in test set\t", end = '\r')
-            self.gt['gt'].append(element)
-        print()
-        with open(path, 'w', encoding='utf-8') as f:
-            print(f"Saving in {path}", end = '\r')
-            json.dump(self.gt, f, ensure_ascii=False, indent=4)
-
-
-
-    def iter_text(self):
-        '''
-        No train-test difference, iterate over the wole dataset.
-        
-        '''
-        for element in self.gt['gt']:
-            yield element['text']
-
-    def __getitem__(self, index: int) -> Tuple[torch.tensor, str]:
-        if not self.train: index = index + len(self)
-        item = self.gt['gt'][index]
-        impath = f"{self.data_folder}{'train/' if self.train else 'val/'}{item['image']}"
-        image = cv2.imread(impath, cv2.IMREAD_GRAYSCALE)
-        bbx = item['bbx']
-        image = image[bbx[1]:bbx[1]+bbx[3], bbx[0]:bbx[0]+bbx[2]]
-        return image, item['text']
-
 class TwinAbstractsDataset:
     name = 'twin_dataset'
     def __init__(self, original_df, imsize, data_folder = 'dataset/augm_images/', level = 'sentence', num = 1, shuffle = True):
@@ -196,7 +81,7 @@ class TwinAbstractsDataset:
 class AbstractsDataset:
 
     name = 'abstracts_dataset'
-    def __init__(self, csv_path, data_folder, train = True, imsize = 512, twin = False) -> None:
+    def __init__(self, csv_path, data_folder, train = True, imsize = 512, twin = False, cleaner = None) -> None:
 
         # My Frame https://www.kaggle.com/datasets/spsayakpaul/arxiv-paper-abstracts?resource=download
 
@@ -220,6 +105,7 @@ class AbstractsDataset:
         self.offset = int(.8*len(self.dataframe)) if not train else 0
         self.tokenizer = 0
         self.imsize = imsize
+        self.cleaner = cleaner
 
         self.twin = twin
         if self.twin: self.twin_dataset = TwinAbstractsDataset(self.dataframe, self.imsize)
@@ -268,11 +154,13 @@ class AbstractsDataset:
         image = image.astype(np.float32)
         text = self.dataframe['titles'][index] + ' ' + \
             self.dataframe['summaries'][index]
+        
+        if self.cleaner is not None: text = self.cleaner([text])[0]
 
         if isinstance(self.tokenizer, int):
             return image, text
         
         if self.twin: return image, self.tokenizer[index], self.twin_dataset[index]
-        return image, self.tokenizer[index]
+        return image, self.tokenizer.predict(text)
 
     

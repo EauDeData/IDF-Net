@@ -52,6 +52,10 @@ class TF_IDFLoader:
         self.corpus = [self.dct.doc2bow(line) for line in sentences]
         self.model = gensim.models.TfidfModel(self.corpus, smartirs='ntc')
 
+    def predict(self, sentence):
+        new_text_corpus =  self.dct.doc2bow(sentence.split())
+        return gensim.matutils.sparse2full(self.model[new_text_corpus], len(self.dct))
+
     def infer(self, index: int) -> Dict:
 
         return {
@@ -72,6 +76,10 @@ class LDALoader:
         _train_precondition(self)
         instance = self.model[self.corpus[index]]
         return gensim.matutils.sparse2full(instance, self.ntopics)
+    
+    def predict(self, sentence):
+        new_text_corpus =  self.dct.doc2bow(sentence.split())
+        return gensim.matutils.sparse2full(self.model[new_text_corpus],  self.ntopics)
 
     def fit(self):
         dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
@@ -106,6 +114,9 @@ class LSALoader:
         gensim_vector = gensim.matutils.sparse2full(instance, self.ntopics)
         return gensim_vector
 
+    def predict(self, sentence):
+        new_text_corpus =  self.dct.doc2bow(sentence.split())
+        return gensim.matutils.sparse2full(self.model[new_text_corpus], self.ntopics)
 
     def fit(self):
         
