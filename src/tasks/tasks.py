@@ -90,7 +90,7 @@ class Test:
         if self.save:
             if not os.path.exists('./output/'): os.mkdir('./output')
             if not os.path.exists('./output/models/'):  os.mkdir('./output/models/')
-            torch.save(self.model, f'./output/models/{epoch}')
+            torch.save(self.model.state_dict(), f'./output/models/{epoch}.pth')
 
         for n, (images, text_emb) in enumerate(self.loader):
 
