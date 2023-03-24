@@ -7,8 +7,8 @@ import wandb
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
-from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss
-from src.models.models import VisualTransformer, Resnet50
+from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, MSERankLoss
+from src.models.models import VisualTransformer, Resnet50, Resnet
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test
 from src.tasks.evaluation import MAPEvaluation
@@ -20,7 +20,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 256
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 64
+BSIZE = 16
 
 ### First we select the dataset ###
 dataset = AbstractsDataset('./train_set.csv', './dataset/arxiv_images_train/', imsize = IMSIZE)
@@ -40,8 +40,8 @@ dataset_test.tokenizer = loader
 dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
-loss_function = SpearmanRankLoss(weighted = 'sigmoid')
-model = Resnet50(224, norm = 2) # VisualTransformer(IMSIZE)
+loss_function = MSERankLoss()
+model = Resnet(224, norm = 2, resnet = '152') # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
