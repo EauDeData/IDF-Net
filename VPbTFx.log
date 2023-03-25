@@ -1,0 +1,111 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.3.17)  20 MAR 2023 11:46
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**\documentclass{article}
+
+*\thispagestyle{empty}
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2021/10/04 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count185
+\c@section=\count186
+\c@subsection=\count187
+\c@subsubsection=\count188
+\c@paragraph=\count189
+\c@subparagraph=\count190
+\c@figure=\count191
+\c@table=\count192
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen138
+)
+*\begin{document}
+(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+File: l3backend-pdftex.def 2022-01-12 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count193
+\l__pdf_internal_box=\box50
+)
+No file VPbTFx.aux.
+\openout1 = `VPbTFx.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 0.
+LaTeX Font Info:    ... okay on input line 0.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 0.
+LaTeX Font Info:    ... okay on input line 0.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 0.
+LaTeX Font Info:    ... okay on input line 0.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 0.
+LaTeX Font Info:    ... okay on input line 0.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 0.
+LaTeX Font Info:    ... okay on input line 0.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 0.
+LaTeX Font Info:    ... okay on input line 0.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 0.
+LaTeX Font Info:    ... okay on input line 0.
+
+*
+(Please type a command or say `\end')
+*            Mining Contextual Information Beyond Image for Semantic Segmentati
+on
+
+*
+(Please type a command or say `\end')
+*
+(Please type a command or say `\end')
+*
+(Please type a command or say `\end')
+*            This paper studies the context aggregation problem in semantic ima
+ge segmentation The existing researches focus on improving the pixel representa
+tions by aggregating the contextual information within individual images Though
+ impressive these methods neglect the significance of the representations of th
+e pixels of the corresponding class beyond the input image To address this this
+ paper proposes to mine the contextual information beyond individual images to 
+further augment the pixel representations We first set up a feature memory modu
+le which is updated dynamically during training to store the dataset level repr
+esentations of various categories Then we learn class probability distribution 
+of each pixel representation under the supervision of the ground truth segmenta
+tion At last the representation of each pixel is augmented by aggregating the d
+ataset level representations based on the corresponding class probability distr
+ibution Furthermore by utilizing the stored dataset level representations we al
+so propose a representation consistent learning strategy to make the classifica
+tion head better address intra class compactness and inter class dispersion The
+ proposed method could be effortlessly incorporated into existing segmentation 
+frameworks e g FCN PSPNet OCRNet and DeepLabV and brings consistent performance
+ improvements Mining contextual information beyond image allows us to report st
+ate of the art performance on various benchmarks ADE K LIP Cityscapes and COCO 
+Stuff
+
+*
+(Please type a command or say `\end')
+*
+(Please type a command or say `\end')
+*\end{document}
+[1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+! Interruption.
+<argument> ...\__shipout_drop_firstpage_specials: 
+                                                  \set@typeset@protect \hook...
+<*> \end{document}
+                  
+? 
+! Emergency stop.
+<argument> ...\__shipout_drop_firstpage_specials: 
+                                                  \set@typeset@protect \hook...
+<*> \end{document}
+                  
+End of file on the terminal!
+
+ 
+Here is how much of TeX's memory you used:
+ 393 strings out of 480247
+ 7329 string characters out of 5896151
+ 295472 words of memory out of 5000000
+ 18425 multiletter control sequences out of 15000+600000
+ 469259 words of font info for 28 fonts, out of 8000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 33i,5n,38p,1526b,104s stack positions out of 5000i,500n,10000p,200000b,80000s
+!  ==> Fatal error occurred, no output PDF file produced!
