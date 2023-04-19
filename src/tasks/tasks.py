@@ -135,7 +135,7 @@ class TrainMiniClip(Train):
         self.model.to(self.device)
 
     def epoch(self, logger_freq, epoch):
-        print(f"Testing... Epoch {epoch}")
+
         buffer, pbuffer, stats_buffer = 0, 0, 0
 
         if self.save:

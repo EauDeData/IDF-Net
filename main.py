@@ -21,7 +21,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 256
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 16
+BSIZE = 2
 
 ### First we select the dataset ###
 transforms =  torchvision.transforms.Resize((IMSIZE, IMSIZE))
@@ -43,8 +43,8 @@ dataset_test.tokenizer = loader
 #dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
-loss_function = MSERankLoss()
-model = Resnet(224, norm = 2, resnet = '152') # VisualTransformer(IMSIZE)
+loss_function = SpearmanRankLoss()
+model = Resnet(224, norm = 2, resnet = '18') # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
