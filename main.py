@@ -24,9 +24,10 @@ DEVICE = 'cuda' # TODO: Implement cuda execution
 BSIZE = 2
 
 ### First we select the dataset ###
+base = '/home/amolina/amolina/COCO/'
 transforms =  torchvision.transforms.Resize((IMSIZE, IMSIZE))
-dataset = COCODataset('/home/amolina/Desktop/amolina/COCO/val2014/', '/home/amolina/Desktop/amolina/COCO/captions_val2014.json', transform = transforms)
-dataset_test = COCODataset('/home/amolina/Desktop/amolina/COCO/val2014/', '/home/amolina/Desktop/amolina/COCO/captions_val2014.json', transform = transforms)
+dataset = COCODataset(f'{base}val2014/', '{base}captions_val2014.json', transform = transforms)
+dataset_test = COCODataset(f'{base}val2014/', '{base}captions_val2014.json', transform = transforms)
 
 print(dataset[0])
 ### On which we clean the text and load the tokenizer ###
