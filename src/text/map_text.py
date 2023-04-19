@@ -7,6 +7,7 @@ from gensim.models import Word2Vec, KeyedVectors
 from gensim.test.utils import common_texts
 import os
 import clip
+import torch
 
 from src.utils.errors import *
 from src.dataloaders.base import IDFNetDataLoader
@@ -136,6 +137,7 @@ class CLIPLoader:
     def __init__(self, device = 'cuda', *args, **kwargs) -> None:
         self.device = device
         self.model, self.preprocess = clip.load("ViT-B/32", device=device)
+        self.model = torch.nn.DataParallel(self.model)
 
     def predict(self, text):
         tokens = clip.tokenize(text).to(self.device)

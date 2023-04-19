@@ -116,3 +116,7 @@ class AbstractsDataset:
 class COCODataset(torchvision.datasets.CocoCaptions):
     def __init__(self, *args, **kwargs):
         super(COCODataset, self).__init__(*args, **kwargs)
+    
+    def __getitem__(self, idx):
+        img, captions = super(COCODataset, self).__getitem__(idx)
+        return np.array(img), random.choice(captions)

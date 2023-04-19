@@ -192,9 +192,11 @@ class TestMiniClip(Test):
             torch.save(self.model.state_dict(), f'./output/models/{epoch}.pth')
         with torch.no_grad():
 
-            for n, (images, text) in enumerate(self.loader):
 
+            for n, (images, text) in enumerate(self.loader):
+                
                 images, = self.clip.preprocess( images.to(self.device) )
+
                 text_emb = self.clip.predict(text)
                 img_emb = self.clip.encode_images(images)
 
