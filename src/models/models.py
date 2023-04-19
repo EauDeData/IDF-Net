@@ -100,10 +100,11 @@ class Resnet(torch.nn.Module):
 
         self.resnet.fc = torch.nn.Linear(2048, embedding_size)
         self.norm = norm
+        #self.resnet = torch.nn.DataParallel(self.resnet)
 
 
     def forward(self, batch):
-
+        #print(batch.shape)
         h = self.resnet(batch)
         if self.norm is not None: h =  torch.nn.functional.normalize(h, p = self.norm, dim = 1)
         return h

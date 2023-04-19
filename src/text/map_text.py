@@ -137,7 +137,6 @@ class CLIPLoader:
     def __init__(self, device = 'cuda', *args, **kwargs) -> None:
         self.device = device
         self.model, self.preprocess = clip.load("ViT-B/32", device=device)
-        self.model = torch.nn.DataParallel(self.model)
 
     def predict(self, text):
         tokens = clip.tokenize(text).to(self.device)

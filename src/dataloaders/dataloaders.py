@@ -119,4 +119,4 @@ class COCODataset(torchvision.datasets.CocoCaptions):
     
     def __getitem__(self, idx):
         img, captions = super(COCODataset, self).__getitem__(idx)
-        return np.array(img), random.choice(captions)
+        return img, random.choice(captions)

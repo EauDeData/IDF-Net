@@ -19,17 +19,20 @@ torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
-IMSIZE = 256
+IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 2
+BSIZE = 64
 
 ### First we select the dataset ###
 base = '/home/amolina/amolina/COCO/'
-transforms =  torchvision.transforms.Resize((IMSIZE, IMSIZE))
-dataset = COCODataset(f'{base}val2014/', '{base}captions_val2014.json', transform = transforms)
-dataset_test = COCODataset(f'{base}val2014/', '{base}captions_val2014.json', transform = transforms)
+transforms = torchvision.transforms.Compose( [torchvision.transforms.Resize((IMSIZE, IMSIZE)),
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))]
+)
+dataset = COCODataset(f'{base}val2014/', f'{base}captions_val2014.json', transform = transforms)
+dataset_test = COCODataset(f'{base}val2014/', f'{base}captions_val2014.json', transform = transforms)
 
-print(dataset[0])
+#print(dataset[0][0]['img'].shape)
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 #cleaner = StringCleanAndTrim()
@@ -45,7 +48,7 @@ dataset_test.tokenizer = loader
 
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss()
-model = Resnet(224, norm = 2, resnet = '18') # VisualTransformer(IMSIZE)
+model = Resnet(224, norm = 2, resnet = '50') # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
