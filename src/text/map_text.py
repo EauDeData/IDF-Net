@@ -6,6 +6,7 @@ from typing import *
 from gensim.models import Word2Vec, KeyedVectors
 from gensim.test.utils import common_texts
 import os
+import clip
 
 from src.utils.errors import *
 from src.dataloaders.base import IDFNetDataLoader
@@ -130,4 +131,15 @@ class LSALoader:
             )
         
         
-    
+class CLIPLoader:
+    name = 'CLIP_mapper'
+    def __init__(self, device = 'cuda', *args, **kwargs) -> None:
+        self.device = device
+        self.model, self.preprocess = clip.load("ViT-B/32", device=device)
+
+    def predict(self, text):
+        tokens = clip.tokenize(text).to(self.device)
+        return self.model.encode_text(tokens)
+
+    def encode_images(self, batch):
+        return self.model.encode_image(batch)

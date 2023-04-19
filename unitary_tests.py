@@ -6,7 +6,7 @@ from scipy import stats
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
-from src.dataloaders.dataloaders import DummyDataset
+from src.dataloaders.dataloaders import DummyDataset, COCODataset
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import AbstractsDataset
@@ -19,7 +19,8 @@ from src.loss.loss import (nns_loss, rank_correlation, rank_correlation_loss, Co
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
-
+    print(COCODataset('/home/amolina/Desktop/amolina/COCO/val2014/',
+                    '/home/amolina/Desktop/amolina/COCO/captions_val2014.json')[0])
     try:
         a, b = torch.rand(5, 5), torch.rand(5, 15)
         sim_a = CosineSimilarityMatrix()(a, a)
