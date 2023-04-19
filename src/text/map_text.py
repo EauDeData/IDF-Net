@@ -132,16 +132,26 @@ class LSALoader:
             )
         
         
+
+class ParallelWrapper(torch.nn.Module):
+    def __init__(self, fn) -> None:
+        super(ParallelWrapper, self).__init__()
+        self.fn = fn
+    
+    def forward(self, batch):
+        return self.fn(batch)
+    
 class CLIPLoader:
     name = 'CLIP_mapper'
     def __init__(self, device = 'cuda', *args, **kwargs) -> None:
         self.device = device
         self.model, self.preprocess = clip.load("ViT-B/32", device=device, jit = False)
-        self.model = torch.nn.DataParallel(self.model)
+        self.predict = ParallelWrapper(self._predict)
+        self.encode_images = ParallelWrapper(self._encode_images)
 
-    def predict(self, text):
+    def _predict(self, text):
         tokens = clip.tokenize(text).to(self.device)
-        return self.model.module.encode_text(tokens)
+        return self.model.encode_text(tokens)
 
-    def encode_images(self, batch):
-        return self.model.module.encode_image(batch)
+    def _encode_images(self, batch):
+        return self.model.encode_image(batch)
