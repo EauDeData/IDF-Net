@@ -136,11 +136,12 @@ class CLIPLoader:
     name = 'CLIP_mapper'
     def __init__(self, device = 'cuda', *args, **kwargs) -> None:
         self.device = device
-        self.model, self.preprocess = clip.load("ViT-B/32", device=device)
+        self.model, self.preprocess = clip.load("ViT-B/32", device=device, jit = False)
+        self.model = torch.nn.DataParallel(self.model)
 
     def predict(self, text):
         tokens = clip.tokenize(text).to(self.device)
-        return self.model.encode_text(tokens)
+        return self.model.module.encode_text(tokens)
 
     def encode_images(self, batch):
-        return self.model.encode_image(batch)
+        return self.model.module.encode_image(batch)

@@ -21,7 +21,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 64
+BSIZE = 32
 
 ### First we select the dataset ###
 base = '/home/amolina/amolina/COCO/'
