@@ -122,7 +122,7 @@ class TrainMiniClip(Train):
 
     def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, test_task, clip_tokenizer, bsize = 5, device = 'cuda',):
         
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers = 8)
         self.bs = bsize
         self.model = model
         self.loss_f = loss_function
@@ -133,10 +133,11 @@ class TrainMiniClip(Train):
         self.device = device
         self.clip = clip_tokenizer
         self.model.to(self.device)
+        self.save = True
 
     def epoch(self, logger_freq, epoch):
 
-        buffer, pbuffer, stats_buffer = 0, 0, 0
+        buffer = 0
 
         if self.save:
             if not os.path.exists('./output/'): os.mkdir('./output')
@@ -155,15 +156,13 @@ class TrainMiniClip(Train):
             buffer += loss.item()
             loss.backward()
 
-            statistics, pvalues = rank_correlation(h, text_emb,)
-            stats_buffer += statistics
-            pbuffer += pvalues
+            #statistics, pvalues = rank_correlation(h, text_emb,)
+            #stats_buffer += statistics
+            #pbuffer += pvalues
 
             if not (n*self.bs) % logger_freq: print(f"Current loss: {loss.item()}")
 
-        wandb.log({'test-loss': buffer / n})
-        wandb.log({'rank-corr': stats_buffer / n})
-        wandb.log({'rank-corr-pvalue': pbuffer / n})
+        wandb.log({'train-loss': buffer / n})
         if not isinstance(self.scheduler, bool): self.scheduler.step(buffer / n)
 
 class TestMiniClip(Test):

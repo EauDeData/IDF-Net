@@ -108,7 +108,36 @@ class Resnet(torch.nn.Module):
         h = self.resnet(batch)
         if self.norm is not None: h =  torch.nn.functional.normalize(h, p = self.norm, dim = 1)
         return h
+
+class ResNetWithEmbedder(torch.nn.Module):
+    def __init__(self, resnet='152', pretrained=True, embedding_size: int = 512):
+        super(ResNetWithEmbedder, self).__init__()
+
+        if resnet == '152':
+            resnet = torchvision.models.resnet152(pretrained=pretrained)
+        elif resnet == '101':
+            resnet = torchvision.models.resnet101(pretrained=pretrained)
+        elif resnet == '50':
+            resnet = torchvision.models.resnet50(pretrained=pretrained)
+        elif resnet == '34':
+            resnet = torchvision.models.resnet34(pretrained=pretrained)
+        elif resnet == '18':
+            resnet = torchvision.models.resnet18(pretrained=pretrained)
+        else:
+            raise NotImplementedError
+    
+        self.trunk = resnet
+        trunk_output_size = self.trunk.fc.in_features
+        self.trunk.fc = torch.nn.Identity()
+        self.embedder = torch.nn.Linear(trunk_output_size, embedding_size)
         
+    def __str__(self):
+        return str(self.trunk)
+
+    def forward(self, batch):
+        h = self.trunk(batch)
+        h = self.embedder(h)
+        return h      
 
 class VisualConvTransformer(torch.nn.Module):
     def __init__(self) -> None:

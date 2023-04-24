@@ -146,6 +146,7 @@ class CLIPLoader:
     def __init__(self, device = 'cuda', *args, **kwargs) -> None:
         self.device = device
         self.model, self.preprocess = clip.load("ViT-B/32", device=device, jit = False)
+        self.model.eval()
         self.predict = ParallelWrapper(self._predict)
         self.encode_images = ParallelWrapper(self._encode_images)
 
