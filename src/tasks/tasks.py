@@ -163,7 +163,7 @@ class TrainMiniClip(Train):
             if not (n*self.bs) % logger_freq: print(f"Current loss: {loss.item()}")
 
         wandb.log({'train-loss': buffer / n})
-        if not isinstance(self.scheduler, bool): self.scheduler.step(buffer / n)
+        #if not isinstance(self.scheduler, bool): self.scheduler.step(buffer / n)
 
 class TestMiniClip(Test):
     def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, clip_tokenizer,bsize = 5, scheduler = False, save = True, device = 'cuda'):

@@ -1,6 +1,8 @@
 import torch
 import torchvision
 from vit_pytorch import ViT
+import torch.nn as nn
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 class VisualTransformer(torch.nn.Module):
     def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 1, heads = 1, dropout = 0.1, norm = 2) -> None:
@@ -61,16 +63,6 @@ class SelfAttention(torch.nn.Module):
         
         out = self.gamma*out + x
         return out,attention
-
-class VisualConvAttention(torch.nn.Module):
-    def __init__(self,  embedding_size = 128): # TODO: Relevant hyperparameters
-
-        self.extractor = torch.nn.Sequential(*list(resnet50.children())[:-2])
-        self.attention = SelfAttention()
-
-    def forward(self, x):
-        pass
-
 
 class Resnet50(torch.nn.Module):
     def __init__(self, embedding_size = 128, norm = None):
@@ -139,8 +131,61 @@ class ResNetWithEmbedder(torch.nn.Module):
         h = self.embedder(h)
         return h      
 
-class VisualConvTransformer(torch.nn.Module):
-    def __init__(self) -> None:
-        pass
+class TransformerEncoder(nn.Module):
+    def __init__(self, input_dim, output_dim, num_layers=1, num_heads=8, hidden_dim=512, dropout=0.1):
+        super(TransformerEncoder, self).__init__()
+
+        self.transformer_layers = nn.ModuleList([
+            nn.TransformerEncoderLayer(d_model=input_dim, nhead=num_heads, dim_feedforward=hidden_dim, dropout=dropout)
+            for _ in range(num_layers)
+        ])
+
+        self.fc = nn.Linear(input_dim, output_dim)
+
+    def forward(self, x, lengths):
+        # Pack variable-length sequences into padded tensor
+        packed_x = pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
+
+        # Apply transformer layers to padded tensor
+        packed_x, _ = self.transformer_layers(packed_x)
+
+        # Unpack padded tensor back into variable-length sequences
+        x, _ = pad_packed_sequence(packed_x, batch_first=True)
+
+        # Take mean across sequence dimension
+        x = torch.mean(x, dim=1)
+
+        # Apply linear layer to output global representation
+        x = self.fc(x)
+
+        return x
+
+class DocTopicSpotter(torch.nn.Module):
+    # TODO: Decide how shall we condition the theme
+    def __init__(self, patch_visual_extractor, aggregator, device = 'cuda') -> None:
+        self.visual_extractor = patch_visual_extractor
+        self.aggregator = aggregator
+        self.device = device
+
     def forward(self, batch):
-        pass
+
+        '''
+
+        batch: 
+            [{
+              "crops": [Tensor[Width, Height], ...]
+            },
+            {
+              "crops": [Tensor[Width, Height], ...]
+            }]
+        
+        '''
+        
+        # SHAPE: (BATCH, SEQ_LEN_var, EMB_LEN)
+        visual_tokens = [[self.visual_extractor(crop) for crop in image['crops']] for image in batch]
+        lengths = [len(tokens) for tokens in visual_tokens]
+
+        # SHAPE: (BS, EMB)
+        emb = self.aggregator(visual_tokens, lengths)
+        return emb
+                

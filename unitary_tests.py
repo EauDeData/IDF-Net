@@ -10,6 +10,8 @@ from src.dataloaders.dataloaders import DummyDataset, COCODataset
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
 from src.models.models import VisualTransformer
 from src.dataloaders.dataloaders import AbstractsDataset
+from src.dataloaders.boe_dataloader import BOEDataset
+
 from src.dataloaders.annoyify import Annoyifier
 from src.tasks.evaluation import MAPEvaluation
 from src.loss.loss import (nns_loss, rank_correlation, rank_correlation_loss, CosineSimilarityMatrix,
@@ -19,8 +21,11 @@ from src.loss.loss import (nns_loss, rank_correlation, rank_correlation_loss, Co
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
-    print(COCODataset('/home/amolina/Desktop/amolina/COCO/val2014/',
-                    '/home/amolina/Desktop/amolina/COCO/captions_val2014.json')[0])
+    data = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/BOE')
+    for a in data[0][0]['crops']:
+        plt.imshow(a)
+        plt.show()
+    exit()
     try:
         a, b = torch.rand(5, 5), torch.rand(5, 15)
         sim_a = CosineSimilarityMatrix()(a, a)
