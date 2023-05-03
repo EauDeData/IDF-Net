@@ -8,6 +8,7 @@ from gensim.test.utils import common_texts
 import os
 import clip
 import torch
+from transformers import BertTokenizer, BertModel
 
 from src.utils.errors import *
 from src.dataloaders.base import IDFNetDataLoader
@@ -131,8 +132,6 @@ class LSALoader:
             corpus=self.corpus, id2word=self.dct, num_topics=self.ntopics,
             )
         
-        
-
 class ParallelWrapper(torch.nn.Module):
     def __init__(self, fn) -> None:
         super(ParallelWrapper, self).__init__()
@@ -156,3 +155,13 @@ class CLIPLoader:
 
     def _encode_images(self, batch):
         return self.model.encode_image(batch)
+
+
+class BertTextEncoder:
+    def __init__(self, pretrained = 'bert-base-multilingual-cased') -> None:
+        self.tokenizer = BertTokenizer.from_pretrained(pretrained)
+        self.model = BertModel.from_pretrained(pretrained)
+
+    def predict(self, batch):
+        encoded_input = self.tokenizer(batch, return_tensors='pt')
+        return self.model(**encoded_input).pooler_output # (BS, 768) 

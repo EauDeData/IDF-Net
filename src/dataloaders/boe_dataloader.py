@@ -63,7 +63,8 @@ class BOEDataset(IDFNetDataLoader):
             for item in image_json['pages'][page]:
                 x1, y1, x2, y2 = item['bbox']
                 if (x2 - x1) < self.min_width or (y2 - y1) < self.min_width: continue
-                crops.append(images[num_page][y1:y2, x1:x2] / 255)
+                array = images[num_page][y1:y2, x1:x2] / 255
+                crops.append(torch.from_numpy(array.transpose(2, 0, 1)).unsqueeze(0).float())
         if not isinstance(self.tokenizer, int): textual = self.tokenizer.predict(self.text[idx])
         else: textual = self.text[idx]
         return {"crops": crops}, textual

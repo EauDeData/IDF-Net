@@ -135,39 +135,36 @@ class TransformerEncoder(nn.Module):
     def __init__(self, input_dim, output_dim, num_layers=1, num_heads=8, hidden_dim=512, dropout=0.1):
         super(TransformerEncoder, self).__init__()
 
-        self.transformer_layers = nn.ModuleList([
-            nn.TransformerEncoderLayer(d_model=input_dim, nhead=num_heads, dim_feedforward=hidden_dim, dropout=dropout)
-            for _ in range(num_layers)
-        ])
+        layer = nn.TransformerEncoderLayer(d_model=input_dim, nhead=num_heads, dim_feedforward=hidden_dim, dropout=dropout)
+        self.transformer_layers = nn.TransformerEncoder(layer, num_layers=num_layers)
 
-        self.fc = nn.Linear(input_dim, output_dim)
+        self.mean = nn.Linear(input_dim, output_dim)
+        self.variance = nn.Linear(input_dim, output_dim)
 
-    def forward(self, x, lengths):
-        # Pack variable-length sequences into padded tensor
-        packed_x = pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
+    def forward(self, x):
 
         # Apply transformer layers to padded tensor
-        packed_x, _ = self.transformer_layers(packed_x)
-
-        # Unpack padded tensor back into variable-length sequences
-        x, _ = pad_packed_sequence(packed_x, batch_first=True)
+        x = self.transformer_layers(x)
 
         # Take mean across sequence dimension
         x = torch.mean(x, dim=1)
 
         # Apply linear layer to output global representation
-        x = self.fc(x)
+        mu = self.mean(x)
+        sigma = self.variance(x)
 
-        return x
+        return mu, sigma
 
 class DocTopicSpotter(torch.nn.Module):
-    # TODO: Decide how shall we condition the theme
+
     def __init__(self, patch_visual_extractor, aggregator, device = 'cuda') -> None:
+        super(DocTopicSpotter, self).__init__()
         self.visual_extractor = patch_visual_extractor
         self.aggregator = aggregator
         self.device = device
+        self.zeros = torch.zeros(512) # TODO: don't hardcode this
 
-    def forward(self, batch):
+    def forward(self, batch, batch_bert):
 
         '''
 
@@ -178,14 +175,21 @@ class DocTopicSpotter(torch.nn.Module):
             {
               "crops": [Tensor[Width, Height], ...]
             }]
+        batch_blip: (BATCH_SIZE, BLIP_EMB_SIZE)
         
         '''
         
         # SHAPE: (BATCH, SEQ_LEN_var, EMB_LEN)
-        visual_tokens = [[self.visual_extractor(crop) for crop in image['crops']] for image in batch]
-        lengths = [len(tokens) for tokens in visual_tokens]
+        lengths = [len(image['crops']) for image in batch]
+        max_len = max(lengths)
+
+        # TODO: Better padding
+        visual_tokens = [torch.stack([self.visual_extractor(crop).squeeze() for crop in image['crops']]+[self.zeros] * (lengths[n] - max_len)) for n, image in enumerate(batch)]
 
         # SHAPE: (BS, EMB)
-        emb = self.aggregator(visual_tokens, lengths)
+        input_tensor = torch.stack(visual_tokens)
+        mu, sigma = self.aggregator(input_tensor)
+        emb = mu + sigma * batch_bert # Text is conditioned by generating a mixture model
+        
         return emb
                 

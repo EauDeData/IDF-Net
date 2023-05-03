@@ -7,8 +7,8 @@ from scipy import stats
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.dataloaders.dataloaders import DummyDataset, COCODataset
-from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
-from src.models.models import VisualTransformer
+from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, BertTextEncoder
+from src.models.models import DocTopicSpotter, ResNetWithEmbedder, TransformerEncoder
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.dataloaders.boe_dataloader import BOEDataset
 
@@ -22,10 +22,13 @@ nltk.download('stopwords')
 
 if __name__ == '__main__': 
     data = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/BOE')
-    for a in data[0][0]['crops']:
-        plt.imshow(a)
-        plt.show()
-    exit()
+    encoder = BertTextEncoder()
+    model = DocTopicSpotter(ResNetWithEmbedder(resnet = "18"), TransformerEncoder(512, 768))
+    crops, text = data[0]
+    out = model([crops], encoder.predict([text]))
+    out.mean().backward()
+    print(list(model.visual_extractor.parameters())[0].grad)
+
     try:
         a, b = torch.rand(5, 5), torch.rand(5, 15)
         sim_a = CosineSimilarityMatrix()(a, a)
