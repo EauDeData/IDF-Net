@@ -138,8 +138,7 @@ class TransformerEncoder(nn.Module):
         layer = nn.TransformerEncoderLayer(d_model=input_dim, nhead=num_heads, dim_feedforward=hidden_dim, dropout=dropout)
         self.transformer_layers = nn.TransformerEncoder(layer, num_layers=num_layers)
 
-        self.mean = nn.Linear(input_dim, output_dim)
-        self.variance = nn.Linear(input_dim, output_dim)
+        self.projection = nn.Linear(input_dim, output_dim)
 
     def forward(self, x):
 
@@ -150,10 +149,8 @@ class TransformerEncoder(nn.Module):
         x = torch.mean(x, dim=1)
 
         # Apply linear layer to output global representation
-        mu = self.mean(x)
-        sigma = self.variance(x)
-
-        return mu, sigma
+        mu = self.projection(x)
+        return mu
 
 class DocTopicSpotter(torch.nn.Module):
 
@@ -162,7 +159,10 @@ class DocTopicSpotter(torch.nn.Module):
         self.visual_extractor = patch_visual_extractor
         self.aggregator = aggregator
         self.device = device
-        self.zeros = torch.zeros(512) # TODO: don't hardcode this
+
+        self.zeros = torch.zeros(768) # TODO: don't hardcode this
+        self.mean_mixture = nn.Linear(512, 768)
+        self.sigma_mixture = nn.Linear(512, 768)
 
     def forward(self, batch, batch_bert):
 
@@ -184,12 +184,16 @@ class DocTopicSpotter(torch.nn.Module):
         max_len = max(lengths)
 
         # TODO: Better padding
-        visual_tokens = [torch.stack([self.visual_extractor(crop).squeeze() for crop in image['crops']]+[self.zeros] * (lengths[n] - max_len)) for n, image in enumerate(batch)]
+        visual_tokens_mean = [torch.stack([self.mean_mixture(self.visual_extractor(crop).squeeze()) for crop in image['crops']]            
+                            +[self.zeros] * (lengths[n] - max_len)) for n, image in enumerate(batch)]
+        visual_tokens_var = [torch.stack([self.sigma_mixture(self.visual_extractor(crop).squeeze()) for crop in image['crops']]            
+                            +[self.zeros] * (lengths[n] - max_len)) for n, image in enumerate(batch)]
+        
+        visual_tokens_mean, visual_tokens_var = torch.stack(visual_tokens_mean), torch.stack(visual_tokens_var)
+        visual_tokens = visual_tokens_mean + visual_tokens_var * batch_bert # With this trick we should define the tockens conditioned to the text we are searching B-)
 
         # SHAPE: (BS, EMB)
-        input_tensor = torch.stack(visual_tokens)
-        mu, sigma = self.aggregator(input_tensor)
-        emb = mu + sigma * batch_bert # Text is conditioned by generating a mixture model
+        emb = self.aggregator(visual_tokens)
         
         return emb
                 
