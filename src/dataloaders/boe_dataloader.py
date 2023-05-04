@@ -40,6 +40,7 @@ class BOEDataset(IDFNetDataLoader):
                 path = path.replace('images', 'htmls')
 
                 self.text.append(open(path, 'r').read())
+                break
         
 
         self.device = device

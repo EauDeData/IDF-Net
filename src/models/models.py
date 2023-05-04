@@ -161,8 +161,11 @@ class DocTopicSpotter(torch.nn.Module):
         self.device = device
 
         self.zeros = torch.zeros(768) # TODO: don't hardcode this
-        self.mean_mixture = nn.Linear(512, 768)
-        self.sigma_mixture = nn.Linear(512, 768)
+        self.visual_keys = nn.Linear(512, 256)
+        self.visual_values = nn.Linear(512, 256)
+        
+        self.textual_queries = nn.Linear(768, 256)
+        
 
     def forward(self, batch, batch_bert):
 
@@ -184,16 +187,21 @@ class DocTopicSpotter(torch.nn.Module):
         max_len = max(lengths)
 
         # TODO: Better padding
-        visual_tokens_mean = [torch.stack([self.mean_mixture(self.visual_extractor(crop).squeeze()) for crop in image['crops']]            
+        visual_keys = [torch.stack([self.visual_keys(self.visual_extractor(crop).squeeze()) for crop in image['crops']]            
                             +[self.zeros] * (lengths[n] - max_len)) for n, image in enumerate(batch)]
-        visual_tokens_var = [torch.stack([self.sigma_mixture(self.visual_extractor(crop).squeeze()) for crop in image['crops']]            
+        visual_values = [torch.stack([self.visual_values(self.visual_extractor(crop).squeeze()) for crop in image['crops']]            
                             +[self.zeros] * (lengths[n] - max_len)) for n, image in enumerate(batch)]
         
-        visual_tokens_mean, visual_tokens_var = torch.stack(visual_tokens_mean), torch.stack(visual_tokens_var)
-        visual_tokens = visual_tokens_mean + visual_tokens_var * batch_bert # With this trick we should define the tockens conditioned to the text we are searching B-)
+        visual_keys, visual_values = torch.stack(visual_keys), torch.stack(visual_values) # (BS, SEQ_SIZE, EMB_SIZE)
+        bert_query = self.textual_queries(batch_bert) # (BS, EMB_SIZE)
 
-        # SHAPE: (BS, EMB)
-        emb = self.aggregator(visual_tokens)
-        
-        return emb
+        visual_keys_transposed = visual_keys.transpose(1, 2) # (BS, EMB_SIZE, SEQ_SIZE)
+        dot_products = torch.bmm(bert_query.unsqueeze(1), visual_keys_transposed).squeeze(1) # (BS, SEQ_SIZE)
+        print(dot_products)
+
+        dot_products_softmax = torch.softmax(dot_products, dim=1)
+        visual_attention = torch.bmm(dot_products_softmax.unsqueeze(1), visual_values).squeeze(1) # (BS, EMB_SIZE)
+        print(visual_attention)
+        # TODO: És necesari fer una projecció final?
+        return visual_attention
                 
