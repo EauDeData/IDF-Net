@@ -197,11 +197,11 @@ class DocTopicSpotter(torch.nn.Module):
 
         visual_keys_transposed = visual_keys.transpose(1, 2) # (BS, EMB_SIZE, SEQ_SIZE)
         dot_products = torch.bmm(bert_query.unsqueeze(1), visual_keys_transposed).squeeze(1) # (BS, SEQ_SIZE)
-        print(dot_products)
+
 
         dot_products_softmax = torch.softmax(dot_products, dim=1)
         visual_attention = torch.bmm(dot_products_softmax.unsqueeze(1), visual_values).squeeze(1) # (BS, EMB_SIZE)
-        print(visual_attention)
+
         # TODO: És necesari fer una projecció final?
         return visual_attention
                 

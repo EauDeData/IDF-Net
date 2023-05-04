@@ -11,6 +11,7 @@ import pandas as pd
 import string
 import re
 import pdf2image
+from bs4 import BeautifulSoup 
 
 from tqdm import tqdm
 
@@ -38,8 +39,9 @@ class BOEDataset(IDFNetDataLoader):
                 path = datapoint['path']
                 path = os.path.splitext(path)[0]+'.html'
                 path = path.replace('images', 'htmls')
-
-                self.text.append(open(path, 'r').read())
+                
+                sopita = BeautifulSoup(open(path, 'r').read(),)
+                self.text.append(str(sopita.find('h4')))
                 break
         
 
