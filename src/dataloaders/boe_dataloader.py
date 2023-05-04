@@ -41,8 +41,7 @@ class BOEDataset(IDFNetDataLoader):
                 path = path.replace('images', 'htmls')
                 
                 sopita = BeautifulSoup(open(path, 'r').read(),)
-                self.text.append(str(sopita.find('h4')))
-                break
+                self.text.append(sopita.find('h4').text)
         
 
         self.device = device
