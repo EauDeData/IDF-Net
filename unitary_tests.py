@@ -25,6 +25,7 @@ if __name__ == '__main__':
     encoder = BertTextEncoder()
     model = DocTopicSpotter(ResNetWithEmbedder(resnet = "18"), TransformerEncoder(768, 128))
     crops, text = data[0]
+    print(text)
     out = model([crops], encoder.predict([text]))
     print(out)    
     exit()
