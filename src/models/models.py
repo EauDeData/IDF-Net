@@ -167,7 +167,7 @@ class DocTopicSpotter(torch.nn.Module):
         self.textual_queries = nn.Linear(768, 256)
         
 
-    def forward(self, batch, masks, batch_bert):
+    def forward(self, batch, masks, batch_bert, return_attn = False):
 
         
         # BATCH: [BS, SEQ_LEN, 3, W, H]
@@ -195,7 +195,8 @@ class DocTopicSpotter(torch.nn.Module):
         visual_attention = torch.bmm(dot_products_softmax.unsqueeze(1), visual_values).squeeze(1) # (BS, EMB_SIZE)
 
         # TODO: És necesari fer una projecció final?
-        return visual_attention
+        if not return_attn: return visual_attention
+        else: return visual_attention, dot_products_softmax
                 
 
 class Yoro(torch.nn.Module):
