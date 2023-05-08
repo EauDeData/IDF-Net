@@ -216,6 +216,8 @@ class Yoro(torch.nn.Module):
         # BATCH: [BS, C, W, H]
         detections = self.detector(batch) # detector is a Mask RCNN from torchvision
 
+        # TODO: 
+        # Get the detections to be in the proper shape as follows
         # DETECTIONS: [BS, DETECTED_REGIONS, C, W, H]
         # In order to achieve this shape we should use soft selections from pytorch Functional
         # For each image of the batch stack all the detected regions with padding if necessary 
