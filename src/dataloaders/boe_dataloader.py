@@ -74,16 +74,16 @@ class BOEDataset:
         if not isinstance(self.tokenizer, int): textual = self.tokenizer.predict(self.text[idx])
         else: textual = self.text[idx]
         
-        max_height = max(crop.shape[0] for crop in crops)
-        max_width = max(crop.shape[1] for crop in crops)
+        max_height = max(crop.shape[1] for crop in crops)
+        max_width = max(crop.shape[2] for crop in crops)
 
         padded_crops = torch.zeros((len(crops), 3, max_height, max_width))
         mask = torch.zeros_like(padded_crops)
 
         #    populate output arrays
         for i, crop in enumerate(crops):
-            padded_crops[i, :, :crop.shape[0], :crop.shape[1]] = crop
-            mask[i, :, :crop.shape[0], :crop.shape[1]] = 1
+            padded_crops[i, :, :crop.shape[1], :crop.shape[2]] = crop
+            mask[i, :, :crop.shape[1], :crop.shape[2]] = 1
         
         return {"crops": padded_crops, 'mask': mask}, textual, self.text[idx]
         
