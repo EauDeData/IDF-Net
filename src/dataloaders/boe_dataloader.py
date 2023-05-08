@@ -59,7 +59,28 @@ class BOEDataset:
         return len(self.text)
     
     def collate_boe(self, batch):
-        return batch
+
+        max_height = max(crop[0].shape[2] for crop in batch)
+        max_width = max(crop[0].shape[3] for crop in batch)
+        max_bunch = max(crop[0].shape[0] for crop in batch)
+
+        padded_crops = torch.zeros((len(batch), max_bunch, 3, max_height, max_width))
+        supermask = torch.zeros_like(padded_crops)
+
+        texts = []
+        embs = []
+        for num, (image, mask, emb, text) in enumerate(batch):
+
+            b, c, w, h = image.shape
+
+            padded_crops[num, :b, :c, :w, :h] = image
+            supermask[num, :b, :c, :w, :h] = mask
+
+            embs += [emb]
+            texts += [text]
+        
+        return padded_crops, supermask, torch.from_numpy(np.stack(embs)), texts
+
 
     def __getitem__(self, idx):
         
@@ -90,7 +111,7 @@ class BOEDataset:
             padded_crops[i, :, :crop.shape[1], :crop.shape[2]] = crop
             mask[i, :, :crop.shape[1], :crop.shape[2]] = 1
                 
-        return {"crops": padded_crops}, {"mask": mask}, textual, self.text[idx]
+        return padded_crops, mask, textual, self.text[idx]
         
 
 

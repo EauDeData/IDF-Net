@@ -182,30 +182,23 @@ class DocTopicSpotter(torch.nn.Module):
         
         '''
         
-        # SHAPE: (BATCH, SEQ_LEN_var, EMB_LEN)
-        lengths = [len(image['crops']) for image in batch]
-        max_len = max(lengths)
-        create_padding = lambda n: torch.tensor([self.zeros] * (lengths[n] - max_len))
+        # BATCH: [BS, SEQ_LEN, 3, W, H]
+        genesis_shape = batch.shape
+        images = batch * masks
+        print(images.shape)
+        
+        # Convert to batch of 0-padded images
+        x_batched = images.view(genesis_shape[0]*genesis_shape[1], 
+                                3, genesis_shape[3], genesis_shape[4])
+        
+        # FEATURES: [BS x SEQ_LEN, 3, W, H]
+        features = self.visual_extractor(x_batched)
+        print(features.shape)
+        
+        # KEYS n' VALUES: [BS, SEQ_LEN, EMB_SIZE]
+        visual_keys = self.visual_keys(features).view(genesis_shape[0], genesis_shape[1], -1)
+        visual_values = self.visual_values(features).view(genesis_shape[0], genesis_shape[1], -1)
 
-        for n, (image, mask) in enumerate(zip(batch, masks)):
-            padding = create_padding(n)
-            features = self.visual_extractor(image['crops'] * mask['mask'])
-
-            visual_keys.append(
-                torch.stack([
-                    self.visual_keys(features),
-                    padding
-                    ])
-            )
-
-            visual_values.append(
-                torch.stack([
-                    self.visual_values(features),
-                    padding
-                    ])
-            )
-
-        visual_keys, visual_values = torch.stack(visual_keys), torch.stack(visual_values) # (BS, SEQ_SIZE, EMB_SIZE)
         bert_query = self.textual_queries(batch_bert) # (BS, EMB_SIZE)
 
         visual_keys_transposed = visual_keys.transpose(1, 2) # (BS, EMB_SIZE, SEQ_SIZE)

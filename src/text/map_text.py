@@ -163,7 +163,7 @@ class BertTextEncoder:
         self.model = BertModel.from_pretrained(pretrained)
 
     def predict(self, batch):
-        encoded_input = self.tokenizer(batch, return_tensors='pt')
+        encoded_input = self.tokenizer(batch, return_tensors='pt', padding=True).to(self.model.device)
         return self.model(**encoded_input).pooler_output # (BS, 768) 
     
     def to(self, device):
