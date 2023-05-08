@@ -169,23 +169,10 @@ class DocTopicSpotter(torch.nn.Module):
 
     def forward(self, batch, masks, batch_bert):
 
-        '''
-
-        batch: 
-            [{
-              "crops": [Tensor[Width, Height], ...]
-            },
-            {
-              "crops": [Tensor[Width, Height], ...]
-            }]
-        batch_blip: (BATCH_SIZE, BLIP_EMB_SIZE)
-        
-        '''
         
         # BATCH: [BS, SEQ_LEN, 3, W, H]
         genesis_shape = batch.shape
         images = batch * masks
-        print(images.shape)
         
         # Convert to batch of 0-padded images
         x_batched = images.view(genesis_shape[0]*genesis_shape[1], 
@@ -193,7 +180,6 @@ class DocTopicSpotter(torch.nn.Module):
         
         # FEATURES: [BS x SEQ_LEN, 3, W, H]
         features = self.visual_extractor(x_batched)
-        print(features.shape)
         
         # KEYS n' VALUES: [BS, SEQ_LEN, EMB_SIZE]
         visual_keys = self.visual_keys(features).view(genesis_shape[0], genesis_shape[1], -1)
@@ -211,3 +197,44 @@ class DocTopicSpotter(torch.nn.Module):
         # TODO: És necesari fer una projecció final?
         return visual_attention
                 
+
+class Yoro(torch.nn.Module):
+
+    # Here add the detection procedure in the training
+    def __init__(self, detector, topic_spotter, device='cuda'):
+        super(Yoro, self).__init__()
+        self.topic_spotter = topic_spotter
+        self.detector = detector
+        self.device = device        
+
+    def forward(self, batch, batch_bert):
+        '''
+        batch: Image[BS, Ch, W, H]
+        '''
+        
+        # BATCH: [BS, C, W, H]
+        detections = self.detector(batch) # detector is a Mask RCNN from torchvision
+
+        # DETECTIONS: [BS, DETECTED_REGIONS, C, W, H]
+        # In order to achieve this shape we should use soft selections from pytorch Functional
+        # For each image of the batch stack all the detected regions with padding if necessary 
+        # Produce the binary masks for the padding to be useful
+        
+        max_detections = detections.shape[1] # maximum number of detected regions across batch
+        
+        # stack all detected regions in batch, padding with zeros to max number of regions
+        batch_detections = torch.zeros((batch.shape[0], max_detections, *detections.shape[2:]), device=self.device)
+        masks = torch.zeros((batch.shape[0], max_detections, 1, *batch.shape[-2:]), device=self.device)
+        
+        for i in range(batch.shape[0]): # for each image in batch
+            num_detections = detections[i].shape[0]
+            if num_detections > max_detections:
+                # if there are more detections than max, only keep the first max
+                batch_detections[i] = detections[i][:max_detections]
+                masks[i] = torch.ones((max_detections, 1, *batch.shape[-2:]), device=self.device)
+            else:
+                # if there are fewer detections than max, pad with zeros
+                batch_detections[i, :num_detections] = detections[i]
+                masks[i, :num_detections] = torch.ones((num_detections, 1, *batch.shape[-2:]), device=self.device)
+        
+        return self.topic_spotter(batch_detections, masks, batch_bert)
