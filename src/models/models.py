@@ -196,7 +196,7 @@ class DocTopicSpotter(torch.nn.Module):
 
         # TODO: És necesari fer una projecció final?
         if not return_attn: return visual_attention
-        else: return visual_attention, dot_products_softmax
+        return visual_attention, dot_products_softmax
                 
 
 class Yoro(torch.nn.Module):
