@@ -167,4 +167,5 @@ class BertTextEncoder:
         return self.model(**encoded_input).pooler_output # (BS, 768) 
     
     def to(self, device):
-        return self.model.to(device)
+        self.model = self.model.to(device)
+        return self

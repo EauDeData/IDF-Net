@@ -59,38 +59,7 @@ class BOEDataset:
         return len(self.text)
     
     def collate_boe(self, batch):
-        """
-        Custom collate function for the MyDataset class.
-        """
-        # Get the maximum height and width of the crops in the batch
-        max_height = max([sample['crops'].shape[2] for sample in batch])
-        max_width = max([sample['crops'].shape[3] for sample in batch])
-
-        # Initialize empty lists for the crops, masks, and textual data
-        crops_list = []
-        mask_list = []
-        textual_list = []
-        text_list = []
-
-        # Loop over the batch
-        for sample in batch:
-            # Append the crops, mask, and textual data to their respective lists
-            crops_list.append(sample['crops'])
-            mask_list.append(sample['mask'])
-            textual_list.append(sample['textual'])
-            text_list.append(sample['text'])
-
-        # Stack the crops and mask tensors along the batch dimension and pad to the maximum size
-        padded_crops = torch.zeros((len(crops_list), 3, max_height, max_width))
-        mask = torch.zeros_like(padded_crops)
-        for i, crops in enumerate(crops_list):
-            padded_crops[i, :, :crops.shape[2], :crops.shape[3]] = crops
-            mask[i, :, :crops.shape[2], :crops.shape[3]] = mask_list[i]
-
-        # Combine the data into a dictionary
-        result = {"crops": padded_crops, "mask": mask, "textual": textual_list, "text": text_list}
-
-        return result
+        return batch
 
     def __getitem__(self, idx):
         
