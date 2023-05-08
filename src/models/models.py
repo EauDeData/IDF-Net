@@ -185,13 +185,26 @@ class DocTopicSpotter(torch.nn.Module):
         # SHAPE: (BATCH, SEQ_LEN_var, EMB_LEN)
         lengths = [len(image['crops']) for image in batch]
         max_len = max(lengths)
+        create_padding = lambda n: torch.tensor([self.zeros] * (lengths[n] - max_len))
 
-        # TODO: Better padding
-        visual_keys = [torch.stack([self.visual_keys(self.visual_extractor(crop).squeeze()) for crop in image['crops']]            
-                            +[self.zeros] * (lengths[n] - max_len)) for n, image in enumerate(batch)]
-        visual_values = [torch.stack([self.visual_values(self.visual_extractor(crop).squeeze()) for crop in image['crops']]            
-                            +[self.zeros] * (lengths[n] - max_len)) for n, image in enumerate(batch)]
-        
+        for n, image in enumerate(batch):
+            padding = create_padding(n)
+            features = self.visual_extractor(image['crops'] * image['mask'])
+
+            visual_keys.append(
+                torch.stack([
+                    self.visual_keys(features),
+                    padding
+                    ])
+            )
+
+            visual_values.append(
+                torch.stack([
+                    self.visual_values(features),
+                    padding
+                    ])
+            )
+
         visual_keys, visual_values = torch.stack(visual_keys), torch.stack(visual_values) # (BS, SEQ_SIZE, EMB_SIZE)
         bert_query = self.textual_queries(batch_bert) # (BS, EMB_SIZE)
 

@@ -21,7 +21,7 @@ def read_img(path):
     img = pdf2image.convert_from_path(path.strip())
     return [np.array(img[i]) for i in range(len(img))]
 
-class BOEDataset(IDFNetDataLoader):
+class BOEDataset:
 
     name = 'boe_dataset'
     def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, device = 'cuda',) -> None:
@@ -40,7 +40,7 @@ class BOEDataset(IDFNetDataLoader):
                 path = os.path.splitext(path)[0]+'.html'
                 path = path.replace('images', 'htmls')
                 
-                sopita = BeautifulSoup(open(path, 'r').read(),)
+                sopita = BeautifulSoup(open(path, 'r').read(), features="html.parser")
                 self.text.append(sopita.find('h4').text)
         
 
@@ -50,9 +50,13 @@ class BOEDataset(IDFNetDataLoader):
         self.min_height = min_height
 
         self.tokenizer = 0
+        self.max_crops = 50
     
     def iter_text(self):
         for datapoint in self.text: yield datapoint
+    
+    def __len__(self):
+        return len(self.text)
     
     def __getitem__(self, idx):
         
@@ -66,10 +70,22 @@ class BOEDataset(IDFNetDataLoader):
                 x1, y1, x2, y2 = item['bbox']
                 if (x2 - x1) < self.min_width or (y2 - y1) < self.min_width: continue
                 array = images[num_page][y1:y2, x1:x2] / 255
-                crops.append(torch.from_numpy(array.transpose(2, 0, 1)).unsqueeze(0).float())
+                crops.append(torch.from_numpy(array.transpose(2, 0, 1)).float())
         if not isinstance(self.tokenizer, int): textual = self.tokenizer.predict(self.text[idx])
         else: textual = self.text[idx]
-        return {"crops": crops}, textual
+        
+        max_height = max(crop.shape[0] for crop in crops)
+        max_width = max(crop.shape[1] for crop in crops)
+
+        padded_crops = torch.zeros((len(crops), 3, max_height, max_width))
+        mask = torch.zeros_like(padded_crops)
+
+        #    populate output arrays
+        for i, crop in enumerate(crops):
+            padded_crops[i, :, :crop.shape[0], :crop.shape[1]] = crop
+            mask[i, :, :crop.shape[0], :crop.shape[1]] = 1
+        
+        return {"crops": padded_crops, 'mask': mask}, textual, self.text[idx]
         
 
 

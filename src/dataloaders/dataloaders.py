@@ -57,9 +57,6 @@ class AbstractsDataset:
         self.imsize = imsize
         self.cleaner = cleaner
 
-        self.twin = twin
-        if self.twin: self.twin_dataset = TwinAbstractsDataset(self.dataframe, self.imsize)
-
     def generate_db(self, path) -> None:
 
         printable = set(string.printable)

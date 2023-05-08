@@ -165,3 +165,6 @@ class BertTextEncoder:
     def predict(self, batch):
         encoded_input = self.tokenizer(batch, return_tensors='pt')
         return self.model(**encoded_input).pooler_output # (BS, 768) 
+    
+    def to(self, device):
+        return self.model.to(device)
