@@ -167,7 +167,7 @@ class DocTopicSpotter(torch.nn.Module):
         self.textual_queries = nn.Linear(768, 256)
         
 
-    def forward(self, batch, batch_bert):
+    def forward(self, batch, masks, batch_bert):
 
         '''
 
@@ -187,9 +187,9 @@ class DocTopicSpotter(torch.nn.Module):
         max_len = max(lengths)
         create_padding = lambda n: torch.tensor([self.zeros] * (lengths[n] - max_len))
 
-        for n, image in enumerate(batch):
+        for n, (image, mask) in enumerate(zip(batch, masks)):
             padding = create_padding(n)
-            features = self.visual_extractor(image['crops'] * image['mask'])
+            features = self.visual_extractor(image['crops'] * mask['mask'])
 
             visual_keys.append(
                 torch.stack([

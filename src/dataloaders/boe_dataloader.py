@@ -58,6 +58,40 @@ class BOEDataset:
     def __len__(self):
         return len(self.text)
     
+    def collate_boe(self, batch):
+        """
+        Custom collate function for the MyDataset class.
+        """
+        # Get the maximum height and width of the crops in the batch
+        max_height = max([sample['crops'].shape[2] for sample in batch])
+        max_width = max([sample['crops'].shape[3] for sample in batch])
+
+        # Initialize empty lists for the crops, masks, and textual data
+        crops_list = []
+        mask_list = []
+        textual_list = []
+        text_list = []
+
+        # Loop over the batch
+        for sample in batch:
+            # Append the crops, mask, and textual data to their respective lists
+            crops_list.append(sample['crops'])
+            mask_list.append(sample['mask'])
+            textual_list.append(sample['textual'])
+            text_list.append(sample['text'])
+
+        # Stack the crops and mask tensors along the batch dimension and pad to the maximum size
+        padded_crops = torch.zeros((len(crops_list), 3, max_height, max_width))
+        mask = torch.zeros_like(padded_crops)
+        for i, crops in enumerate(crops_list):
+            padded_crops[i, :, :crops.shape[2], :crops.shape[3]] = crops
+            mask[i, :, :crops.shape[2], :crops.shape[3]] = mask_list[i]
+
+        # Combine the data into a dictionary
+        result = {"crops": padded_crops, "mask": mask, "textual": textual_list, "text": text_list}
+
+        return result
+
     def __getitem__(self, idx):
         
         image_json = self.data[idx]
@@ -71,6 +105,7 @@ class BOEDataset:
                 if (x2 - x1) < self.min_width or (y2 - y1) < self.min_width: continue
                 array = images[num_page][y1:y2, x1:x2] / 255
                 crops.append(torch.from_numpy(array.transpose(2, 0, 1)).float())
+
         if not isinstance(self.tokenizer, int): textual = self.tokenizer.predict(self.text[idx])
         else: textual = self.text[idx]
         
@@ -80,12 +115,13 @@ class BOEDataset:
         padded_crops = torch.zeros((len(crops), 3, max_height, max_width))
         mask = torch.zeros_like(padded_crops)
 
+        # TODO: Investigate whats up with the pages with 200 crops
         #    populate output arrays
         for i, crop in enumerate(crops):
             padded_crops[i, :, :crop.shape[1], :crop.shape[2]] = crop
             mask[i, :, :crop.shape[1], :crop.shape[2]] = 1
-        
-        return {"crops": padded_crops, 'mask': mask}, textual, self.text[idx]
+                
+        return {"crops": padded_crops}, {"mask": mask}, textual, self.text[idx]
         
 
 
