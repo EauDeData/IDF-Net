@@ -147,12 +147,12 @@ class BOEWhole(BOEDataset):
     def __getitem__(self, idx):
         
         image_json = self.data[idx]
-        image = read_img(image_json['path'])[self.just_get]
+        image = read_img(image_json['path'])[self.just_get].transpose(2, 0, 1)
         
         if not isinstance(self.tokenizer, int): textual = self.tokenizer.predict(self.text[idx])
         else: textual = self.text[idx]
 
-        return image, textual, self.text[idx]
+        return torch.from_numpy(image), textual, self.text[idx]
 
 
     

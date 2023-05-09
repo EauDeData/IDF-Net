@@ -16,7 +16,7 @@ from src.dataloaders.dataloaders import AbstractsDataset, COCODataset
 from src.tasks.tasks import Train, Test, TestMiniClip, TrainMiniClip
 from src.tasks.evaluation import MAPEvaluation
 from src.dataloaders.annoyify import Annoyifier
-from src.dataloaders.boe_dataloader import BOEDataset
+from src.dataloaders.boe_dataloader import BOEDataset, BOEWhole
 from src.tasks.train_doc import TrainDoc
 
 
@@ -30,15 +30,15 @@ DEVICE = 'cuda' # TODO: Implement cuda execution
 BSIZE = 1 # If batch size is a problem, program properly the collate fn
 
 try:
-        dataset = pickle.load(open('output/train.pkl', 'rb'))
-        dataset_test = pickle.load(open('output/test.pkl', 'rb'))
+        dataset = pickle.load(open('output/train_yotaro.pkl', 'rb'))
+        dataset_test = pickle.load(open('output/test_yotaro.pkl', 'rb'))
 
 except FileNotFoundError:
-        dataset = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/train',)
-        dataset_test = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/test',)
+        dataset = BOEWhole('/home/amolina/Desktop/santa-lucia-dataset/data/train',)
+        dataset_test = BOEWhole('/home/amolina/Desktop/santa-lucia-dataset/data/test',)
 
-        pickle.dump(dataset, open('output/train.pkl', 'wb'))
-        pickle.dump(dataset_test, open('output/test.pkl', 'wb'))
+        pickle.dump(dataset, open('output/train_yotaro.pkl', 'wb'))
+        pickle.dump(dataset_test, open('output/train_yotaro.pkl', 'wb'))
 
 #print(dataset[0][0]['img'].shape)
 ### On which we clean the text and load the tokenizer ###

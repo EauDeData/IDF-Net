@@ -242,25 +242,9 @@ class YOTARO(torch.nn.Module):
         # TODO: 
         # Get the detections to be in the proper shape as follows
         # DETECTIONS: [BS, DETECTED_REGIONS, C, W, H]
+
         # In order to achieve this shape we should use soft selections from pytorch Functional
         # For each image of the batch stack all the detected regions with padding if necessary 
         # Produce the binary masks for the padding to be useful
         
-        max_detections = detections.shape[1] # maximum number of detected regions across batch
-        
-        # stack all detected regions in batch, padding with zeros to max number of regions
-        batch_detections = torch.zeros((batch.shape[0], max_detections, *detections.shape[2:]), device=self.device)
-        masks = torch.zeros((batch.shape[0], max_detections, 1, *batch.shape[-2:]), device=self.device)
-        
-        for i in range(batch.shape[0]): # for each image in batch
-            num_detections = detections[i].shape[0]
-            if num_detections > max_detections:
-                # if there are more detections than max, only keep the first max
-                batch_detections[i] = detections[i][:max_detections]
-                masks[i] = torch.ones((max_detections, 1, *batch.shape[-2:]), device=self.device)
-            else:
-                # if there are fewer detections than max, pad with zeros
-                batch_detections[i, :num_detections] = detections[i]
-                masks[i, :num_detections] = torch.ones((num_detections, 1, *batch.shape[-2:]), device=self.device)
-        
-        return self.topic_spotter(batch_detections, masks, batch_bert)
+        return self.topic_spotter(None, None, batch_bert)
