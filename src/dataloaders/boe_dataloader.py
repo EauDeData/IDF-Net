@@ -125,10 +125,7 @@ class BOEWhole(BOEDataset):
         self.just_get = 0
     
     def collate_boe(self, batch):
-            
-        max_height = max(img[0].shape[1] for img in batch)
-        max_width = max(img[0].shape[2] for img in batch)
-
+        
         # padded_crops = torch.zeros((len(batch), 3, max_height, max_width))
         # mask = torch.zeros_like(padded_crops)
 
