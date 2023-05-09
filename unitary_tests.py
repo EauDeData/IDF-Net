@@ -22,13 +22,7 @@ nltk.download('stopwords')
 
 if __name__ == '__main__': 
     data = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/BOE')
-    encoder = BertTextEncoder()
-    model = DocTopicSpotter(ResNetWithEmbedder(resnet = "18"), TransformerEncoder(768, 128))
-    crops, text = data[0]
-    print(text)
-    out = model([crops], encoder.predict([text]))
-    print(out)    
-    exit()
+    
     try:
         a, b = torch.rand(5, 5), torch.rand(5, 15)
         sim_a = CosineSimilarityMatrix()(a, a)
