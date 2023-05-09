@@ -199,11 +199,11 @@ class DocTopicSpotter(torch.nn.Module):
         return visual_attention, dot_products_softmax
                 
 
-class Yoro(torch.nn.Module):
-
+class YOTARO(torch.nn.Module):
+    # You Only Try At Reading Once
     # Here add the detection procedure in the training
     def __init__(self, detector, topic_spotter, device='cuda'):
-        super(Yoro, self).__init__()
+        super(YOTARO, self).__init__()
         self.topic_spotter = topic_spotter
         self.detector = detector
         self.device = device        

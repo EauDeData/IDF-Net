@@ -3,6 +3,7 @@ import nltk
 import matplotlib.pyplot as plt
 import copy
 from scipy import stats
+import torch.utils.data.dataloader as dataloader
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
@@ -10,7 +11,7 @@ from src.dataloaders.dataloaders import DummyDataset, COCODataset
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, BertTextEncoder
 from src.models.models import DocTopicSpotter, ResNetWithEmbedder, TransformerEncoder
 from src.dataloaders.dataloaders import AbstractsDataset
-from src.dataloaders.boe_dataloader import BOEDataset
+from src.dataloaders.boe_dataloader import BOEDataset, read_img
 
 from src.dataloaders.annoyify import Annoyifier
 from src.tasks.evaluation import MAPEvaluation
@@ -21,8 +22,22 @@ from src.loss.loss import (nns_loss, rank_correlation, rank_correlation_loss, Co
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
-    data = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/BOE')
-    
+    data = pickle.load(open('output/test.pkl', 'rb'))
+    loader = LSALoader(data, string_preprocess=StringCleanAndTrim())
+    loader.fit()
+    data.tokenizer = loader
+
+    dataloader_ = dataloader.DataLoader(data, batch_size = 1, shuffle = False, num_workers=0, collate_fn=data.collate_boe)
+    for n, (image, mask, emb, text) in enumerate(loader): 
+        print(image.shape)
+        a = input("uwu: ")
+        if a == 'y':
+            for n in range(image.shape[1]):
+                im = image[:, n].squeeze().numpy().transpose(1, 2, 0)
+                plt.imshow(im)
+                plt.show()
+
+
     try:
         a, b = torch.rand(5, 5), torch.rand(5, 15)
         sim_a = CosineSimilarityMatrix()(a, a)
