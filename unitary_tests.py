@@ -10,9 +10,9 @@ from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.dataloaders.dataloaders import DummyDataset, COCODataset
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, BertTextEncoder
-from src.models.models import DocTopicSpotter, ResNetWithEmbedder, TransformerEncoder
+from src.models.models import DocTopicSpotter, ResNetWithEmbedder, TransformerEncoder, YOTARO, DocTopicSpotter
 from src.dataloaders.dataloaders import AbstractsDataset
-from src.dataloaders.boe_dataloader import BOEDataset, read_img
+from src.dataloaders.boe_dataloader import BOEDataset, BOEWhole, read_img
 
 from src.dataloaders.annoyify import Annoyifier
 from src.tasks.evaluation import MAPEvaluation
@@ -23,21 +23,22 @@ from src.loss.loss import (nns_loss, rank_correlation, rank_correlation_loss, Co
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
-    data = pickle.load(open('output/test.pkl', 'rb'))
+    data = pickle.load(open('output/test_yotaro.pkl', 'rb'))
     loader = LSALoader(data, string_preprocess=StringCleanAndTrim())
     loader.fit()
     data.tokenizer = loader
 
-    dataloader_ = dataloader.DataLoader(data, batch_size = 1, shuffle = False, num_workers=0, collate_fn=data.collate_boe)
-    for n, (image, mask, emb, text) in enumerate(dataloader_): 
-        print(image.shape)
+    topic = DocTopicSpotter(ResNetWithEmbedder(), None)
+    model = YOTARO(topic)
+    bert = BertTextEncoder()
+
+    dataloader_ = dataloader.DataLoader(data, batch_size = 2, shuffle = False, num_workers=0, collate_fn=data.collate_boe)
+    for image, emb, text in dataloader_:
+
+
         print(text)
-        a = input("uwu: ")
-        if a == 'y':
-            for n in range(image.shape[1]):
-                im = image[:, n].squeeze().numpy().transpose(1, 2, 0)
-                plt.imshow(im)
-                plt.show()
+        bert_encoded = bert.predict(text)
+        print(model(image, bert_encoded))
 
 
     try:

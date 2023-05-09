@@ -129,20 +129,20 @@ class BOEWhole(BOEDataset):
         max_height = max(img[0].shape[1] for img in batch)
         max_width = max(img[0].shape[2] for img in batch)
 
-        padded_crops = torch.zeros((len(batch), 3, max_height, max_width))
-        mask = torch.zeros_like(padded_crops)
+        # padded_crops = torch.zeros((len(batch), 3, max_height, max_width))
+        # mask = torch.zeros_like(padded_crops)
 
         text_emb = []
         texts = []
-        for i, crop in enumerate(batch):
+        batched_inputs = []
+        for i, (crop, emb, text) in enumerate(batch):
 
-            padded_crops[i, :, :crop.shape[1], :crop.shape[2]] = crop[0]
-            mask[i, :, :crop.shape[1], :crop.shape[2]] = 1
+            batched_inputs.append({"image": crop, "height": crop.shape[1], "width": crop.shape[2]})
 
-            text_emb.append(crop[1])
-            texts.append(crop[2])
+            text_emb.append(emb)
+            texts.append(text)
 
-        return padded_crops, mask, torch.from_numpy(np.stack(text_emb)), texts
+        return batched_inputs, torch.from_numpy(np.stack(text_emb)), texts
         
     def __getitem__(self, idx):
         

@@ -4,6 +4,7 @@ from vit_pytorch import ViT
 import torch.nn as nn
 import layoutparser as lp
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+import torch.nn.functional as F
 
 class VisualTransformer(torch.nn.Module):
     def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 1, heads = 1, dropout = 0.1, norm = 2) -> None:
@@ -226,10 +227,12 @@ class YOTARO(torch.nn.Module):
 
         wrapper = lp.models.Detectron2LayoutModel(
                 config_path = self.MODELS[detector]['model'], # In model catalog
-                label_map   = self.MODELS[detector]["labels"], # In model`label_map`
+                label_map   = self.MODELS[detector]["labels"],
+                extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.9] # In model`label_map`
             )
         self.detector = wrapper.model.model # This is the pytorch model
-        self.detector.train()
+        self.detector.eval()
+        self.detector.backbone.train()
 
     def forward(self, batch, batch_bert):
         '''
@@ -238,6 +241,8 @@ class YOTARO(torch.nn.Module):
         
         # BATCH: [BS, C, W, H]
         detections = self.detector(batch) # detector is a Mask RCNN from torchvision
+        boxes = [x['instances'].pred_boxes.tensor for x in detections]
+        print(boxes[0]) # NOW WHAT
 
         # TODO: 
         # Get the detections to be in the proper shape as follows
