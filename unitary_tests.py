@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import copy
 from scipy import stats
 import torch.utils.data.dataloader as dataloader
+import pickle
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
@@ -28,8 +29,9 @@ if __name__ == '__main__':
     data.tokenizer = loader
 
     dataloader_ = dataloader.DataLoader(data, batch_size = 1, shuffle = False, num_workers=0, collate_fn=data.collate_boe)
-    for n, (image, mask, emb, text) in enumerate(loader): 
+    for n, (image, mask, emb, text) in enumerate(dataloader_): 
         print(image.shape)
+        print(text)
         a = input("uwu: ")
         if a == 'y':
             for n in range(image.shape[1]):

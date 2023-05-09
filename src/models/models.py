@@ -2,6 +2,7 @@ import torch
 import torchvision
 from vit_pytorch import ViT
 import torch.nn as nn
+import layoutparser as lp
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 class VisualTransformer(torch.nn.Module):
@@ -202,11 +203,33 @@ class DocTopicSpotter(torch.nn.Module):
 class YOTARO(torch.nn.Module):
     # You Only Try At Reading Once
     # Here add the detection procedure in the training
-    def __init__(self, detector, topic_spotter, device='cuda'):
+
+    MODELS = {
+        "navigator": {
+            "model": 'lp://NewspaperNavigator/faster_rcnn_R_50_FPN_3x/config',
+            "labels": {0: "Photograph", 1: "Illustration", 2: "Map", 3: "Comics/Cartoon", 4: "Editorial Cartoon", 5: "Headline", 6: "Advertisement"}
+        },
+        "hjdataset": {
+            "model": "lp://HJDataset/faster_rcnn_R_50_FPN_3x/config",
+            "labels": {1:"Page Frame", 2:"Row", 3:"Title Region", 4:"Text Region", 5:"Title", 6:"Subtitle", 7:"Other"}
+        },
+        "prima": {
+            "model": "lp://PrimaLayout/mask_rcnn_R_50_FPN_3x/config",
+            "labels": {1:"TextRegion", 2:"ImageRegion", 3:"TableRegion", 4:"MathsRegion", 5:"SeparatorRegion", 6:"OtherRegion"}
+        }
+    }   
+
+    def __init__(self, topic_spotter, detector = "prima",device='cuda'):
         super(YOTARO, self).__init__()
         self.topic_spotter = topic_spotter
-        self.detector = detector
-        self.device = device        
+        self.device = device
+
+        wrapper = lp.models.Detectron2LayoutModel(
+                config_path = self.MODELS[detector]['model'], # In model catalog
+                label_map   = self.MODELS[detector]["labels"], # In model`label_map`
+            )
+        self.detector = wrapper.model.model # This is the pytorch model
+        self.detector.train()
 
     def forward(self, batch, batch_bert):
         '''

@@ -28,6 +28,7 @@ class BOEDataset:
         super(BOEDataset, self).__init__()
         self.data = []
         self.text = []
+        heading = ['h1', 'h2', 'h3', 'h4']
         for root, _, files in os.walk(jsons_data_folder):
             for file in tqdm(files, desc=f"Processing dataset..."):
                 if not os.path.splitext(file)[1].lower() in ['.json']: continue
@@ -41,7 +42,11 @@ class BOEDataset:
                 path = path.replace('images', 'htmls')
                 
                 sopita = BeautifulSoup(open(path, 'r').read(), features="html.parser")
-                self.text.append(sopita.find('h4').text)
+
+                whole_text = []
+                for h in heading:
+                    whole_text.extend([a.text for a in sopita.find_all(h)])
+                self.text.append('\n'.join(whole_text))
         
 
         self.device = device
@@ -113,6 +118,41 @@ class BOEDataset:
                 
         return padded_crops, mask, textual, self.text[idx]
         
+
+class BOEWhole(BOEDataset):
+    def __init__(self, jsons_data_folder, min_height=224, min_width=224, device='cuda') -> None:
+        super().__init__(jsons_data_folder, min_height, min_width, device)
+        self.just_get = 0
+    
+    def collate_boe(self, batch):
+            
+        max_height = max(img[0].shape[1] for img in batch)
+        max_width = max(img[0].shape[2] for img in batch)
+
+        padded_crops = torch.zeros((len(batch), 3, max_height, max_width))
+        mask = torch.zeros_like(padded_crops)
+
+        text_emb = []
+        texts = []
+        for i, crop in enumerate(batch):
+
+            padded_crops[i, :, :crop.shape[1], :crop.shape[2]] = crop[0]
+            mask[i, :, :crop.shape[1], :crop.shape[2]] = 1
+
+            text_emb.append(crop[1])
+            texts.append(crop[2])
+
+        return padded_crops, mask, torch.from_numpy(np.stack(text_emb)), texts
+        
+    def __getitem__(self, idx):
+        
+        image_json = self.data[idx]
+        image = read_img(image_json['path'])[self.just_get]
+        
+        if not isinstance(self.tokenizer, int): textual = self.tokenizer.predict(self.text[idx])
+        else: textual = self.text[idx]
+
+        return image, textual, self.text[idx]
 
 
     
