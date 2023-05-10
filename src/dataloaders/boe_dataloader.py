@@ -29,7 +29,7 @@ class BOEDataset:
         self.data = []
         self.text = []
         heading = ['h1', 'h2', 'h3', 'h4']
-        max_crops = 15
+        max_crops = 50
 
         for root, _, files in os.walk(jsons_data_folder):
             for file in tqdm(files, desc=f"Processing dataset..."):
@@ -38,7 +38,7 @@ class BOEDataset:
                 fname = os.path.join(root, file)
                 datapoint = json.load(open(fname, 'r'))
                 total = 0
-                for page in datapoint['pages']: total += len(datapoint['pages'][int(page)])
+                for page in datapoint['pages']: total += len(datapoint['pages'][page])
                 if total > max_crops: continue
 
                 self.data.append(datapoint)
@@ -53,6 +53,7 @@ class BOEDataset:
                 for h in heading:
                     whole_text.extend([a.text for a in sopita.find_all(h)])
                 self.text.append('\n'.join(whole_text))
+        print(len(self.data))
         
 
         self.device = device
