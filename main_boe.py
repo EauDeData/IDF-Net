@@ -37,8 +37,8 @@ except FileNotFoundError:
         dataset = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/train',)
         dataset_test = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/test',)
 
-        pickle.dump(dataset, open('output/train_yotaro.pkl', 'wb'))
-        pickle.dump(dataset_test, open('output/test_yotaro.pkl', 'wb'))
+        pickle.dump(dataset, open('output/train.pkl', 'wb'))
+        pickle.dump(dataset_test, open('output/test.pkl', 'wb'))
 
 #print(dataset[0][0]['img'].shape)
 ### On which we clean the text and load the tokenizer ###

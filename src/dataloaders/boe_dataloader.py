@@ -29,12 +29,18 @@ class BOEDataset:
         self.data = []
         self.text = []
         heading = ['h1', 'h2', 'h3', 'h4']
+        max_crops = 15
+
         for root, _, files in os.walk(jsons_data_folder):
             for file in tqdm(files, desc=f"Processing dataset..."):
                 if not os.path.splitext(file)[1].lower() in ['.json']: continue
 
                 fname = os.path.join(root, file)
                 datapoint = json.load(open(fname, 'r'))
+                total = 0
+                for page in datapoint['pages']: total += len(datapoint['pages'][int(page)])
+                if total > max_crops: continue
+
                 self.data.append(datapoint)
 
                 path = datapoint['path']
