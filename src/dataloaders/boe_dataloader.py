@@ -24,10 +24,11 @@ def read_img(path):
 class BOEDataset:
 
     name = 'boe_dataset'
-    def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, device = 'cuda',) -> None:
+    def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, scale = 0.5,device = 'cuda',) -> None:
         super(BOEDataset, self).__init__()
         self.data = []
         self.text = []
+        self.scale = scale
         heading = ['h1', 'h2', 'h3', 'h4']
         max_crops = 50
 
@@ -106,6 +107,7 @@ class BOEDataset:
                 x1, y1, x2, y2 = item['bbox']
                 if (x2 - x1) < self.min_width or (y2 - y1) < self.min_width: continue
                 array = images[num_page][y1:y2, x1:x2] / 255
+                if self.scale: array = cv2.resize(array, [int(x * self.scale) for x in array.shape][:-1])
                 crops.append(torch.from_numpy(array.transpose(2, 0, 1)).float())
 
         if not isinstance(self.tokenizer, int): textual = self.tokenizer.predict(self.text[idx])
