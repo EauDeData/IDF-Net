@@ -17,7 +17,7 @@ class TrainDoc:
             )
         self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers=workers, collate_fn=dataset.collate_boe)
         self.test_loader = dataloader.DataLoader(test_set, batch_size = bsize, shuffle = False, num_workers=workers, collate_fn=dataset.collate_boe)
-        self.bert = bert.to(device)
+        self.bert = bert
         self.bs = bsize
         self.model = model.to(device)
         self.loss_f = loss_function
@@ -33,22 +33,31 @@ class TrainDoc:
         print(f"Training... Epoch {epoch}")
         buffer = 0
         self.model.train()
+        text_embs = []
+        loss = None
         for n, (images, mask, text_emb, text) in enumerate(self.loader):
-
+            print(n)
             text_emb = text_emb.to(self.device)
-            self.optimizer.zero_grad()
+            text_embs.append(text_emb)
+
             images, mask, text_emb = images.to(self.device), mask.to(self.device), text_emb.to(self.device)
 
-            conditional_text = self.bert.predict(text)
+            conditional_text = self.bert.predict(text).to(self.device)
             h = self.model(images, mask, conditional_text)
+            if not h is None:
+                
+                embs = torch.cat(text_embs, dim = 0)
+                loss = self.loss_f(h, embs)
+                loss.backward()
 
-            loss = self.loss_f(h, text_emb)
-            loss.backward()
+                self.optimizer.step()
+                buffer += loss.item()
 
-            self.optimizer.step()
-            buffer += loss.item()
+                text_embs = []
+                self.optimizer.zero_grad()
 
-            if not (n*self.bs) % logger_freq: print(f"Current loss: {loss.item()}")
+
+        if (not loss is None) and not (n*self.bs) % logger_freq: print(f"Current loss: {loss.item()}")
 
         wandb.log({'train-loss': buffer / n})
     

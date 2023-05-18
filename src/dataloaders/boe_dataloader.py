@@ -30,7 +30,7 @@ class BOEDataset:
         self.text = []
         self.scale = scale
         heading = ['h1', 'h2', 'h3', 'h4']
-        max_crops = 50
+        max_crops = 6
         self.replace = eval(replace_path_expression)
             
         

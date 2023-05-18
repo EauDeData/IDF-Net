@@ -26,8 +26,9 @@ torch.manual_seed(42)
 # TODO: Use a config file
 # Some constants
 IMSIZE = 224
-DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 4 # If batch size is a problem, program properly the collate fn
+DEVICE = 'cuda:2' # TODO: Implement cuda execution
+BERT_DEVICE = 'cuda:3'
+BSIZE = 1 # If batch size is a problem, program properly the collate fn
 
 try:
         dataset = pickle.load(open('output/train.pkl', 'rb'))
@@ -46,7 +47,7 @@ print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
 loader = TF_IDFLoader(dataset, string_preprocess=StringCleanAndTrim())
 loader.fit()
-scale = 0.25
+scale = .5
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
 dataset.scale = scale
@@ -58,11 +59,12 @@ dataset_test.scale = scale
 
 ### DL Time: The loss function and model ###
 loss_function = MSERankLoss()
-model = DocTopicSpotter(ResNetWithEmbedder(resnet='50', embedding_size=512), None) # VisualTransformer(IMSIZE)
+model = DocTopicSpotter(ResNetWithEmbedder(resnet='18', embedding_size=512), None) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
-trainer = TrainDoc(dataset, dataset_test, model, BertTextEncoder(), loss_function, None, None, optim, None, BSIZE)
+model.to(DEVICE)
+trainer = TrainDoc(dataset, dataset_test, model, BertTextEncoder().to(BERT_DEVICE), loss_function, None, None, optim, None, BSIZE)
 trainer.train(100)
