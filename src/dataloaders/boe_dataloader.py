@@ -24,7 +24,7 @@ def read_img(path):
 class BOEDataset:
 
     name = 'boe_dataset'
-    def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, scale = 0.5,device = 'cuda', replace_path_expression = "('data1tbssd', 'data2fast/users/amolina')") -> None:
+    def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, scale = 0.5,device = 'cuda', replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')") -> None:
         super(BOEDataset, self).__init__()
         self.data = []
         self.text = []
@@ -32,6 +32,10 @@ class BOEDataset:
         heading = ['h1', 'h2', 'h3', 'h4']
         max_crops = 50
         self.replace = eval(replace_path_expression)
+            
+        
+        self.min_width = min_width
+        self.min_height = min_height
 
         for root, _, files in os.walk(jsons_data_folder):
             for file in tqdm(files, desc=f"Processing dataset..."):
@@ -40,15 +44,18 @@ class BOEDataset:
                 fname = os.path.join(root, file)
                 datapoint = json.load(open(fname, 'r'))
                 total = 0
-                for page in datapoint['pages']: total += len(datapoint['pages'][page])
-                if total > max_crops: continue
+                for page in datapoint['pages']:
+                    for item in datapoint['pages'][page]:
+                        x1, y1, x2, y2 = item['bbox']
+                        if not ((x2 - x1) < self.min_width or (y2 - y1) < self.min_width): total += 1
+                        
+                if (total > max_crops) or (not total): continue
 
                 self.data.append(datapoint)
 
                 path = datapoint['path']
                 path = os.path.splitext(path)[0]+'.html'
                 path = path.replace('images', 'htmls').replace(*self.replace)
-                print(path, self.replace, path.replace(*self.replace))
                 
                 sopita = BeautifulSoup(open(path, 'r').read(), features="html.parser")
 
@@ -62,8 +69,7 @@ class BOEDataset:
 
         self.device = device
         
-        self.min_width = min_width
-        self.min_height = min_height
+
 
         self.tokenizer = 0
         self.max_crops = 50
@@ -115,7 +121,7 @@ class BOEDataset:
 
         if not isinstance(self.tokenizer, int): textual = self.tokenizer.predict(self.text[idx])
         else: textual = self.text[idx]
-        
+
         max_height = max(crop.shape[1] for crop in crops)
         max_width = max(crop.shape[2] for crop in crops)
 

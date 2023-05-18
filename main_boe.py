@@ -34,8 +34,8 @@ try:
         dataset_test = pickle.load(open('output/test.pkl', 'rb'))
 
 except FileNotFoundError:
-        dataset = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/train',)
-        dataset_test = BOEDataset('/home/amolina/Desktop/santa-lucia-dataset/data/test',)
+        dataset = BOEDataset('/data3fast/users/amolina/BOE/train',)
+        dataset_test = BOEDataset('/data3fast/users/amolina/BOE/test',)
 
         pickle.dump(dataset, open('output/train.pkl', 'wb'))
         pickle.dump(dataset_test, open('output/test.pkl', 'wb'))
