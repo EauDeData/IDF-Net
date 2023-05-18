@@ -208,6 +208,7 @@ class DocTopicSpotter(torch.nn.Module):
             self.buffer += [visual_attention]
             self.ammount += 1
             if self.ammount >= self.accomulate_times:
+                self.ammount = 0
                 return self.liberate_willy()
             else: return None
         return visual_attention, dot_products_softmax

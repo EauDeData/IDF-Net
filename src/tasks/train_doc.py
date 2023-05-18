@@ -36,7 +36,7 @@ class TrainDoc:
         text_embs = []
         loss = None
         for n, (images, mask, text_emb, text) in enumerate(self.loader):
-            print(n)
+
             text_emb = text_emb.to(self.device)
             text_embs.append(text_emb)
 

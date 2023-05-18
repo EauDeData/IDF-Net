@@ -28,7 +28,7 @@ torch.manual_seed(42)
 IMSIZE = 224
 DEVICE = 'cuda:2' # TODO: Implement cuda execution
 BERT_DEVICE = 'cuda:3'
-BSIZE = 1 # If batch size is a problem, program properly the collate fn
+BSIZE = 3 # If batch size is a problem, program properly the collate fn
 
 try:
         dataset = pickle.load(open('output/train.pkl', 'rb'))
