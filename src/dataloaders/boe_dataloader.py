@@ -48,6 +48,7 @@ class BOEDataset:
                 path = datapoint['path']
                 path = os.path.splitext(path)[0]+'.html'
                 path = path.replace('images', 'htmls').replace(*self.replace)
+                print(path, self.replace, path.replace(*self.replace))
                 
                 sopita = BeautifulSoup(open(path, 'r').read(), features="html.parser")
 
