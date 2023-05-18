@@ -31,6 +31,7 @@ class BOEDataset:
         self.scale = scale
         heading = ['h1', 'h2', 'h3', 'h4']
         max_crops = 50
+        self.replace = eval(replace_path_expression)
 
         for root, _, files in os.walk(jsons_data_folder):
             for file in tqdm(files, desc=f"Processing dataset..."):
@@ -46,7 +47,7 @@ class BOEDataset:
 
                 path = datapoint['path']
                 path = os.path.splitext(path)[0]+'.html'
-                path = path.replace('images', 'htmls')
+                path = path.replace('images', 'htmls').replace(*self.replace)
                 
                 sopita = BeautifulSoup(open(path, 'r').read(), features="html.parser")
 
@@ -55,7 +56,7 @@ class BOEDataset:
                     whole_text.extend([a.text for a in sopita.find_all(h)])
                 self.text.append('\n'.join(whole_text))
         print(len(self.data))
-        self.replace = replace_path_expression
+        
         
 
         self.device = device
