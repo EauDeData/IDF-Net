@@ -24,7 +24,7 @@ def read_img(path):
 class BOEDataset:
 
     name = 'boe_dataset'
-    def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, scale = 0.5,device = 'cuda',) -> None:
+    def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, scale = 0.5,device = 'cuda', replace_path_expression = "('data1tbssd', 'data2fast/users/amolina')") -> None:
         super(BOEDataset, self).__init__()
         self.data = []
         self.text = []
@@ -55,6 +55,7 @@ class BOEDataset:
                     whole_text.extend([a.text for a in sopita.find_all(h)])
                 self.text.append('\n'.join(whole_text))
         print(len(self.data))
+        self.replace = replace_path_expression
         
 
         self.device = device
@@ -98,7 +99,7 @@ class BOEDataset:
     def __getitem__(self, idx):
         
         image_json = self.data[idx]
-        images = read_img(image_json['path'])
+        images = read_img(image_json['path'].replace(*self.replace))
         crops = []
 
         for page in image_json['pages']:
@@ -124,7 +125,7 @@ class BOEDataset:
         for i, crop in enumerate(crops):
             padded_crops[i, :, :crop.shape[1], :crop.shape[2]] = crop
             mask[i, :, :crop.shape[1], :crop.shape[2]] = 1
-                
+        
         return padded_crops, mask, textual, self.text[idx]
         
 

@@ -171,7 +171,6 @@ class DocTopicSpotter(torch.nn.Module):
 
     def forward(self, batch, masks, batch_bert, return_attn = False):
 
-        
         # BATCH: [BS, SEQ_LEN, 3, W, H]
         genesis_shape = batch.shape
         images = batch * masks

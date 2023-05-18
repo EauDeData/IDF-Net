@@ -27,7 +27,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 3 # If batch size is a problem, program properly the collate fn
+BSIZE = 4 # If batch size is a problem, program properly the collate fn
 
 try:
         dataset = pickle.load(open('output/train.pkl', 'rb'))
@@ -46,12 +46,14 @@ print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
 loader = TF_IDFLoader(dataset, string_preprocess=StringCleanAndTrim())
 loader.fit()
-
+scale = 0.25
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
+dataset.scale = scale
 #dataset.cleaner = cleaner
 
 dataset_test.tokenizer = loader
+dataset_test.scale = scale
 #dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
