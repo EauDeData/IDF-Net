@@ -167,7 +167,7 @@ class DocTopicSpotter(torch.nn.Module):
         self.visual_values = nn.Linear(512, 256)
         
         self.textual_queries = nn.Linear(768, 256)
-        self.accomulate_times = 16
+        self.accomulate_times = 36
         self.buffer = []
         self.ammount = 0
     
@@ -204,6 +204,7 @@ class DocTopicSpotter(torch.nn.Module):
         visual_attention = torch.bmm(dot_products_softmax.unsqueeze(1), visual_values).squeeze(1) # (BS, EMB_SIZE)
 
         # TODO: És necesari fer una projecció final?
+
         if not return_attn:
             self.buffer += [visual_attention]
             self.ammount += 1

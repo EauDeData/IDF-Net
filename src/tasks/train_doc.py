@@ -7,7 +7,7 @@ from src.loss.loss import rank_correlation, raw_accuracy
 
 class TrainDoc:
 
-    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize = 5, device = 'cuda', workers = 0):
+    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize = 5, device = 'cuda', workers = 16):
         
         if isinstance(dataset.tokenizer, int): 
             raise NotImplementedError(
@@ -44,6 +44,7 @@ class TrainDoc:
 
             conditional_text = self.bert.predict(text).to(self.device)
             h = self.model(images, mask, conditional_text)
+
             if not h is None:
                 
                 embs = torch.cat(text_embs, dim = 0)
@@ -57,7 +58,7 @@ class TrainDoc:
                 self.optimizer.zero_grad()
 
 
-        if (not loss is None) and not (n*self.bs) % logger_freq: print(f"Current loss: {loss.item()}")
+            if not (n % logger_freq): print(f"Current loss: {loss}")
 
         wandb.log({'train-loss': buffer / n})
     
@@ -94,5 +95,5 @@ class TrainDoc:
     def train(self, epoches):
         for epoch in range(epoches):
 
-            self.epoch(1000, epoch)
-            self.test_epoch(100, epoch)
+            self.epoch(36, epoch)
+            self.test_epoch(36, epoch)
