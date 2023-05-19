@@ -45,7 +45,7 @@ except FileNotFoundError:
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-loader = TF_IDFLoader(dataset, string_preprocess=StringCleanAndTrim())
+loader = LDALoader(dataset, string_preprocess=StringCleanAndTrim())
 loader.fit()
 scale = .5
 ### Now we setup the tokenizer on the dataset ###
@@ -59,7 +59,7 @@ dataset_test.scale = scale
 #dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
-loss_function = MSERankLoss()
+loss_function = SpearmanRankLoss(weighted=None)
 model = DocTopicSpotter(ResNetWithEmbedder(resnet='18', embedding_size=512), None) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###

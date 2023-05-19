@@ -35,6 +35,7 @@ class TrainDoc:
         self.model.train()
         text_embs = []
         loss = None
+        nans = 0
         for n, (images, mask, text_emb, text) in enumerate(self.loader):
 
             text_emb = text_emb.to(self.device)
@@ -49,7 +50,8 @@ class TrainDoc:
                 
                 embs = torch.cat(text_embs, dim = 0)
                 loss = self.loss_f(h, embs)
-                loss.backward()
+                if loss == loss: loss.backward() # prevent NaN for constant arrays
+                else: nans += 1
 
                 self.optimizer.step()
                 buffer += loss.item()
@@ -58,7 +60,7 @@ class TrainDoc:
                 self.optimizer.zero_grad()
 
 
-            if not (n % logger_freq): print(f"Current loss: {loss}")
+            if not (n % logger_freq): print(f"Current loss: {loss}, NaNs: {nans}")
 
         wandb.log({'train-loss': buffer / n})
     
@@ -82,7 +84,7 @@ class TrainDoc:
                 h = self.model(images, mask, conditional_text)
                 if not h is None:
                     embs = torch.cat(text_embs, dim = 0)
-                    print(embs.shape, h.shape)
+
                     loss = self.loss_f(h, embs)
                     text_embs = []
 
@@ -104,6 +106,6 @@ class TrainDoc:
     
     def train(self, epoches):
         for epoch in range(epoches):
-            self.test_epoch(36, epoch)
             self.epoch(36, epoch)
+            self.test_epoch(36, epoch)
             
