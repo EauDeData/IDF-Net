@@ -82,6 +82,7 @@ class TrainDoc:
                 h = self.model(images, mask, conditional_text)
                 if not h is None:
                     embs = torch.cat(text_embs, dim = 0)
+                    print(embs.shape, h.shape)
                     loss = self.loss_f(h, embs)
                     text_embs = []
 
@@ -89,7 +90,7 @@ class TrainDoc:
                     buffer += loss.item()
 
                     
-                    statistics, pvalues = rank_correlation(h, text_emb,)
+                    statistics, pvalues = rank_correlation(h, embs,)
                     stats_buffer += statistics
                     pbuffer += pvalues
 
