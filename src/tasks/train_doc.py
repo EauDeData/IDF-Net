@@ -2,8 +2,16 @@ import torch.utils.data.dataloader as dataloader
 import torch
 import wandb
 import os
-
+import sys
 from src.loss.loss import rank_correlation, raw_accuracy
+
+
+def print_total_gradient_shape(model):
+    total_gradient = 0
+    for param in model.parameters():
+        if param.grad is not None:
+            total_gradient += sys.getsizeof(param.grad.numel())
+    print("Total Gradient Shape:", total_gradient)
 
 class TrainDoc:
 
@@ -50,14 +58,20 @@ class TrainDoc:
                 
                 embs = torch.cat(text_embs, dim = 0)
                 loss = self.loss_f(h, embs)
-                if loss == loss: loss.backward() # prevent NaN for constant arrays
+                if loss == loss:
+                    loss.backward() # prevent NaN for constant arrays
+                    self.optimizer.step()
+                    buffer += loss.item()
+                    text_embs = []
+
                 else: nans += 1
-
-                self.optimizer.step()
-                buffer += loss.item()
-
-                text_embs = []
+                
+                print_total_gradient_shape(self.model)
                 self.optimizer.zero_grad()
+                text_embs = []
+
+
+
 
 
             if not (n % logger_freq): print(f"Current loss: {loss}, NaNs: {nans}")

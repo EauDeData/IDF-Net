@@ -156,18 +156,18 @@ class TransformerEncoder(nn.Module):
 
 class DocTopicSpotter(torch.nn.Module):
 
-    def __init__(self, patch_visual_extractor, aggregator, device = 'cuda') -> None:
+    def __init__(self, patch_visual_extractor, emb_size,out_size, aggregator, device = 'cuda') -> None:
         super(DocTopicSpotter, self).__init__()
         self.visual_extractor = patch_visual_extractor
         self.aggregator = aggregator
         self.device = device
 
-        self.zeros = torch.zeros(768) # TODO: don't hardcode this
-        self.visual_keys = nn.Linear(512, 256)
-        self.visual_values = nn.Linear(512, 256)
+        #self.zeros = torch.zeros(768) # TODO: don't hardcode this
+        self.visual_keys = nn.Linear(emb_size, out_size)
+        self.visual_values = nn.Linear(emb_size, out_size)
         
         self.textual_queries = nn.Linear(768, 256)
-        self.accomulate_times = 36
+        self.accomulate_times = 64
         self.buffer = []
         self.ammount = 0
     
@@ -176,6 +176,7 @@ class DocTopicSpotter(torch.nn.Module):
         self.buffer = []
         self.ammount = 0
         return buff
+    
 
     def forward(self, batch, masks, batch_bert, return_attn = False):
 

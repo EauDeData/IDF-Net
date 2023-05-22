@@ -51,7 +51,6 @@ class BOEDataset:
                         
                 if (total > max_crops) or (not total): continue
 
-                self.data.append(datapoint)
 
                 path = datapoint['path']
                 path = os.path.splitext(path)[0]+'.html'
@@ -62,7 +61,11 @@ class BOEDataset:
                 whole_text = []
                 for h in heading:
                     whole_text.extend([a.text for a in sopita.find_all(h)])
-                self.text.append('\n'.join(whole_text))
+                
+                if len(''.join(whole_text)):
+                    self.text.append('\n'.join(whole_text))
+                    self.data.append(datapoint)
+
         print(len(self.data))
         
         

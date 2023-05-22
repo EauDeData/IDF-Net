@@ -2,10 +2,12 @@ import torch
 import nltk 
 import matplotlib.pyplot as plt
 import copy
-import wandb
+#import wandb
 import torchvision
 import pickle
 import multiprocessing as mp
+import cv2
+import numpy as np
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
@@ -52,7 +54,9 @@ scale = .5
 dataset.tokenizer = loader
 dataset.scale = scale
 #dataset.cleaner = cleaner
-
+img = dataset[0][0].numpy()
+img = np.hstack(img).transpose(1, 2, 0) * 255
+cv2.imwrite('sample_out.png', img.astype(np.uint8))
 
 dataset_test.tokenizer = loader
 dataset_test.scale = scale
@@ -60,7 +64,9 @@ dataset_test.scale = scale
 
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss(weighted=None)
-model = DocTopicSpotter(ResNetWithEmbedder(resnet='18', embedding_size=512), None) # VisualTransformer(IMSIZE)
+emb_size = 128
+out_size = 64
+model = DocTopicSpotter(ResNetWithEmbedder(resnet='18', embedding_size=emb_size), emb_size, out_size, None) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
