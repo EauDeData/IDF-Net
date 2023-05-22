@@ -12,6 +12,7 @@ import string
 import re
 import pdf2image
 from bs4 import BeautifulSoup 
+import torch
 
 from tqdm import tqdm
 
@@ -24,15 +25,14 @@ def read_img(path):
 class BOEDataset:
 
     name = 'boe_dataset'
-    def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, scale = 0.5,device = 'cuda', replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')") -> None:
+    def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, bert = None, scale = 0.5,device = 'cuda', replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')") -> None:
         super(BOEDataset, self).__init__()
         self.data = []
         self.text = []
         self.scale = scale
         heading = ['h1', 'h2', 'h3', 'h4']
         max_crops = 6
-        self.replace = eval(replace_path_expression)
-            
+        self.replace = eval(replace_path_expression)            
         
         self.min_width = min_width
         self.min_height = min_height
@@ -57,6 +57,7 @@ class BOEDataset:
                 path = path.replace('images', 'htmls').replace(*self.replace)
                 
                 sopita = BeautifulSoup(open(path, 'r').read(), features="html.parser")
+                
 
                 whole_text = []
                 for h in heading:
@@ -64,7 +65,11 @@ class BOEDataset:
                 
                 if len(''.join(whole_text)):
                     self.text.append('\n'.join(whole_text))
+                    with torch.no_grad():
+                        datapoint['bert'] = bert.predict([self.text[-1]]).to('cpu')
+                    
                     self.data.append(datapoint)
+
 
         print(len(self.data))
         
@@ -94,7 +99,8 @@ class BOEDataset:
 
         texts = []
         embs = []
-        for num, (image, mask, emb, text) in enumerate(batch):
+        berts = []
+        for num, (image, mask, emb, text, bert) in enumerate(batch):
 
             b, c, w, h = image.shape
 
@@ -103,8 +109,9 @@ class BOEDataset:
 
             embs += [emb]
             texts += [text]
+            berts += [bert]
         
-        return padded_crops, supermask, torch.from_numpy(np.stack(embs)), texts
+        return padded_crops, supermask, torch.from_numpy(np.stack(embs)), texts, torch.cat(berts, dim = 0)
 
 
     def __getitem__(self, idx):
@@ -137,7 +144,7 @@ class BOEDataset:
             padded_crops[i, :, :crop.shape[1], :crop.shape[2]] = crop
             mask[i, :, :crop.shape[1], :crop.shape[2]] = 1
         
-        return padded_crops, mask, textual, self.text[idx]
+        return padded_crops, mask, textual, self.text[idx], image_json['bert']
         
 
 class BOEWhole(BOEDataset):

@@ -28,17 +28,18 @@ torch.manual_seed(42)
 # TODO: Use a config file
 # Some constants
 IMSIZE = 224
-DEVICE = 'cuda:2' # TODO: Implement cuda execution
-BERT_DEVICE = 'cuda:3'
+DEVICE = 'cuda:5' # TODO: Implement cuda execution
+BERT_DEVICE = 'cuda:4'
 BSIZE = 1 # If batch size is a problem, program properly the collate fn
+bert =  BertTextEncoder().to(BERT_DEVICE)
 
 try:
         dataset = pickle.load(open('output/train.pkl', 'rb'))
         dataset_test = pickle.load(open('output/test.pkl', 'rb'))
 
 except FileNotFoundError:
-        dataset = BOEDataset('/data3fast/users/amolina/BOE/train',)
-        dataset_test = BOEDataset('/data3fast/users/amolina/BOE/test',)
+        dataset = BOEDataset('/data3fast/users/amolina/BOE/train', bert = bert)
+        dataset_test = BOEDataset('/data3fast/users/amolina/BOE/test', bert = bert)
 
         pickle.dump(dataset, open('output/train.pkl', 'wb'))
         pickle.dump(dataset_test, open('output/test.pkl', 'wb'))
@@ -47,7 +48,7 @@ except FileNotFoundError:
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-loader = LDALoader(dataset, string_preprocess=StringCleanAndTrim())
+loader = LSALoader(dataset, string_preprocess=StringCleanAndTrim(), ntopics = 128)
 loader.fit()
 scale = .5
 ### Now we setup the tokenizer on the dataset ###
@@ -73,5 +74,5 @@ optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 model.to(DEVICE)
-trainer = TrainDoc(dataset, dataset_test, model, BertTextEncoder().to(BERT_DEVICE), loss_function, None, None, optim, None, BSIZE)
+trainer = TrainDoc(dataset, dataset_test, model, bert, loss_function, None, None, optim, None, BSIZE)
 trainer.train(100)

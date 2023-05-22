@@ -44,14 +44,15 @@ class TrainDoc:
         text_embs = []
         loss = None
         nans = 0
-        for n, (images, mask, text_emb, text) in enumerate(self.loader):
+        for n, (images, mask, text_emb, text, conditional_text) in enumerate(self.loader):
 
             text_emb = text_emb.to(self.device)
+            conditional_text = conditional_text.to(self.device)
+
             text_embs.append(text_emb)
 
             images, mask, text_emb = images.to(self.device), mask.to(self.device), text_emb.to(self.device)
 
-            conditional_text = self.bert.predict(text).to(self.device)
             h = self.model(images, mask, conditional_text)
 
             if not h is None:
@@ -59,20 +60,17 @@ class TrainDoc:
                 embs = torch.cat(text_embs, dim = 0)
                 loss = self.loss_f(h, embs)
                 if loss == loss:
+
                     loss.backward() # prevent NaN for constant arrays
                     self.optimizer.step()
                     buffer += loss.item()
                     text_embs = []
 
                 else: nans += 1
-                
+
                 print_total_gradient_shape(self.model)
                 self.optimizer.zero_grad()
                 text_embs = []
-
-
-
-
 
             if not (n % logger_freq): print(f"Current loss: {loss}, NaNs: {nans}")
 
@@ -85,14 +83,14 @@ class TrainDoc:
         self.model.eval()
         text_embs = []
         loss = None
-        for n, (images, mask, text_emb, text) in enumerate(self.loader):
+        for n, (images, mask, text_emb, text, conditional_text) in enumerate(self.loader):
 
             text_emb = text_emb.to(self.device)
+            conditional_text = conditional_text.to(self.device)
+
             text_embs.append(text_emb)
 
             images, mask, text_emb = images.to(self.device), mask.to(self.device), text_emb.to(self.device)
-
-            conditional_text = self.bert.predict(text).to(self.device)
             with torch.no_grad():
 
                 h = self.model(images, mask, conditional_text)
