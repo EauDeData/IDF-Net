@@ -127,3 +127,55 @@ class TrainDoc:
             self.epoch(36, epoch)
             self.test_epoch(36, epoch)
             
+class TrainDocAbstracts(TrainDoc):
+    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize=5, device='cuda', workers=16):
+        super().__init__(dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize, device, workers)
+    
+    
+    def epoch(self, logger_freq, epoch):
+        
+        print(f"Training... Epoch {epoch}")
+        buffer = 0
+        self.model.train()
+        for n, (images, text_emb, conditional_text) in enumerate(self.loader):
+            
+            text_emb = text_emb.to(self.device)
+            conditional_text = conditional_text.to(self.device)
+            images = images.to(self.device)
+
+            spotted_topics = self.model(images, conditional_text)
+            loss = self.loss_f(spotted_topics, text_emb)
+            loss.backward()
+            self.optimizer.step()
+
+            if not n%logger_freq: print(loss)
+            buffer += loss.item()
+
+        wandb.log({'train-loss': buffer / n})
+
+    def test_epoch(self, logger_freq, epoch):
+        
+        print(f"Training... Epoch {epoch}")
+        buffer, pbuffer, stats_buffer = 0, 0, 0
+
+        self.model.eval()
+        for n, (images, text_emb, conditional_text) in enumerate(self.loader):
+            
+            text_emb = text_emb.to(self.device)
+            conditional_text = conditional_text.to(self.device)
+            images = images.to(self.device)
+
+            with torch.no_grad():
+                spotted_topics = self.model(images, conditional_text)
+                loss = self.loss_f(spotted_topics, text_emb)
+                statistics, pvalues = rank_correlation(spotted_topics, text_emb,)
+
+            if not n%logger_freq: print(loss)
+            buffer += loss.item()
+            pbuffer += pvalues
+            stats_buffer += statistics
+
+        wandb.log({'test-loss': buffer / n})
+        
+        wandb.log({'rank-corr': stats_buffer / n})
+        wandb.log({'rank-corr-pvalue': pbuffer / n})
