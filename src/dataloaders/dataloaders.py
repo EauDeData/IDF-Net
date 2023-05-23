@@ -49,7 +49,8 @@ class AbstractsDataset:
 
             '''
         
-        if not (os.path.exists(data_folder) and len(os.listdir(data_folder))): self.generate_db(data_folder)
+        os.makedirs(data_folder, exist_ok=True)
+        if not len(os.listdir(data_folder)): self.generate_db(data_folder)
         
         self.images = data_folder
         self.fold = train

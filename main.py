@@ -24,8 +24,8 @@ DEVICE = 'cuda' # TODO: Implement cuda execution
 BSIZE = 64
 
 
-dataset = AbstractsDataset('train.csv', 'dataset/arxiv_images_train/')
-dataset_test = AbstractsDataset('test.csv', 'dataset/arxiv_images_test/')
+dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/')
+dataset_test = AbstractsDataset('test_set.csv', 'dataset/arxiv_images_test/')
 
 #print(dataset[0][0]['img'].shape)
 ### On which we clean the text and load the tokenizer ###
