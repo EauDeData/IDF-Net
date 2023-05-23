@@ -215,7 +215,44 @@ class DocTopicSpotter(torch.nn.Module):
             else: return None
         return visual_attention, dot_products_softmax
                 
+def linear_constructor(topology: list):
 
+    seq = []
+    for n, size in enumerate(topology[:-1]):
+        seq.extend([
+            nn.ReLU(),
+            nn.Linear(size, topology[n + 1])
+        ])
+    
+    return nn.Sequential(*seq)
+
+class AbstractsTopicSpotter(torch.nn.Module):
+    def __init__(self, visual_extractor, emb_size, out_size, inner_attn = [128, 128, 128], device = 'cuda') -> None:
+        super(AbstractsTopicSpotter, self).__init__()
+        self.visual_extractor = visual_extractor
+        self.device = device
+
+        hidden_attn = [emb_size] + inner_attn + [out_size]
+        self.visual_keys = linear_constructor(hidden_attn)
+        self.visual_values = linear_constructor(hidden_attn)
+        
+        self.textual_queries = linear_constructor([768] + inner_attn + [out_size])
+    
+    def forward(self, visual_batch, textual_batch):
+
+        visual_features = self.visual_extractor(visual_batch) # SHAPE (BS_VIS, EMB_SIZE)
+
+        visual_values = self.visual_values(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
+        visual_keys = self.visual_keys(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
+
+        textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
+
+        dot_products = torch.matmul(visual_keys, textual_queries.transpose(1, 0)) # (BS_VIS, BS_TEXT)
+        attn_weights = F.softmax(dot_products, dim = 0) # (BS_VIS, BS_TEXT)
+
+        weighted = torch.matmul(attn_weights.transpose(1, 0), visual_values) # For each textual query, a topic model formed with visual information.
+        return weighted
+        
 class YOTARO(torch.nn.Module):
     # You Only Try At Reading Once
     # Here add the detection procedure in the training

@@ -11,6 +11,7 @@ import pandas as pd
 from pnglatex import pnglatex
 import string
 import re
+from tqdm import tqdm
 
 from src.dataloaders.base import IDFNetDataLoader
 
@@ -109,6 +110,18 @@ class AbstractsDataset:
         
         if self.twin: return image, self.tokenizer[index], self.twin_dataset[index]
         return image, self.tokenizer.predict(text)
+
+class AbstractsAttn(AbstractsDataset):
+    def __init__(self, csv_path, data_folder, train=True, imsize=512, twin=False, cleaner=None, bert = None) -> None:
+        super().__init__(csv_path, data_folder, train, imsize, twin, cleaner)
+        berts = []
+        for title in tqdm(self.dataframe['titles']): 
+            with torch.no_grad(): berts.append(bert.predict([title]).to('cpu'))
+    
+    def __getitem__(self, index):
+        image, topic = super().__getitem__(index)
+        return image, topic, self.berts[index]
+
 
 class COCODataset(torchvision.datasets.CocoCaptions):
     def __init__(self, *args, **kwargs):

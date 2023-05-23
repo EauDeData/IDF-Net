@@ -23,21 +23,16 @@ IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
 BSIZE = 64
 
-### First we select the dataset ###
-base = '/home/amolina/Desktop/amolina/COCO/'
-transforms = torchvision.transforms.Compose( [torchvision.transforms.Resize((IMSIZE, IMSIZE)),
-        torchvision.transforms.ToTensor(),
-        torchvision.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))]
-)
-dataset = COCODataset(f'{base}val2014/', f'{base}captions_val2014.json', transform = transforms)
-dataset_test = COCODataset(f'{base}val2014/', f'{base}captions_val2014.json', transform = transforms)
+
+dataset = AbstractsDataset('train.csv')
+dataset_test = AbstractsDataset('test.csv')
 
 #print(dataset[0][0]['img'].shape)
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 #cleaner = StringCleanAndTrim()
-loader = CLIPLoader()
-#loader.fit()
+loader = TF_IDFLoader()
+loader.fit()
 
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
@@ -47,15 +42,15 @@ dataset_test.tokenizer = loader
 #dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
-loss_function = MSERankLoss()
-model = ResNetWithEmbedder(embedding_size = 224, resnet = '50') # VisualTransformer(IMSIZE)
+loss_function = SpearmanRankLoss()
+model = ResNetWithEmbedder(embedding_size = 224, resnet = '101') # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
-test_task = TestMiniClip(dataset_test, model, loss_function, loader, None, optim, loader, scheduler = scheduler, device = DEVICE, bsize = BSIZE)
-train_task = TrainMiniClip(dataset, model, loss_function, loader, None, optim, test_task,loader, device= DEVICE, bsize = BSIZE)
+test_task = Test(dataset_test, model, loss_function, loader, None, optim, loader, scheduler = scheduler, device = DEVICE, bsize = BSIZE)
+train_task = Train(dataset, model, loss_function, loader, None, optim, test_task,loader, device= DEVICE, bsize = BSIZE)
 
 train_task.run(epoches = 120)
 

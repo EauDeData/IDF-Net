@@ -10,7 +10,7 @@ from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.dataloaders.dataloaders import DummyDataset, COCODataset
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, BertTextEncoder
-from src.models.models import DocTopicSpotter, ResNetWithEmbedder, TransformerEncoder, YOTARO, DocTopicSpotter
+from src.models.models import DocTopicSpotter, ResNetWithEmbedder, TransformerEncoder, YOTARO, DocTopicSpotter, AbstractsTopicSpotter
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.dataloaders.boe_dataloader import BOEDataset, BOEWhole, read_img
 
@@ -23,24 +23,12 @@ from src.loss.loss import (nns_loss, rank_correlation, rank_correlation_loss, Co
 nltk.download('stopwords')
 
 if __name__ == '__main__': 
-    data = pickle.load(open('output/test_yotaro.pkl', 'rb'))
-    loader = LSALoader(data, string_preprocess=StringCleanAndTrim())
-    loader.fit()
-    data.tokenizer = loader
 
-    topic = DocTopicSpotter(ResNetWithEmbedder(), None)
-    model = YOTARO(topic)
-    bert = BertTextEncoder()
-
-    dataloader_ = dataloader.DataLoader(data, batch_size = 2, shuffle = False, num_workers=0, collate_fn=data.collate_boe)
-    for image, emb, text in dataloader_:
-
-
-        print(text)
-        bert_encoded = bert.predict(text)
-        print(model(image, bert_encoded))
-
-
+    model = AbstractsTopicSpotter(ResNetWithEmbedder(resnet = '18', ), 512, 128)
+    images = torch.zeros(8, 3, 224, 224)
+    text = torch.zeros(8, 768)
+    print(model(images, text).shape)
+    exit()
     try:
         a, b = torch.rand(5, 5), torch.rand(5, 15)
         sim_a = CosineSimilarityMatrix()(a, a)
