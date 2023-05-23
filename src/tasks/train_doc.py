@@ -52,24 +52,30 @@ class TrainDoc:
             text_embs.append(text_emb)
 
             images, mask, text_emb = images.to(self.device), mask.to(self.device), text_emb.to(self.device)
+            try:
+                h = self.model(images, mask, conditional_text)
+            except:
+                print(images.shape)
+                exit()
 
-            h = self.model(images, mask, conditional_text)
 
             if not h is None:
                 
                 embs = torch.cat(text_embs, dim = 0)
                 loss = self.loss_f(h, embs)
+                loss.backward() # prevent NaN for constant arrays
+
                 if loss == loss:
 
-                    loss.backward() # prevent NaN for constant arrays
                     self.optimizer.step()
                     buffer += loss.item()
                     text_embs = []
 
-                else: nans += 1
+                else:
+                    nans += 1
 
-                print_total_gradient_shape(self.model)
                 self.optimizer.zero_grad()
+                self.model.zero_grad()
                 text_embs = []
 
             if not (n % logger_freq): print(f"Current loss: {loss}, NaNs: {nans}")

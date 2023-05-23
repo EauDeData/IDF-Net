@@ -30,7 +30,7 @@ class NNCLR(CustomLoss):
         return nns_loss(h, gt, self.similarity)
     
 class SpearmanRankLoss(CustomLoss):
-    def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, device = 'cuda', weighted = None, maxy = 3):
+    def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-5, k_gt = 1e-5, device = 'cuda', weighted = None, maxy = 3):
 
         self.ind = indicator_function
         self.sim = similarity

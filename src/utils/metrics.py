@@ -112,7 +112,7 @@ def cov(m):
 
 
 
-def corrcoef(x, y):
+def corrcoef(x, y, eps = 1e-4):
     # thanks https://discuss.pytorch.org/t/spearmans-correlation/91931/2
     batch_size = x.shape[0]
     x = torch.stack((x, y), 1)
@@ -121,7 +121,7 @@ def corrcoef(x, y):
     # normalize covariance matrix
     d = torch.diagonal(c, dim1=1, dim2=2)
     stddev = torch.pow(d, 0.5)
-    stddev = stddev.repeat(1, 2).view(batch_size, 2, 2)
+    stddev = stddev.repeat(1, 2).view(batch_size, 2, 2) + eps
     c = c.div(stddev)
     c = c.div(torch.transpose(stddev, 1, 2))
     return c[:, 1, 0]

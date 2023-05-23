@@ -167,7 +167,7 @@ class DocTopicSpotter(torch.nn.Module):
         self.visual_values = nn.Linear(emb_size, out_size)
         
         self.textual_queries = nn.Linear(768, out_size)
-        self.accomulate_times = 128
+        self.accomulate_times = 32
         self.buffer = []
         self.ammount = 0
     
