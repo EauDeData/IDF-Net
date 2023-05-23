@@ -67,10 +67,10 @@ dataset_test.scale = scale
 loss_function = SpearmanRankLoss(weighted=None)
 emb_size = 128
 out_size = 64
-model = DocTopicSpotter(ResNetWithEmbedder(resnet='50', embedding_size=emb_size), emb_size, out_size, None) # VisualTransformer(IMSIZE)
+model = DocTopicSpotter(ResNetWithEmbedder(resnet='18', embedding_size=emb_size), emb_size, out_size, None) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 1) # TODO: Don't let it be 1; just for knowing if backprop is properly working
+optim = torch.optim.Adam(model.parameters(), lr = 1e-5) # TODO: Don't let it be 1; just for knowing if backprop is properly working
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 model.to(DEVICE)

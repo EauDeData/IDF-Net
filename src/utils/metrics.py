@@ -112,7 +112,7 @@ def cov(m):
 
 
 
-def corrcoef(x, y, eps = 1e-4):
+def corrcoef(x, y, eps = 0):
     # thanks https://discuss.pytorch.org/t/spearmans-correlation/91931/2
     batch_size = x.shape[0]
     x = torch.stack((x, y), 1)
