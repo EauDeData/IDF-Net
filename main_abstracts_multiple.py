@@ -33,8 +33,15 @@ try:
 except:
     dataset = AbstractsAttn('train_set.csv', 'dataset/arxiv_images_train/', bert = bert)
     dataset_test = AbstractsAttn('test_set.csv', 'dataset/arxiv_images_test/', bert = bert)
+
+    dataset.init_berts(bert)
+    dataset_test.init_berts(bert)
+
     pickle.dump(dataset, open('abstracts_dataset.pkl','wb'))
     pickle.dump(dataset_test, open('abstracts_dataset_test.pkl','wb'))
+    
+dataset.twin = False
+dataset_test.twin = False
 del bert
 #print(dataset[0][0]['img'].shape)
 ### On which we clean the text and load the tokenizer ###
