@@ -116,6 +116,7 @@ class AbstractsAttn(AbstractsDataset):
     def __init__(self, csv_path, data_folder, train=True, imsize=512, twin=False, cleaner=None, bert = None) -> None:
         super().__init__(csv_path, data_folder, train, imsize, twin, cleaner)
         berts = []
+        self.twin = False
         for title in tqdm(self.dataframe['titles']): 
             with torch.no_grad(): berts.append(bert.predict([title]).to('cpu'))
     

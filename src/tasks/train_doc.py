@@ -3,7 +3,7 @@ import torch
 import wandb
 import os
 import sys
-from src.loss.loss import rank_correlation, raw_accuracy
+from src.loss.loss import rank_correlation, raw_accuracy, SimCLRLoss
 from pytorch_metric_learning import losses
 
 
@@ -129,7 +129,7 @@ class TrainDoc:
             self.test_epoch(36, epoch)
             
 class TrainDocAbstracts(TrainDoc):
-    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize=5, device='cuda', workers=16, contrastive = losses.NTXentLoss()):
+    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize=5, device='cuda', workers=16, contrastive = SimCLRLoss()):
         super().__init__(dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize, device, workers)
         self.closs = contrastive
     
@@ -147,8 +147,7 @@ class TrainDocAbstracts(TrainDoc):
 
             spotted_topics, values = self.model(images, conditional_text)
             loss = self.loss_f(spotted_topics, text_emb)
-            if not values is None:
-                loss = loss + 0
+            if not values is None: loss = loss + self.closs(spotted_topics, values)
             loss.backward()
             self.optimizer.step()
 
