@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import copy
 import wandb
 import torchvision
+import pickle
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
@@ -26,8 +27,14 @@ BSIZE = 64
 DEVICE_BERT = 'cuda:1'
 bert = BertTextEncoder().to(DEVICE_BERT)
 
-dataset = AbstractsAttn('train_set.csv', 'dataset/arxiv_images_train/', bert = bert)
-dataset_test = AbstractsAttn('test_set.csv', 'dataset/arxiv_images_test/', bert = bert)
+try: 
+    dataset = pickle.load(open('abstracts_dataset.pkl','rb'))
+    dataset_test = pickle.load(open('abstracts_dataset_test.pkl','rb'))
+except:
+    dataset = AbstractsAttn('train_set.csv', 'dataset/arxiv_images_train/', bert = bert)
+    dataset_test = AbstractsAttn('test_set.csv', 'dataset/arxiv_images_test/', bert = bert)
+    pickle.dump(dataset, open('abstracts_dataset.pkl','wb'))
+    pickle.dump(dataset_test, open('abstracts_dataset_test.pkl','wb'))
 del bert
 #print(dataset[0][0]['img'].shape)
 ### On which we clean the text and load the tokenizer ###

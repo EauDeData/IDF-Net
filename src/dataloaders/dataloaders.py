@@ -119,6 +119,9 @@ class AbstractsAttn(AbstractsDataset):
         for title in tqdm(self.dataframe['titles']): 
             with torch.no_grad(): berts.append(bert.predict([title]).to('cpu'))
     
+    def collate_boe(self, batch):
+        return batch
+
     def __getitem__(self, index):
         image, topic = super().__getitem__(index)
         return image, topic, self.berts[index]
