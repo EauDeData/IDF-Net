@@ -59,6 +59,15 @@ class MSERankLoss(CustomLoss):
 
     def forward(self, h, gt):
         return mse_rank_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt)
+    
+class SimCLRLoss(CustomLoss):
+    def __init__(self, similarity = CosineSimilarityMatrix(), k = .5) -> None:
+        super().__init__()
+        self.sim = similarity
+        self.t = k
+
+    def forward(self, h, gt):
+        return sim_clr_loss(h, gt, self.t, self.sim)
 
 def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5, device = 'cuda'):
 
@@ -99,8 +108,14 @@ def clique_potential_loss():
     
     pass
 
-def sim_clr_loss(h, h_augm, temperature = 0.1):
-    pass
+def sim_clr_loss(h, h_corr, temperature = 0.5, distance_function = CosineSimilarityMatrix()):
+    distances = distance_function(h, h_corr) / temperature
+    eyed = torch.eye(h.shape[0])
+    distances = torch.exp(distances)
+    numerator = distances * eyed
+    denominator = torch.sum(distances * (1 - eyed), dim = 1)
+    return - torch.log(numerator / denominator)
+
 
 def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix(), temperature = 0.1):
     # From " With a Little Help from My Friends" paper (insptiration)

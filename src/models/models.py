@@ -238,7 +238,7 @@ class AbstractsTopicSpotter(torch.nn.Module):
         
         self.textual_queries = linear_constructor([768] + inner_attn + [out_size])
     
-    def forward(self, visual_batch, textual_batch):
+    def forward(self, visual_batch, textual_batch, return_values = True):
 
         visual_features = self.visual_extractor(visual_batch) # SHAPE (BS_VIS, EMB_SIZE)
 
@@ -251,7 +251,8 @@ class AbstractsTopicSpotter(torch.nn.Module):
         attn_weights = F.softmax(dot_products, dim = 0) # (BS_VIS, BS_TEXT)
 
         weighted = torch.matmul(attn_weights.transpose(1, 0), visual_values) # For each textual query, a topic model formed with visual information.
-        return weighted
+        if return_values: weighted, visual_values
+        return weighted, None
         
 class YOTARO(torch.nn.Module):
     # You Only Try At Reading Once

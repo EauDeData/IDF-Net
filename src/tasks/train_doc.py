@@ -4,6 +4,7 @@ import wandb
 import os
 import sys
 from src.loss.loss import rank_correlation, raw_accuracy
+from pytorch_metric_learning import losses
 
 
 def print_total_gradient_shape(model):
@@ -128,8 +129,9 @@ class TrainDoc:
             self.test_epoch(36, epoch)
             
 class TrainDocAbstracts(TrainDoc):
-    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize=5, device='cuda', workers=16):
+    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize=5, device='cuda', workers=16, contrastive = losses.NTXentLoss()):
         super().__init__(dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize, device, workers)
+        self.closs = contrastive
     
     
     def epoch(self, logger_freq, epoch):
@@ -143,8 +145,10 @@ class TrainDocAbstracts(TrainDoc):
             conditional_text = conditional_text.to(self.device)
             images = images.to(self.device)
 
-            spotted_topics = self.model(images, conditional_text)
+            spotted_topics, values = self.model(images, conditional_text)
             loss = self.loss_f(spotted_topics, text_emb)
+            if not values is None:
+                loss = loss + 0
             loss.backward()
             self.optimizer.step()
 
@@ -166,7 +170,7 @@ class TrainDocAbstracts(TrainDoc):
             images = images.to(self.device)
 
             with torch.no_grad():
-                spotted_topics = self.model(images, conditional_text)
+                spotted_topics, _ = self.model(images, conditional_text)
                 loss = self.loss_f(spotted_topics, text_emb)
                 statistics, pvalues = rank_correlation(spotted_topics, text_emb,)
 
