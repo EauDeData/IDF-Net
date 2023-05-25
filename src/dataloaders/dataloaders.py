@@ -17,7 +17,6 @@ from src.dataloaders.base import IDFNetDataLoader
 
 # https://open.spotify.com/track/31i56LZnwE6uSu3exoHjtB?si=1e5e0d5080404042
 
-
 class DummyDataset(IDFNetDataLoader):
     name = 'dummy_dataset'
     def __init__(self) -> None:

@@ -183,7 +183,7 @@ class TransformerModel(nn.Module):
     def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int,
                  nlayers: int, dropout: float = 0.5):
         super().__init__()
-        
+
         self.model_type = 'Transformer'
         self.pos_encoder = PositionalEncoding(d_model, dropout)
         encoder_layers = TransformerEncoderLayer(d_model, nhead, d_hid, dropout)
@@ -280,7 +280,7 @@ def linear_constructor(topology: list):
     return nn.Sequential(*seq)
 
 class AbstractsTopicSpotter(torch.nn.Module):
-    def __init__(self, visual_extractor, emb_size, out_size, inner_attn = [128, 128, 128], device = 'cuda') -> None:
+    def __init__(self, visual_extractor, emb_size, out_size, inner_attn = [], bert_size = 768, device = 'cuda') -> None:
         super(AbstractsTopicSpotter, self).__init__()
         self.visual_extractor = visual_extractor
         self.device = device
@@ -289,7 +289,7 @@ class AbstractsTopicSpotter(torch.nn.Module):
         self.visual_keys = linear_constructor(hidden_attn)
         self.visual_values = linear_constructor(hidden_attn)
         
-        self.textual_queries = linear_constructor([768] + inner_attn + [out_size])
+        self.textual_queries = linear_constructor([bert_size] + inner_attn + [out_size])
     
     def forward(self, visual_batch, textual_batch, return_values = True):
 

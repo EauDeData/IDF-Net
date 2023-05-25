@@ -129,23 +129,24 @@ class TrainDoc:
             self.test_epoch(36, epoch)
             
 class TrainDocAbstracts(TrainDoc):
-    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize=5, device='cuda', workers=16, contrastive = SimCLRLoss()):
+    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize=5, device='cuda', workers=4, contrastive = SimCLRLoss()):
         super().__init__(dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize, device, workers)
         self.closs = contrastive
     
-    
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers=workers,)
+        self.test_loader = dataloader.DataLoader(test_set, batch_size = bsize, shuffle = False, num_workers=workers,)   
     def epoch(self, logger_freq, epoch):
         
         print(f"Training... Epoch {epoch}")
         buffer = 0
         self.model.train()
         for n, (images, text_emb, conditional_text) in enumerate(self.loader):
-            
+
             text_emb = text_emb.to(self.device)
             conditional_text = conditional_text.to(self.device)
             images = images.to(self.device)
 
-            spotted_topics, values = self.model(images, conditional_text)
+            spotted_topics, values = self.model(images, text_emb) # TODO: Condition text properly not with the topic itself maybe
             loss = self.loss_f(spotted_topics, text_emb)
             if not values is None: loss = loss + self.closs(spotted_topics, values)
             loss.backward()

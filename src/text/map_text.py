@@ -68,7 +68,7 @@ class TF_IDFLoader:
 class LDALoader:
     # https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
     name = 'LDA_mapper'
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, num_topics = 28):
+    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim(), num_topics = 64):
 
         self.dataset = dataset
         self.prep = string_preprocess

@@ -153,9 +153,10 @@ def smooth_rank(sm, temperature, indicator_function):
     return sm.shape[0] - indicator
 
 
-def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, weighting = 'sigmoid', maxy = 3, device = 'cuda'):
+def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-5, k_gt = 1e-5, weighting = 'sigmoid', maxy = 3, device = 'cuda'):
 
     sm = similarity(h, h)
+
     indicator = smooth_rank(sm, k, indicator_function)
     
     # Ground-truth Ranking function
@@ -164,21 +165,9 @@ def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = 
 
     n = h.shape[0] if scale else 1
     C = corrcoef(gt_indicator, indicator)
-    if weighting is not None:
-
-        bins = torch.flip((torch.arange(h.shape[0] - 1).to(device) + 1), [0]) 
-        delta = bins *  maxy / (h.shape[0] - 1)        
-        if weighting == 'sigmoid':
-
-            W = 1 / (1 + torch.exp(delta))
-
-        Idiff = torch.abs(indicator - gt_indicator) * W.unsqueeze(0)
-        scalator = Idiff.sum(1) / W.sum() + 1
-        scalator.detach()
+    if weighting is not None: raise NotImplementedError
+    else: scalator = 1
     
-    else:
-        scalator = 1
-
     return 1 - (torch.sum(C * scalator/ n))
 
 def mse_rank_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5,):
