@@ -20,9 +20,9 @@ torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
-IMSIZE = 64
+IMSIZE = 128
 DEVICE = 'cuda:0' # TODO: Implement cuda execution
-BSIZE = 64
+BSIZE = 8
 
 
 dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/')
@@ -35,7 +35,7 @@ cleaner = StringCleanAndTrim()
 #try: 
 #loader = pickle.load(open('lda_loader.pkl', 'rb'))
 #except:
-loader = LSALoader(dataset, cleaner, ntopics = 224)
+loader = TF_IDFLoader(dataset, cleaner,)
 loader.fit()
 #pickle.dump(loader, open('lda_loader.pkl', 'wb'))
 
@@ -49,8 +49,8 @@ dataset_test.twin = False
 dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
-loss_function = SpearmanRankLoss(k=1e-2, k_gt=1e-2)
-model = Resnet(embedding_size = 64, resnet = '18') # VisualTransformer(IMSIZE)
+loss_function = MSERankLoss()
+model = Resnet(embedding_size = 64, resnet = '50') # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-3)

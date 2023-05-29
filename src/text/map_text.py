@@ -56,7 +56,8 @@ class TF_IDFLoader:
         self.model = gensim.models.TfidfModel(self.corpus, smartirs='ntc')
 
     def predict(self, sentence):
-        new_text_corpus =  self.dct.doc2bow(sentence.split())
+        sentence = self.prep([sentence])
+        new_text_corpus =  self.dct.doc2bow(sentence[0])
         return gensim.matutils.sparse2full(self.model[new_text_corpus], len(self.dct))
 
     def infer(self, index: int) -> Dict:

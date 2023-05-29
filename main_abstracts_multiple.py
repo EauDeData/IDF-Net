@@ -68,7 +68,7 @@ dataset_test.tokenizer = loader
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss()
 model_visual = ResNetWithEmbedder(embedding_size = 224, resnet = '101') # VisualTransformer(IMSIZE)
-model = AbstractsTopicSpotter(model_visual, emb_size = 224, out_size=128, bert_size=64)
+model = AbstractsTopicSpotter(model_visual, emb_size = 224, out_size=128, bert_size=200)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
