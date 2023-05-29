@@ -50,11 +50,11 @@ del bert
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 try: 
-    loader = pickle.load(open('lda_loader.pkl', 'rb'))
+    loader = pickle.load(open('lsa_loader.pkl', 'rb'))
 except:
-    loader = LDALoader(dataset,)
+    loader = LSALoader(dataset,)
     loader.fit()
-    pickle.dump(loader, open('lda_loader.pkl', 'wb'))
+    pickle.dump(loader, open('lsa_loader.pkl', 'wb'))
 cleaner = StringCleanAndTrim()
 
 
