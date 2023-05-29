@@ -20,8 +20,8 @@ torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
-IMSIZE = 224
-DEVICE = 'cuda' # TODO: Implement cuda execution
+IMSIZE = 64
+DEVICE = 'cuda:0' # TODO: Implement cuda execution
 BSIZE = 64
 
 
@@ -32,32 +32,32 @@ dataset_test = AbstractsDataset('test_set.csv', 'dataset/arxiv_images_test/')
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-try: 
-    loader = pickle.load(open('lda_loader.pkl', 'rb'))
-except:
-    loader = LDALoader(dataset,)
-    loader.fit()
-    pickle.dump(loader, open('lda_loader.pkl', 'wb'))
+#try: 
+#loader = pickle.load(open('lda_loader.pkl', 'rb'))
+#except:
+loader = LSALoader(dataset, cleaner, ntopics = 224)
+loader.fit()
+#pickle.dump(loader, open('lda_loader.pkl', 'wb'))
 
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
 dataset.twin = False
-#dataset.cleaner = cleaner
+dataset.cleaner = cleaner
 
 dataset_test.tokenizer = loader
 dataset_test.twin = False
-#dataset_test.cleaner = cleaner
+dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
-loss_function = SpearmanRankLoss()
-model = ResNetWithEmbedder(embedding_size = 224, resnet = '101') # VisualTransformer(IMSIZE)
+loss_function = SpearmanRankLoss(k=1e-2, k_gt=1e-2)
+model = Resnet(embedding_size = 64, resnet = '18') # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
-test_task = Test(dataset, model, loss_function, None, None, optim, bsize = BSIZE, scheduler = False, save = True, device = 'cuda')
-train_task = Train(dataset, model, loss_function, None, None, optim, test_task, bsize = BSIZE, device = 'cuda',)
+test_task = Test(dataset, model, loss_function, None, None, optim, bsize = BSIZE, scheduler = False, save = True, device = DEVICE)
+train_task = Train(dataset, model, loss_function, None, None, optim, test_task, bsize = BSIZE, device = DEVICE,)
 
 train_task.run(epoches = 120)
 

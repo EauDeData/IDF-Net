@@ -31,7 +31,7 @@ class DummyDataset(IDFNetDataLoader):
 class AbstractsDataset:
 
     name = 'abstracts_dataset'
-    def __init__(self, csv_path, data_folder, train = True, imsize = 512, twin = False, cleaner = None) -> None:
+    def __init__(self, csv_path, data_folder, train = True, imsize = 512, twin = False) -> None:
 
         # My Frame https://www.kaggle.com/datasets/spsayakpaul/arxiv-paper-abstracts?resource=download
 
@@ -48,15 +48,16 @@ class AbstractsDataset:
 
             '''
         
-        os.makedirs(data_folder, exist_ok=True)
-        if not len(os.listdir(data_folder)): self.generate_db(data_folder)
+        if not (os.path.exists(data_folder) and len(os.listdir(data_folder))): self.generate_db(data_folder)
         
         self.images = data_folder
         self.fold = train
-        self.offset = int(.8*len(self.dataframe)) if not train else 0
+        self.offset = 0
         self.tokenizer = 0
         self.imsize = imsize
-        self.cleaner = cleaner
+
+        self.twin = twin
+        if self.twin: self.twin_dataset = None
 
     def generate_db(self, path) -> None:
 
@@ -71,8 +72,7 @@ class AbstractsDataset:
 
         
     def __len__(self):
-        if self.fold: return int(.8*len(self.dataframe))
-        return int(.2*len(self.dataframe))
+        return len(self.dataframe)
 
     
     def iter_text(self):
@@ -102,14 +102,12 @@ class AbstractsDataset:
         image = image.astype(np.float32)
         text = self.dataframe['titles'][index] + ' ' + \
             self.dataframe['summaries'][index]
-        
-        if self.cleaner is not None: text = ' '.join(self.cleaner([text])[0])
 
         if isinstance(self.tokenizer, int):
             return image, text
         
         if self.twin: return image, self.tokenizer[index], self.twin_dataset[index]
-        return image, self.tokenizer.predict(text)
+        return image, self.tokenizer.predict(text), text
 
 class AbstractsAttn(AbstractsDataset):
     def __init__(self, csv_path, data_folder, train=True, imsize=512, twin=False, cleaner=None, bert = None) -> None:

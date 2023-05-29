@@ -4,7 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 import wandb
 import os
 
-from src.loss.loss import rank_correlation, raw_accuracy
+from src.loss.loss import rank_correlation, raw_accuracy, CosineSimilarityMatrix
 
 wandb.init(project="IDF-NET Logger")
 WRITER = SummaryWriter()
@@ -35,12 +35,15 @@ class Train:
         print(f"Training... Epoch {epoch}")
         buffer = 0
         self.model.train()
-        for n, (images, text_emb) in enumerate(self.loader):
+        for n, (images, text_emb, text) in enumerate(self.loader):
+
+            # print(text)
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
             self.optimizer.zero_grad()
             h = self.model(images)
             loss = self.loss_f(h, text_emb)
+            assert loss==loss, "me quiero matar"
             loss.backward()
             self.optimizer.step()
             buffer += loss.item()
@@ -56,10 +59,10 @@ class Train:
     def run(self, epoches = 60, logger_freq = 1000):
 
         for epoch in range(epoches):
+
+            self.epoch(logger_freq, epoch)
             with torch.no_grad():
                 self.test.epoch(500, epoch)
-            self.epoch(logger_freq, epoch)
-
         self.test.epoch(500, epoch+1)
 
 class Test:
@@ -92,7 +95,7 @@ class Test:
             if not os.path.exists('./output/models/'):  os.mkdir('./output/models/')
             torch.save(self.model.state_dict(), f'./output/models/{epoch}.pth')
 
-        for n, (images, text_emb) in enumerate(self.loader):
+        for n, (images, text_emb, _) in enumerate(self.loader):
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
             h = self.model(images)

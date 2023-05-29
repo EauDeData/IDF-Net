@@ -81,13 +81,17 @@ class LDALoader:
         return gensim.matutils.sparse2full(instance, self.ntopics)
     
     def predict(self, sentence):
-        new_text_corpus =  self.dct.doc2bow(sentence.split())
+        sentence = self.prep([sentence])
+        new_text_corpus =  self.dct.doc2bow(sentence[0])
         return gensim.matutils.sparse2full(self.model[new_text_corpus],  self.ntopics)
 
     def fit(self):
         dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
         sentences = self.prep([' '.join(x[0]) for x in dataset])
+        print(len(sentences))
+
         self.dct = gensim.corpora.Dictionary(documents=sentences)
+
         self.corpus = [self.dct.doc2bow(line) for line in sentences]
         self.model = gensim.models.LdaMulticore(corpus=self.corpus,
                                        id2word=self.dct,

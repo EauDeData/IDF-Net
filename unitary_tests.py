@@ -24,11 +24,6 @@ nltk.download('stopwords')
 
 if __name__ == '__main__': 
 
-    model = AbstractsTopicSpotter(ResNetWithEmbedder(resnet = '18', ), 512, 128)
-    images = torch.zeros(8, 3, 224, 224)
-    text = torch.zeros(8, 768)
-    print(model(images, text)[0].shape)
-    exit()
     try:
         a, b = torch.rand(5, 5), torch.rand(5, 15)
         sim_a = CosineSimilarityMatrix()(a, a)

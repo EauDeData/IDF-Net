@@ -94,7 +94,7 @@ class Resnet(torch.nn.Module):
         else: raise NotImplementedError
 
 
-        self.resnet.fc = torch.nn.Linear(2048, embedding_size)
+        self.resnet.fc = torch.nn.Linear(2048 if resnet != "18" else 512, embedding_size)
         self.norm = norm
         #self.resnet = torch.nn.DataParallel(self.resnet)
 

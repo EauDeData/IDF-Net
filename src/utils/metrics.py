@@ -103,6 +103,7 @@ def batched_spearman_rank(h_rank, gt_rank):
 
     return [z.correlation for z in data], [z.pvalue for z in data]
 
+
 def cov(m):
     # m = m.type(torch.double)  # uncomment this line if desired
     fact = 1.0 / (m.shape[-1] - 1)  # 1 / N
@@ -112,7 +113,7 @@ def cov(m):
 
 
 
-def corrcoef(x, y, eps = 0):
+def corrcoef(x, y):
     # thanks https://discuss.pytorch.org/t/spearmans-correlation/91931/2
     batch_size = x.shape[0]
     x = torch.stack((x, y), 1)
@@ -121,7 +122,7 @@ def corrcoef(x, y, eps = 0):
     # normalize covariance matrix
     d = torch.diagonal(c, dim1=1, dim2=2)
     stddev = torch.pow(d, 0.5)
-    stddev = stddev.repeat(1, 2).view(batch_size, 2, 2) + eps
+    stddev = stddev.repeat(1, 2).view(batch_size, 2, 2)
     c = c.div(stddev)
     c = c.div(torch.transpose(stddev, 1, 2))
     return c[:, 1, 0]

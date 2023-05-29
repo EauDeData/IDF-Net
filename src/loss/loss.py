@@ -46,7 +46,7 @@ class SpearmanRankLoss(CustomLoss):
 
 
 class MSERankLoss(CustomLoss):
-    def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, device = 'cuda', weighted = None, maxy = 3):
+    def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-2, k_gt = 1, device = 'cuda', weighted = None, maxy = 3):
 
         self.ind = indicator_function
         self.sim = similarity
@@ -153,10 +153,9 @@ def smooth_rank(sm, temperature, indicator_function):
     return sm.shape[0] - indicator
 
 
-def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-5, k_gt = 1e-5, weighting = 'sigmoid', maxy = 3, device = 'cuda'):
+def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = EuclideanSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, weighting = 'sigmoid', maxy = 3, device = 'cuda'):
 
     sm = similarity(h, h)
-
     indicator = smooth_rank(sm, k, indicator_function)
     
     # Ground-truth Ranking function
@@ -167,7 +166,6 @@ def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = 
     C = corrcoef(gt_indicator, indicator)
     if weighting is not None: raise NotImplementedError
     else: scalator = 1
-    
     return 1 - (torch.sum(C * scalator/ n))
 
 def mse_rank_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5,):
