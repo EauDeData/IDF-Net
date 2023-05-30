@@ -22,9 +22,9 @@ torch.manual_seed(42)
 # TODO: Use a config file
 # Some constants
 IMSIZE = 224
-DEVICE = 'cuda:1' # TODO: Implement cuda execution
-BSIZE = 32
-DEVICE_BERT = 'cuda:1'
+DEVICE = 'cuda' # TODO: Implement cuda execution
+BSIZE = 8
+DEVICE_BERT = 'cuda'
 bert = BertTextEncoder().to(DEVICE_BERT)
 
 try: 
@@ -45,6 +45,8 @@ dataset_test.twin = False
 
 dataset.imsize = IMSIZE
 dataset_test.imsize = IMSIZE
+cleaner = StringCleanAndTrim()
+
 del bert
 #print(dataset[0][0]['img'].shape)
 ### On which we clean the text and load the tokenizer ###
@@ -52,11 +54,9 @@ print("Tokenizing text!")
 try: 
     loader = pickle.load(open('lsa_loader.pkl', 'rb'))
 except:
-    loader = LSALoader(dataset,)
+    loader = LSALoader(dataset, cleaner, ntopics = 224)
     loader.fit()
     pickle.dump(loader, open('lsa_loader.pkl', 'wb'))
-cleaner = StringCleanAndTrim()
-
 
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
@@ -66,17 +66,15 @@ dataset_test.tokenizer = loader
 #dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
-loss_function = SpearmanRankLoss()
-model_visual = ResNetWithEmbedder(embedding_size = 224, resnet = '101') # VisualTransformer(IMSIZE)
-model = AbstractsTopicSpotter(model_visual, emb_size = 224, out_size=128, bert_size=200)
+loss_function = MSERankLoss()
+model_visual = Resnet(224, norm = 2, resnet = '152') # VisualTransformer(IMSIZE)
+model = AbstractsTopicSpotter(model_visual, emb_size = 224, out_size=128, bert_size=224)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=3)
-
-
 task.train(epoches = 120)
 
 
