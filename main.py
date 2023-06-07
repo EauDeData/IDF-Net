@@ -22,7 +22,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 128
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 42
+BSIZE = 64
 
 
 dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/')
@@ -35,7 +35,7 @@ cleaner = StringCleanAndTrim()
 #try: 
 #loader = pickle.load(open('lda_loader.pkl', 'rb'))
 #except:
-loader = LDALoader(dataset, cleaner, num_topics=224)
+loader = LDALoader(dataset, cleaner, num_topics=32)
 loader.fit()
 #pickle.dump(loader, open('lda_loader.pkl', 'wb'))
 
