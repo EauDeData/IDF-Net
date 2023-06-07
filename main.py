@@ -35,25 +35,23 @@ cleaner = StringCleanAndTrim()
 #try: 
 #loader = pickle.load(open('lda_loader.pkl', 'rb'))
 #except:
-loader = TF_IDFLoader(dataset, cleaner,)
+loader = LDALoader(dataset, cleaner, num_topics=64)
 loader.fit()
 #pickle.dump(loader, open('lda_loader.pkl', 'wb'))
 
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
 dataset.twin = False
-dataset.cleaner = cleaner
 
 dataset_test.tokenizer = loader
 dataset_test.twin = False
-dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
-loss_function = MSERankLoss()
+loss_function = SpearmanRankLoss()
 model = Resnet(embedding_size = 64, resnet = '50') # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 test_task = Test(dataset, model, loss_function, None, None, optim, bsize = BSIZE, scheduler = False, save = True, device = DEVICE)

@@ -45,7 +45,7 @@ def cosine_similarity_matrix(x1: Tensor, x2: Tensor, dim: int = 1, eps: float = 
 
     sim = torch.tensordot(x1, x2, dims=([2], [2])).squeeze()
 
-    sim = (sim + 1)/2 #range: [-1, 1] -> [0, 2] -> [0, 1]
+    sim = sim #range: [-1, 1] -> [0, 2] -> [0, 1]
 
     return sim
 

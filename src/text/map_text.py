@@ -42,11 +42,11 @@ class BaseMapper:
     def fit(self) -> None:
 
         sentences = [self.prep(x) for x in self.dataset.iter_text()]
-        print("Dataset processed...")
+        print("Dataset processed...", sentences[-1])
         self.dct = gensim.corpora.Dictionary(documents=sentences)
         print('Creating Corpus...')
         self.corpus = [self.dct.doc2bow(line) for line in sentences]
-        print('Fitting...')
+        print('Fitting...', self.corpus[-1])
         self.model = self.model_instance(**{"corpus":self.corpus,
                                     "id2word":self.dct,
                                     "num_topics":self.ntopics})
