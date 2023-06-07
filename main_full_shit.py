@@ -23,7 +23,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 128
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 4
+BSIZE = 42
 
 
 dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/')
@@ -42,7 +42,7 @@ class ProxyCleaner:
 #try: 
 #    loader = pickle.load(open('lda_loader.pkl', 'rb'))
 # except:
-loader = LDALoader(dataset, cleaner, num_topics=64)
+loader = LDALoader(dataset, cleaner, num_topics=32)
 loader.fit()
     # pickle.dump(loader, open('lda_loader.pkl', 'wb'))
 
@@ -91,6 +91,6 @@ with torch.no_grad():
 
         lloss = loss_function(features, topics)
         print(lloss)
-        break
+        if lloss!=lloss: break
 
 

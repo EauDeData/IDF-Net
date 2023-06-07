@@ -8,7 +8,7 @@ import pickle
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
-from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, CLIPLoader
+from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
 from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, MSERankLoss
 from src.models.models import VisualTransformer, Resnet50, Resnet, ResNetWithEmbedder
 from src.dataloaders.dataloaders import AbstractsDataset, COCODataset
@@ -21,8 +21,8 @@ torch.manual_seed(42)
 # TODO: Use a config file
 # Some constants
 IMSIZE = 128
-DEVICE = 'cuda:0' # TODO: Implement cuda execution
-BSIZE = 8
+DEVICE = 'cuda' # TODO: Implement cuda execution
+BSIZE = 42
 
 
 dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/')
@@ -35,7 +35,7 @@ cleaner = StringCleanAndTrim()
 #try: 
 #loader = pickle.load(open('lda_loader.pkl', 'rb'))
 #except:
-loader = LDALoader(dataset, cleaner, num_topics=64)
+loader = LDALoader(dataset, cleaner, num_topics=224)
 loader.fit()
 #pickle.dump(loader, open('lda_loader.pkl', 'wb'))
 
