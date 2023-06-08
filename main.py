@@ -22,7 +22,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 128
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 64
+BSIZE = 21
 
 
 dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/')
@@ -32,12 +32,12 @@ dataset_test = AbstractsDataset('test_set.csv', 'dataset/arxiv_images_test/')
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
-#try: 
-#loader = pickle.load(open('lda_loader.pkl', 'rb'))
-#except:
-loader = LDALoader(dataset, cleaner, num_topics=32)
-loader.fit()
-#pickle.dump(loader, open('lda_loader.pkl', 'wb'))
+try: 
+    loader = pickle.load(open('lda_loader.pkl', 'rb'))
+except:
+    loader = LDALoader(dataset, cleaner, num_topics=32)
+    loader.fit()
+    pickle.dump(loader, open('lda_loader.pkl', 'wb'))
 
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
@@ -48,7 +48,7 @@ dataset_test.twin = False
 
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss()
-model = Resnet(embedding_size = 64, resnet = '50') # VisualTransformer(IMSIZE)
+model = torch.compile(Resnet(embedding_size = 64, resnet = '50')) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-4)

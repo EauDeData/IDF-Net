@@ -23,7 +23,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 128
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 42
+BSIZE = 21
 
 
 dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/')
@@ -69,22 +69,25 @@ import numpy as np
 
 matrix = CosineSimilarityMatrix()
 dataloader = torch.utils.data.DataLoader(dataset, batch_size = BSIZE)
-with torch.no_grad():
-    for out  in dataloader:
-        try:
-            samples, topics, text = out
-        except:
-            samples, topics = out
-        print("input shape", samples.shape)
-        print("matriu (ara):")
-        print(matrix(topics, topics))
-        samples = samples.to(DEVICE)
-        topics = topics.to(DEVICE)
-        features = model(samples)
+for out  in dataloader:
+    try:
+        samples, topics, text = out
+    except:
+        samples, topics = out
+    print("input shape", samples.shape)
+    print("matriu (ara):")
+    print(matrix(topics, topics))
+    samples = samples.to(DEVICE)
+    topics = topics.to(DEVICE)
+    features = model(samples)
 
-        print("matriu (bé):")
-        lloss = loss_function(features, topics)
-        print(lloss)
-        if lloss!=lloss: break
+    print("matriu (bé):")
+    lloss = loss_function(features, topics)
+    lloss.backward()
+
+    optim.step()
+    optim.zero_grad()
+    print(lloss)
+    if lloss!=lloss: break
 
 
