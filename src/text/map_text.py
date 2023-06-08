@@ -38,13 +38,13 @@ class BaseMapper:
     def __getitem__(self, index: int) -> np.ndarray:
         _train_precondition(self)
         instance = self.model[self.corpus[index]]
-        gensim_vector = gensim.matutils.sparse2full(instance, len(self.dct))
+        gensim_vector = gensim.matutils.sparse2full(instance, self.vector_size)
         return gensim_vector
     def pop_fit(self, dict):
         return {x: dict[x] for x in dict if x in self.popfitted}
     
     def fit(self) -> None:
-
+        
         sentences = [self.prep(x) for x in self.dataset.iter_text()]
         print("Dataset processed...", sentences[-1])
         self.dct = gensim.corpora.Dictionary(documents=sentences)
@@ -56,10 +56,11 @@ class BaseMapper:
                                     "id2word":self.dct,
                                     "num_topics":self.ntopics
                                     }))
+        self.vector_size = len(self.dct) if self.name == 'tf-idf_mapper' else self.ntopics
 
     def predict(self, sentence):
         new_text_corpus =  self.dct.doc2bow(sentence.split())
-        return gensim.matutils.sparse2full(self.model[new_text_corpus], len(self.dct))
+        return gensim.matutils.sparse2full(self.model[new_text_corpus], self.vector_size)
 
     def infer(self, index: int) -> Dict:
 

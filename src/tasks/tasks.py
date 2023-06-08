@@ -38,6 +38,8 @@ class Train:
         for n, (images, text_emb, text) in enumerate(self.loader):
 
             # print(text)
+            print(text_emb.shape)
+
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
             self.optimizer.zero_grad()
