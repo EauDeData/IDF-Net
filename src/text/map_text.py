@@ -27,18 +27,22 @@ def _train_precondition(obj) -> None:
 
 class BaseMapper:
     model_instance = None
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, ntopics = 224, *args, **kwargs) -> None:
+    popfitted = None
+    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim(), ntopics = 224, *args, **kwargs) -> None:
         self.dataset = dataset
         self.prep = string_preprocess
         self.model = 0 # IF it's an int, a not trained error will be rised
+        
         self.ntopics = ntopics
-    
+
     def __getitem__(self, index: int) -> np.ndarray:
         _train_precondition(self)
         instance = self.model[self.corpus[index]]
         gensim_vector = gensim.matutils.sparse2full(instance, len(self.dct))
         return gensim_vector
-
+    def pop_fit(self, dict):
+        return {x: dict[x] for x in dict if x in self.popfitted}
+    
     def fit(self) -> None:
 
         sentences = [self.prep(x) for x in self.dataset.iter_text()]
@@ -47,9 +51,11 @@ class BaseMapper:
         print('Creating Corpus...')
         self.corpus = [self.dct.doc2bow(line) for line in sentences]
         print('Fitting...', self.corpus[-1])
-        self.model = self.model_instance(**{"corpus":self.corpus,
+        self.model = self.model_instance(**self.pop_fit({
+                                    "corpus":self.corpus,
                                     "id2word":self.dct,
-                                    "num_topics":self.ntopics})
+                                    "num_topics":self.ntopics
+                                    }))
 
     def predict(self, sentence):
         new_text_corpus =  self.dct.doc2bow(sentence.split())
@@ -61,7 +67,7 @@ class BaseMapper:
             "result": self[index]
         }
 
-class TF_IDFLoader:
+class TF_IDFLoader(BaseMapper):
     '''
     Given a dataset; loads its TF-IDF representation.
     self.fit: Builds the TF-IDF model.
@@ -69,42 +75,19 @@ class TF_IDFLoader:
     '''
 
     name = 'tf-idf_mapper'
-
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, *args, **kwargs) -> None:
-        self.dataset = dataset
-        self.prep = string_preprocess
-        self.model = 0 # IF it's an int, a not trained error will be rised
-
-    def __getitem__(self, index: int) -> np.ndarray:
-        _train_precondition(self)
-        instance = self.model[self.corpus[index]]
-        gensim_vector = gensim.matutils.sparse2full(instance, len(self.dct))
-        return gensim_vector
-
-    def fit(self) -> None:
-
-        dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
-        sentences = self.prep([' '.join(x[0]) for x in dataset])
-        self.dct = gensim.corpora.Dictionary(documents=sentences)
-        self.corpus = [self.dct.doc2bow(line) for line in sentences]
-        self.model = gensim.models.TfidfModel(self.corpus, smartirs='ntc')
-
-    def predict(self, sentence):
-        new_text_corpus =  self.dct.doc2bow(sentence.split())
-        return gensim.matutils.sparse2full(self.model[new_text_corpus], len(self.dct))
-
-    def infer(self, index: int) -> Dict:
-
-        return {
-            "result": self[index]
-        }
-
+    model_instance = gensim.models.TfidfModel
+    popfitted = ['corpus'] # Accepted keywords in Fit function
+     
 class LDALoader(BaseMapper):
     # https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
     name = 'LDA_mapper'
     model_instance = gensim.models.LdaMulticore
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable[..., Any] = StringCleanAndTrim, ntopics=224, *args, **kwargs) -> None:
-        super().__init__(dataset, string_preprocess, ntopics, *args, **kwargs)
+    popfitted = ['corpus', 'id2word', 'num_topics'] # Accepted keywords in Fit function
+
+class EnsembleLDALoader:
+    name = 'EnsembleLDA_mapper'
+    model_instance = gensim.models.EnsembleLda
+    popfitted = ['corpus', 'id2word', 'num_topics'] # Accepted keywords in Fit function
 
 class BOWLoader:
     name = 'BOW_mapper'
@@ -113,33 +96,10 @@ class BOWLoader:
 
 class LSALoader:
     name = 'LSA_mapper'
-    def __init__(self, dataset: IDFNetDataLoader, string_preprocess: Callable = StringCleanAndTrim, ntopics = 200) -> None:
-        
-        self.dataset = dataset
-        self.prep = string_preprocess
-        self.model = 0 # IF it's an int, a not trained error will be rised
-        self.ntopics = ntopics
+    model_instance = gensim.models.LsiModel
+    popfitted = ['corpus', 'id2word', 'num_topics'] # Accepted keywords in Fit function
 
-    def __getitem__(self, index: int) -> np.ndarray:
-        _train_precondition(self)
-        instance = self.model[self.corpus[index]]
-        gensim_vector = gensim.matutils.sparse2full(instance, self.ntopics)
-        return gensim_vector
-
-    def predict(self, sentence):
-        new_text_corpus =  self.dct.doc2bow(sentence.split())
-        return gensim.matutils.sparse2full(self.model[new_text_corpus], self.ntopics)
-
-    def fit(self):
-        
-        dataset = yieldify_dataiter(self.dataset.iter_text(), self.prep)
-        sentences = self.prep([' '.join(x[0]) for x in dataset])
-        self.dct = gensim.corpora.Dictionary(documents=sentences)
-
-        self.corpus = [self.dct.doc2bow(line) for line in sentences]
-        self.model = gensim.models.lsimodel.LsiModel(
-            corpus=self.corpus, id2word=self.dct, num_topics=self.ntopics,
-            )
+    
         
         
     

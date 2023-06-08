@@ -9,7 +9,7 @@ import pickle
 
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
-from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
+from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, EnsembleLDALoader
 from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, MSERankLoss
 from src.models.models import VisualTransformer, Resnet50, Resnet
 from src.dataloaders.dataloaders import AbstractsDataset
@@ -22,7 +22,7 @@ torch.manual_seed(42)
 # TODO: Use a config file
 # Some constants
 IMSIZE = 128
-DEVICE = 'cuda' # TODO: Implement cuda execution
+DEVICE = 'cpu' # TODO: Implement cuda execution
 BSIZE = 21
 
 
@@ -39,13 +39,15 @@ class ProxyCleaner:
 
     def __call__(self, batch, *args: Any, **kwds: Any) -> Any:
         return batch.split()
+
+loader = LDALoader(dataset, cleaner, num_topics=224)
+
 try: 
-    loader = pickle.load(open('lda_loader.pkl', 'rb'))
+    loader = pickle.load(open(f'{loader.name}-{loader.ntopics}.pkl', 'rb'))
 
 except:
-    loader = LDALoader(dataset, cleaner, num_topics=32)
     loader.fit()
-    pickle.dump(loader, open('lda_loader.pkl', 'wb'))
+    pickle.dump(loader, open(f'{loader.name}-{loader.ntopics}.pkl', 'wb'))
 
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
@@ -69,25 +71,27 @@ import numpy as np
 
 matrix = CosineSimilarityMatrix()
 dataloader = torch.utils.data.DataLoader(dataset, batch_size = BSIZE)
-for out  in dataloader:
-    try:
-        samples, topics, text = out
-    except:
-        samples, topics = out
-    print("input shape", samples.shape)
-    print("matriu (ara):")
-    print(matrix(topics, topics))
-    samples = samples.to(DEVICE)
-    topics = topics.to(DEVICE)
-    features = model(samples)
+with torch.no_grad():
+    for n, out  in enumerate(dataloader):
+        try:
+            samples, topics, text = out
+        except:
+            samples, topics = out
+        print("input shape", samples.shape)
+        print("matriu (ara):")
+        print(matrix(topics, topics))
+        samples = samples.to(DEVICE)
+        topics = topics.to(DEVICE)
+        features = model(samples)
 
-    print("matriu (bé):")
-    lloss = loss_function(features, topics)
-    lloss.backward()
+        print("matriu (bé):")
+        lloss = loss_function(features, topics)
+        print(lloss)
+        if lloss!=lloss: 
+            
+            print([cleaner(x) for x in text])
+            pass
+            break
 
-    optim.step()
-    optim.zero_grad()
-    print(lloss)
-    if lloss!=lloss: break
 
 
