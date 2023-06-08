@@ -51,7 +51,7 @@ class StringCleanAndTrim:
         '''
 
         shorter = PorterStemmer().stem if self.stemm else WordNetLemmatizer().lemmatize
-        lemma = [shorter(x) for x in batch.lower().split() if not x in stopwords]
+        lemma = [shorter(re.sub('[^A-Za-z0-9]+', '', x)) for x in batch.lower().split() if not x in stopwords]
         return lemma
 
 

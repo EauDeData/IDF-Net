@@ -39,12 +39,13 @@ class ProxyCleaner:
 
     def __call__(self, batch, *args: Any, **kwds: Any) -> Any:
         return batch.split()
-#try: 
-#    loader = pickle.load(open('lda_loader.pkl', 'rb'))
-# except:
-loader = LDALoader(dataset, cleaner, num_topics=32)
-loader.fit()
-    # pickle.dump(loader, open('lda_loader.pkl', 'wb'))
+try: 
+    loader = pickle.load(open('lda_loader.pkl', 'rb'))
+
+except:
+    loader = LDALoader(dataset, cleaner, num_topics=32)
+    loader.fit()
+    pickle.dump(loader, open('lda_loader.pkl', 'wb'))
 
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
@@ -55,7 +56,7 @@ dataset_test.twin = False
 
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss()
-model = Resnet(embedding_size = 64, resnet = '50') # VisualTransformer(IMSIZE)
+model = Resnet(embedding_size = 64, resnet = '50').to(DEVICE) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
@@ -77,18 +78,11 @@ with torch.no_grad():
         print("input shape", samples.shape)
         print("matriu (ara):")
         print(matrix(topics, topics))
-
-        img = np.array(samples[0, 0])
+        samples = samples.to(DEVICE)
+        topics = topics.to(DEVICE)
         features = model(samples)
-        sim = torch.zeros((BSIZE, BSIZE))
-        sim_fitted = torch.zeros((BSIZE, BSIZE))
-        for i in range(BSIZE):
-            for j in range(BSIZE):
-                sim[i, j] = torch.nn.CosineSimilarity(dim = 0)(topics[i], topics[j])
 
         print("matriu (bé):")
-        print(sim)
-
         lloss = loss_function(features, topics)
         print(lloss)
         if lloss!=lloss: break
