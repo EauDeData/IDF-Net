@@ -119,7 +119,7 @@ def smooth_rank(sm, temperature, indicator_function):
     return sm.shape[0] - indicator
 
 
-def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, weighting = 'sigmoid', maxy = 3):
+def rank_correlation_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, weighting = None, maxy = 3):
 
     sm = similarity(h, h)
     indicator = smooth_rank(sm, k, indicator_function)

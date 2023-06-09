@@ -39,7 +39,7 @@ loss_function = SpearmanRankLoss()
 model = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 1e-2)
+optim = torch.optim.Adam(model.parameters(), lr = 1e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 ### Tasks ###
