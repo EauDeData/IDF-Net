@@ -23,7 +23,8 @@ DEVICE = 'cuda' # TODO: Implement cuda execution
 BSIZE = 64
 
 ### First we select the dataset ###
-dataset = AbstractsDataset('./arxiv_data.csv', './dataset/arxiv_images', imsize = IMSIZE)
+dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/')
+test_data = AbstractsDataset('test_set.csv', 'dataset/arxiv_images_test/')
 
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
@@ -41,10 +42,6 @@ model = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 1e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
-
-### Tasks ###
-test_data = copy.deepcopy(dataset)
-test_data.fold = False
 
 test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE, bsize = BSIZE)
 train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE)

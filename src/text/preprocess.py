@@ -8,6 +8,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from src.utils.errors import *
 nltk.download('punkt')
+stopwords = nltk.corpus.stopwords.words('english')
 
 # https://open.spotify.com/track/31i56LZnwE6uSu3exoHjtB?si=1e5e0d5080404042
 
@@ -48,16 +49,8 @@ class StringCleanAndTrim:
                 w: words
                 d: documents of batch
         '''
-        stopwords = nltk.corpus.stopwords.words('english')
-        basic_cleaner = StringCleaner()
 
         shorter = PorterStemmer().stem if self.stemm else WordNetLemmatizer().lemmatize
-
-
-        unstopable = [[word for word in word_tokenize(text.lower()) if not word in stopwords] for text in batch]
-        cleaner = [" ".join([y for y in x if not y in string.punctuation]) for x in unstopable] # Remove punctation and lower
-        shorty = [shorter(x) for x in cleaner]
-        
-        return basic_cleaner(shorty)
-
+        lemma = [shorter(re.sub('[^A-Za-z0-9]+', '', x)) for x in batch.lower().split() if not x in stopwords]
+        return lemma
 

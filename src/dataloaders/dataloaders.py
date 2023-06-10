@@ -273,6 +273,23 @@ class AbstractsDataset:
             return image, text
         
         if self.twin: return image, self.tokenizer[index], self.twin_dataset[index]
-        return image, self.tokenizer[index]
-
+        return image, self.tokenizer.predict(text)
     
+
+
+class AbstractsAttn(AbstractsDataset):
+    def __init__(self, csv_path, data_folder, train=True, imsize=512, twin=False, cleaner=None, bert = None) -> None:
+        super().__init__(csv_path, data_folder, train, imsize, twin,)
+        self.init_berts(bert)
+
+    def init_berts(self, bert):
+        self.berts = []
+        self.twin = False
+        for title in tqdm(self.dataframe['titles']): 
+            with torch.no_grad(): self.berts.append(bert.predict([title]).to('cpu'))
+    def collate_boe(self, batch):
+        return batch
+
+    def __getitem__(self, index):
+        image, topic, text = super().__getitem__(index)
+        return image, topic, self.berts[index]
