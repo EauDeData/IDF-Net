@@ -289,7 +289,7 @@ class TrainDocAbstracts(TrainDoc):
         wandb.log({'rank-corr-pvalue': pbuffer / n})
 
 class TrainDocAbstracts(TrainDoc):
-    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize=5, device='cuda', workers=4, contrastive = SimCLRLoss()):
+    def __init__(self, dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize=5, device='cuda', workers=4, contrastive = None):
         super().__init__(dataset, test_set, model, bert, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize, device, workers)
         self.closs = contrastive
     
@@ -308,7 +308,7 @@ class TrainDocAbstracts(TrainDoc):
 
             spotted_topics, values = self.model(images, text_emb) # TODO: Condition text properly not with the topic itself maybe
             loss = self.loss_f(spotted_topics, text_emb)
-            if not values is None: loss = loss + self.closs(spotted_topics, values)
+            if (not values is None) and (not self.closs is None): loss = loss + self.closs(spotted_topics, values)
             loss.backward()
             self.optimizer.step()
 

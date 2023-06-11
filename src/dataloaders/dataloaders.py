@@ -10,6 +10,7 @@ import pandas as pd
 from pnglatex import pnglatex
 import string
 import re
+from tqdm import tqdm
 
 from src.dataloaders.base import IDFNetDataLoader
 

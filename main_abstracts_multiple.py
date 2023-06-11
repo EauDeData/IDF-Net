@@ -11,8 +11,8 @@ from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, BertTextEncode
 from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss
 from src.models.models import VisualTransformer, Resnet50, AbstractsTopicSpotter
 from src.dataloaders.dataloaders import AbstractsDataset, AbstractsAttn
-from src.tasks.tasks import Train, Test, TrainDocAbstracts
 from src.tasks.evaluation import MAPEvaluation
+from src.tasks.tasks import TrainDocAbstracts
 from src.dataloaders.annoyify import Annoyifier
 nltk.download('stopwords')
 torch.manual_seed(42)
@@ -66,13 +66,13 @@ dataset_test.tokenizer = loader
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss()
 model_visual = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
-model = AbstractsTopicSpotter(model_visual, emb_size = 224, out_size=128, bert_size=224)
+model = AbstractsTopicSpotter(model_visual, emb_size = 224, out_size=128, bert_size=224) # For now we condition with the idf itself
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
-task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=3)
+task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=1)
 task.train(epoches = 120)
 
 
