@@ -292,5 +292,5 @@ class AbstractsAttn(AbstractsDataset):
         return batch
 
     def __getitem__(self, index):
-        image, topic, text = super().__getitem__(index)
+        image, topic = super().__getitem__(index)
         return image, topic, self.berts[index]

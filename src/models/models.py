@@ -1,6 +1,14 @@
 import torch
 from vit_pytorch import ViT
 import torch.nn as nn
+import torch
+import torchvision
+from vit_pytorch import ViT
+import torch.nn as nn
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+import torch.nn.functional as F
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
+import math
 
 class VisualTransformer(torch.nn.Module):
     def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 1, heads = 1, dropout = 0.1, norm = 2) -> None:
@@ -61,16 +69,6 @@ class SelfAttention(torch.nn.Module):
         
         out = self.gamma*out + x
         return out,attention
-
-class VisualConvAttention(torch.nn.Module):
-    def __init__(self,  embedding_size = 128): # TODO: Relevant hyperparameters
-
-        self.extractor = torch.nn.Sequential(*list(resnet50.children())[:-2])
-        self.attention = SelfAttention()
-
-    def forward(self, x):
-        pass
-
 
 class Resnet50(torch.nn.Module):
     def __init__(self, embedding_size = 128, norm = None):
