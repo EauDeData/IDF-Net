@@ -120,5 +120,5 @@ class AbstractsTopicSpotter(torch.nn.Module):
         attn_weights = F.softmax(dot_products, dim = 0) # (BS_VIS, BS_TEXT)
 
         weighted = torch.matmul(attn_weights.transpose(1, 0), visual_values) # For each textual query, a topic model formed with visual information.
-        if return_values: weighted, visual_values
+        if return_values: return weighted, visual_values
         return weighted, None

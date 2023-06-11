@@ -4,7 +4,9 @@ from torch.utils.tensorboard import SummaryWriter
 import wandb
 
 from src.loss.loss import rank_correlation, raw_accuracy
+from src.utils.metrics import CosineSimilarityMatrix
 
+M = CosineSimilarityMatrix
 wandb.init(project="IDF-NET Logger")
 WRITER = SummaryWriter()
 
@@ -254,6 +256,14 @@ class TrainDocAbstracts(TrainDoc):
             loss = self.loss_f(spotted_topics, text_emb)
             if (not values is None) and (not self.closs is None): loss = loss + self.closs(spotted_topics, values)
             loss.backward()
+            if loss != loss:
+
+                print("Visual similarity:")
+                print(M(spotted_topics, spotted_topics))
+
+                print("Textual Similarity:")
+                print(M(text_emb, text_emb))
+                exit()
             self.optimizer.step()
 
             if not n%logger_freq: print(loss)
@@ -274,7 +284,7 @@ class TrainDocAbstracts(TrainDoc):
             images = images.to(self.device)
 
             with torch.no_grad():
-                spotted_topics, _ = self.model(images, conditional_text)
+                spotted_topics, _ = self.model(images, text_emb)
                 loss = self.loss_f(spotted_topics, text_emb)
                 statistics, pvalues = rank_correlation(spotted_topics, text_emb,)
 
@@ -309,17 +319,25 @@ class TrainDocAbstracts(TrainDoc):
             spotted_topics, values = self.model(images, text_emb) # TODO: Condition text properly not with the topic itself maybe
             loss = self.loss_f(spotted_topics, text_emb)
             if (not values is None) and (not self.closs is None): loss = loss + self.closs(spotted_topics, values)
+            if loss != loss:
+
+                print("Visual similarity:")
+                print(M(spotted_topics, spotted_topics))
+
+                print("Textual Similarity:")
+                print(M(text_emb, text_emb))
+                exit()
             loss.backward()
             self.optimizer.step()
 
-            if not n%logger_freq: print(loss)
+            if not n%logger_freq: print('current:', loss)
             buffer += loss.item()
 
         wandb.log({'train-loss': buffer / n})
 
     def test_epoch(self, logger_freq, epoch):
         
-        print(f"Training... Epoch {epoch}")
+        print(f"Testing... Epoch {epoch}")
         buffer, pbuffer, stats_buffer = 0, 0, 0
 
         self.model.eval()
@@ -330,7 +348,7 @@ class TrainDocAbstracts(TrainDoc):
             images = images.to(self.device)
 
             with torch.no_grad():
-                spotted_topics, _ = self.model(images, conditional_text)
+                spotted_topics, _ = self.model(images, text_emb)
                 loss = self.loss_f(spotted_topics, text_emb)
                 statistics, pvalues = rank_correlation(spotted_topics, text_emb,)
 

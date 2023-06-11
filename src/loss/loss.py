@@ -40,6 +40,30 @@ class SpearmanRankLoss(CustomLoss):
 
     def forward(self, h, gt):
         return rank_correlation_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt)
+    
+
+class SimCLRLoss(CustomLoss):
+    def __init__(self, similarity = CosineSimilarityMatrix(), k = .5) -> None:
+
+        self.sim = similarity
+        self.t = k
+
+    def forward(self, h, gt):
+        return sim_clr_loss(h, gt, self.t, self.sim)
+
+def sim_clr_loss(h, h_corr, temperature = .5, distance_function = CosineSimilarityMatrix(), device = 'cuda', max_clr = 4.53):
+    # TODO: Don't hardcode the max: Infer from batch size (log2(exp(0)/((BS-1) * exp(1))))
+    distances = distance_function(h, h_corr) / temperature
+    eyed = torch.eye(h.shape[0]).to(device)
+    distances = torch.exp(distances)
+    numerator = distances * eyed
+    denominator = distances * (1 - eyed)
+
+    denominator = torch.sum(denominator, dim = 1)
+    numerator = torch.sum(numerator, dim = 1)
+    res =  -torch.log(numerator / denominator)
+    return (torch.sum(res) / h.shape[0]) / max_clr
+
 
 def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5, device = 'cuda'):
 
@@ -78,9 +102,6 @@ def clique_potential_loss():
     # You will have troubles finding cliques from adj matrix
     # Use this https://www.math.ucdavis.edu/~daddel/linear_algebra_appl/Applications/GraphTheory/GraphTheory_9_17/node10.html
     
-    pass
-
-def sim_clr_loss(h, h_augm, temperature = 0.1):
     pass
 
 def nns_loss(h, gt, distance_function = EuclideanDistanceMatrix(), temperature = 0.1):

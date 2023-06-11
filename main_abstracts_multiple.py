@@ -8,7 +8,7 @@ import pickle
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, BertTextEncoder
-from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss
+from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, sim_clr_loss
 from src.models.models import VisualTransformer, Resnet50, AbstractsTopicSpotter
 from src.dataloaders.dataloaders import AbstractsDataset, AbstractsAttn
 from src.tasks.evaluation import MAPEvaluation
@@ -21,7 +21,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 8
+BSIZE = 64
 DEVICE_BERT = 'cuda'
 bert = BertTextEncoder().to(DEVICE_BERT)
 
@@ -61,15 +61,16 @@ dataset_test.tokenizer = loader
 #dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
+OUT_SIZE = 128
 loss_function = SpearmanRankLoss()
-model_visual = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
-model = AbstractsTopicSpotter(model_visual, emb_size = 224, out_size=128, bert_size=224) # For now we condition with the idf itself
+model_visual = Resnet50(OUT_SIZE, norm = 2) # VisualTransformer(IMSIZE)
+model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, out_size=224, bert_size=224) # For now we condition with the idf itself
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
-
-task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=1)
+closs_function = sim_clr_loss
+task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=1, contrastive = closs_function )
 task.train(epoches = 120)
 
 
