@@ -1,5 +1,6 @@
 import torch
 from vit_pytorch import ViT
+import torch.nn as nn
 
 class VisualTransformer(torch.nn.Module):
     def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 1, heads = 1, dropout = 0.1, norm = 2) -> None:
@@ -85,10 +86,41 @@ class Resnet50(torch.nn.Module):
         if self.norm is not None: h =  torch.nn.functional.normalize(h, p = self.norm, dim = 1)
         return h
         
-        
+def linear_constructor(topology: list):
 
-class VisualConvTransformer(torch.nn.Module):
-    def __init__(self) -> None:
-        pass
-    def forward(self, batch):
-        pass
+    seq = []
+    for n, size in enumerate(topology[:-1]):
+        seq.extend([
+            nn.ReLU(),
+            nn.Linear(size, topology[n + 1])
+        ])
+    
+    return nn.Sequential(*seq)
+
+class AbstractsTopicSpotter(torch.nn.Module):
+    def __init__(self, visual_extractor, emb_size, out_size, inner_attn = [], bert_size = 768, device = 'cuda') -> None:
+        super(AbstractsTopicSpotter, self).__init__()
+        self.visual_extractor = visual_extractor
+        self.device = device
+
+        hidden_attn = [emb_size] + inner_attn + [out_size]
+        self.visual_keys = linear_constructor(hidden_attn)
+        self.visual_values = linear_constructor(hidden_attn)
+        
+        self.textual_queries = linear_constructor([bert_size] + inner_attn + [out_size])
+    
+    def forward(self, visual_batch, textual_batch, return_values = True):
+
+        visual_features = self.visual_extractor(visual_batch) # SHAPE (BS_VIS, EMB_SIZE)
+
+        visual_values = self.visual_values(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
+        visual_keys = self.visual_keys(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
+
+        textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
+
+        dot_products = torch.matmul(visual_keys, textual_queries.transpose(1, 0)) # (BS_VIS, BS_TEXT)
+        attn_weights = F.softmax(dot_products, dim = 0) # (BS_VIS, BS_TEXT)
+
+        weighted = torch.matmul(attn_weights.transpose(1, 0), visual_values) # For each textual query, a topic model formed with visual information.
+        if return_values: weighted, visual_values
+        return weighted, None

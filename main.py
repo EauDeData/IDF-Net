@@ -23,8 +23,8 @@ DEVICE = 'cuda' # TODO: Implement cuda execution
 BSIZE = 64
 
 ### First we select the dataset ###
-dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/')
-test_data = AbstractsDataset('test_set.csv', 'dataset/arxiv_images_test/')
+dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/', imsize = IMSIZE)
+test_data = AbstractsDataset('test_set.csv', 'dataset/arxiv_images_test/', imsize = IMSIZE)
 
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
@@ -34,6 +34,7 @@ loader.fit()
 
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
+test_data.tokenizer = loader
 
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss()
