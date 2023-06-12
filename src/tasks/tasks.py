@@ -6,7 +6,7 @@ import wandb
 from src.loss.loss import rank_correlation, raw_accuracy
 from src.utils.metrics import CosineSimilarityMatrix
 
-M = CosineSimilarityMatrix
+M = CosineSimilarityMatrix()
 wandb.init(project="IDF-NET Logger")
 WRITER = SummaryWriter()
 
@@ -59,6 +59,7 @@ class Train:
         for epoch in range(epoches):
             with torch.no_grad():
                 self.test.epoch(500, epoch)
+                torch.save(self.model, f'output/{epoch}-{self.loader.name}-{self.loader.ntopics}.pkl')
             self.epoch(logger_freq, epoch)
 
         self.test.epoch(500, epoch+1)

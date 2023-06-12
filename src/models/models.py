@@ -110,15 +110,15 @@ class AbstractsTopicSpotter(torch.nn.Module):
     def forward(self, visual_batch, textual_batch, return_values = True):
 
         visual_features = self.visual_extractor(visual_batch) # SHAPE (BS_VIS, EMB_SIZE)
-
         visual_values = self.visual_values(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
         visual_keys = self.visual_keys(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
 
+        textual_batch = textual_batch.squeeze()
         textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
 
         dot_products = torch.matmul(visual_keys, textual_queries.transpose(1, 0)) # (BS_VIS, BS_TEXT)
         attn_weights = F.softmax(dot_products, dim = 0) # (BS_VIS, BS_TEXT)
-
         weighted = torch.matmul(attn_weights.transpose(1, 0), visual_values) # For each textual query, a topic model formed with visual information.
+
         if return_values: return weighted, visual_values
         return weighted, None

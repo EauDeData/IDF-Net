@@ -70,7 +70,7 @@ model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, out_size=224, b
 optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 closs_function = sim_clr_loss
-task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=1, contrastive = closs_function )
+task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=4, contrastive = closs_function )
 task.train(epoches = 120)
 
 

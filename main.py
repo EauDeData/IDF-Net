@@ -41,15 +41,11 @@ loss_function = SpearmanRankLoss()
 model = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 1e-3)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE, bsize = BSIZE)
 train_task = Train(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE)
 
 train_task.run(epoches = 120)
-ann = Annoyifier(dataset, model, 128, len(dataset[0][1]), device = DEVICE, visual='./dataset/visual-[post]-LDA.ann', text='./dataset/text-LDA.ann')
-evaluator = MAPEvaluation(test_data, dataset, ann)
-res = evaluator.run()
-wandb.log(res)
-print(res)
+
