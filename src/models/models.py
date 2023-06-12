@@ -95,6 +95,9 @@ def linear_constructor(topology: list):
     
     return nn.Sequential(*seq)
 
+def custom_sigmoid(x, t = 1e-3):
+    return 1/(1 + torch.exp( -x / t))
+
 class AbstractsTopicSpotter(torch.nn.Module):
     def __init__(self, visual_extractor, emb_size, out_size, inner_attn = [], bert_size = 768, device = 'cuda') -> None:
         super(AbstractsTopicSpotter, self).__init__()
@@ -117,7 +120,7 @@ class AbstractsTopicSpotter(torch.nn.Module):
         textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
 
         dot_products = torch.matmul(visual_keys, textual_queries.transpose(1, 0)) # (BS_VIS, BS_TEXT)
-        attn_weights = F.softmax(dot_products, dim = 0) # (BS_VIS, BS_TEXT)
+        attn_weights = custom_sigmoid(dot_products,) # (BS_VIS, BS_TEXT)
         weighted = torch.matmul(attn_weights.transpose(1, 0), visual_values) # For each textual query, a topic model formed with visual information.
 
         if return_values: return weighted, visual_values
