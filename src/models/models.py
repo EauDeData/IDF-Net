@@ -93,7 +93,7 @@ def linear_constructor(topology: list):
             nn.Linear(size, topology[n + 1])
         ])
     
-    return nn.Sequential(*seq)
+    return nn.Sequential(*seq + [nn.LayerNorm(topology[-1])])
 
 def custom_sigmoid(x, t = 1e-3):
     return 1/(1 + torch.exp( -x / t))
