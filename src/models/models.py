@@ -115,7 +115,7 @@ class AbstractsTopicSpotter(torch.nn.Module):
 
         visual_features = self.visual_extractor(visual_batch) # SHAPE (BS_VIS, EMB_SIZE)
         visual_values = self.visual_values(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
-        visual_keys = self.visual_keys(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
+        # visual_keys = self.visual_keys(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
 
         textual_batch = textual_batch.squeeze()
         textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
