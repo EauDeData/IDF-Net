@@ -5,11 +5,13 @@ import copy
 import wandb
 import pickle
 
+
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, BertTextEncoder
-from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, sim_clr_loss
+from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, sim_clr_loss, MSERankLoss, KullbackDivergenceWrapper
 from src.models.models import VisualTransformer, Resnet50, AbstractsTopicSpotter
+from src.models.attentions import ScaledDotProductAttention, AdditiveAttention, DotProductAttention
 from src.dataloaders.dataloaders import AbstractsDataset, AbstractsAttn
 from src.tasks.evaluation import MAPEvaluation
 from src.tasks.tasks import TrainDocAbstracts
@@ -64,12 +66,12 @@ dataset_test.tokenizer = loader
 OUT_SIZE = 128
 loss_function = SpearmanRankLoss()
 model_visual = Resnet50(OUT_SIZE, norm = 2) # VisualTransformer(IMSIZE)
-model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, out_size=224, bert_size=224) # For now we condition with the idf itself
+model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, attn=DotProductAttention(224), out_size=224, bert_size=224) # For now we condition with the idf itself
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
-closs_function = sim_clr_loss
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, 30, eta_min = 1e-5)
+closs_function = KullbackDivergenceWrapper()
 task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=4, contrastive = closs_function )
 task.train(epoches = 120)
 

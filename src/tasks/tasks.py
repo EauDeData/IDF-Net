@@ -59,7 +59,7 @@ class Train:
         for epoch in range(epoches):
             with torch.no_grad():
                 self.test.epoch(500, epoch)
-                torch.save(self.model, f'output/{epoch}-{self.loader.name}-{self.tokenizer.ntopics}.pkl')
+                torch.save(self.model, f'output/{epoch}-{self.tokenizer.name}-{self.tokenizer.ntopics}.pkl')
             self.epoch(logger_freq, epoch)
 
         self.test.epoch(500, epoch+1)
@@ -319,7 +319,7 @@ class TrainDocAbstracts(TrainDoc):
 
             spotted_topics, values = self.model(images, text_emb) # TODO: Condition text properly not with the topic itself maybe
             loss = self.loss_f(spotted_topics, text_emb)
-            if (not values is None) and (not self.closs is None): loss = loss + self.closs(spotted_topics, values)
+            if (not values is None) and (not self.closs is None): loss = loss *.5 + self.closs(spotted_topics, values) *.5
             if loss != loss:
 
                 print("Visual similarity:")

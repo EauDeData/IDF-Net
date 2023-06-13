@@ -51,6 +51,30 @@ class SimCLRLoss(CustomLoss):
     def forward(self, h, gt):
         return sim_clr_loss(h, gt, self.t, self.sim)
 
+class MSERankLoss(CustomLoss):
+    def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5):
+
+        self.ind = indicator_function
+        self.sim = similarity
+        self.scale = scale
+        self.k = k 
+        self.k_gt = k_gt
+
+    def forward(self, h, gt):
+        return mse_rank_loss(h, gt, self.ind, self.sim, self.scale, self.k, self.k_gt)
+
+class KullbackDivergenceWrapper(CustomLoss):
+    def __init__(self) -> None:
+
+        self.loss = torch.nn.KLDivLoss(reduction="batchmean")
+    
+    def forward(self, h, gt):
+        
+        h = h / h.sum(h, dim = 1)
+        gt = gt / gt.sum(dim = 1)
+
+        return self.loss(h, gt)
+
 def sim_clr_loss(h, h_corr, temperature = .5, distance_function = CosineSimilarityMatrix(), device = 'cuda', max_clr = 4.53):
     # TODO: Don't hardcode the max: Infer from batch size (log2(exp(0)/((BS-1) * exp(1))))
     distances = distance_function(h, h_corr) / temperature
@@ -64,6 +88,17 @@ def sim_clr_loss(h, h_corr, temperature = .5, distance_function = CosineSimilari
     res =  -torch.log(numerator / denominator)
     return (torch.sum(res) / h.shape[0]) / max_clr
 
+def mse_rank_loss(h, target, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5, weighting = None, maxy = 3):
+
+    sm = similarity(h, h)
+    indicator = smooth_rank(sm, k, indicator_function)
+    
+    # Ground-truth Ranking function
+    gt_sim = similarity(target, target)
+    gt_indicator = smooth_rank(gt_sim, k_gt, indicator_function)
+    error = torch.mean((indicator - gt_indicator) ** 2, dim = 1) / h.shape[0]
+    return torch.mean(error, dim = 0) 
+    
 
 def pairwise_atractors_loss(X, Y, similarity: Callable, k = 3, mu1 = 0.5, mu2 = 0.5, device = 'cuda'):
 
