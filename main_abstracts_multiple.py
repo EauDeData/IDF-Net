@@ -64,9 +64,9 @@ dataset_test.tokenizer = loader
 
 ### DL Time: The loss function and model ###
 OUT_SIZE = 128
-loss_function = SpearmanRankLoss()
+loss_function = MSERankLoss()
 model_visual = Resnet50(OUT_SIZE, norm = 2) # VisualTransformer(IMSIZE)
-model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, attn=MultiHeadAttention(), out_size=512, bert_size=224) # For now we condition with the idf itself
+model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, attn=ScaledDotProductAttention(), out_size=512, bert_size=224) # For now we condition with the idf itself
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-5)
