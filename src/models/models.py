@@ -105,9 +105,9 @@ class CosinesimilarityAttn(torch.nn.Module):
         self.sim = sim
     
     def forward(self, queries, keys, values):
-        
+
         attn_weights = torch.matmul(keys, queries.transpose(1, 0)) # (BS_VIS, BS_TEXT)
-        attn_weights = F.softmax(attn_weights, dim = 0) # (BS_VIS, BS_TEXT)
+        #attn_weights = F.softmax(attn_weights, dim = 0) # (BS_VIS, BS_TEXT)
 
         weighted = torch.matmul(attn_weights.transpose(1, 0), values)
         return weighted, attn_weights
