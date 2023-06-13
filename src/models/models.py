@@ -115,7 +115,7 @@ class AbstractsTopicSpotter(torch.nn.Module):
 
         visual_features = self.visual_extractor(visual_batch) # SHAPE (BS_VIS, EMB_SIZE)
         visual_values = self.visual_values(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
-        # visual_keys = self.visual_keys(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
+        visual_keys = self.visual_keys(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
 
         textual_batch = textual_batch.squeeze()
         textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
@@ -123,7 +123,7 @@ class AbstractsTopicSpotter(torch.nn.Module):
         dim = 0
 
         # TODO: Visual keys are not being used, this may cause heavy overfit
-        weighted, attn = self.attention_layer(textual_queries.unsqueeze(dim), visual_values.unsqueeze(dim)) # Is visual keys first or textual queries first?
+        weighted, attn = self.attention_layer(textual_queries.unsqueeze(dim), visual_keys.unsqueeze(dim), visual_values.unsqueeze(dim)) # Is visual keys first or textual queries first?
         weighted, attn = weighted.squeeze(), attn.squeeze()        
 
         if return_values: return weighted, visual_values
@@ -151,17 +151,7 @@ class AbstractsMaxPoolTopicSpotter(torch.nn.Module):
         textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
 
         # Objective: (BS_VIS, BS_TEXT, OUT_SIZE, OUT_SIZE)
-        bs_vis, emb_size = visual_features.size()
-        bs_text, out_size = textual_queries.size()
-
-        # Expand visual keys and textual queries to match the desired output shape
-        expanded_visual_keys = visual_keys.unsqueeze(1).expand(bs_vis, bs_text, out_size)
-        expanded_textual_queries = textual_queries.unsqueeze(0).expand(bs_vis, bs_text, out_size)
-
-        # Compute attention scores
-        attn_scores = torch.matmul(expanded_visual_keys, expanded_textual_queries.transpose(1, 2)) # SHAPE (BS_VIS, BS_TEXT, OUT_SIZE, OUT_SIZE)
-        print(attn_scores.shape)
-        exit()
+        
         
 
 
