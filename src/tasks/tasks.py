@@ -317,11 +317,14 @@ class TrainDocAbstracts(TrainDoc):
             conditional_text = conditional_text.to(self.device)
             images = images.to(self.device)
 
-            spotted_topics, values = self.model(images, text_emb) # TODO: Condition text properly not with the topic itself maybe
+            spotted_topics, values, a = self.model(images, text_emb) # TODO: Condition text properly not with the topic itself maybe
             loss = self.loss_f(spotted_topics, text_emb)
             if (not values is None) and (not self.closs is None): loss = loss *.5 + self.closs(spotted_topics, values) *.5
             if loss != loss:
-
+                
+                print('attn weights:')
+                print(a)
+                print('visual tokens similarity:')
                 print(M(values, values))
                 print("Visual similarity:")
                 print(M(spotted_topics, spotted_topics))

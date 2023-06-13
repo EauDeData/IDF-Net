@@ -126,8 +126,8 @@ class AbstractsTopicSpotter(torch.nn.Module):
         weighted, attn = self.attention_layer(textual_queries.unsqueeze(dim), visual_keys.unsqueeze(dim), visual_values.unsqueeze(dim)) # Is visual keys first or textual queries first?
         weighted, attn = weighted.squeeze(), attn.squeeze()        
 
-        if return_values: return weighted, visual_values
-        return weighted, None
+        if return_values: return weighted, visual_values, attn
+        return weighted, None, attn
     
 class AbstractsMaxPoolTopicSpotter(torch.nn.Module):
     def __init__(self, visual_extractor, emb_size, out_size, inner_attn = [], bert_size = 768, device = 'cuda') -> None:
