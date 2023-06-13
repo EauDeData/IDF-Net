@@ -69,9 +69,9 @@ class KullbackDivergenceWrapper(CustomLoss):
         self.loss = torch.nn.KLDivLoss(reduction="batchmean")
     
     def forward(self, h, gt):
-        
-        h = h / h.sum(h, dim = 1)
-        gt = gt / gt.sum(dim = 1)
+
+        h = h / torch.sum(h, 1)
+        gt = gt / torch.sum(gt, 1)
 
         return self.loss(h, gt)
 
