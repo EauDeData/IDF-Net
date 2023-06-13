@@ -70,8 +70,8 @@ class KullbackDivergenceWrapper(CustomLoss):
     
     def forward(self, h, gt):
 
-        h = h / torch.sum(h, 1)
-        gt = gt / torch.sum(gt, 1)
+        h = h / torch.sum(h, 0)
+        gt = gt / torch.sum(gt, 0)
 
         return self.loss(h, gt)
 
