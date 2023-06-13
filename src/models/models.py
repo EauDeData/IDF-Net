@@ -9,6 +9,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import torch.nn.functional as F
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 import math
+from src.utils.metrics import CosineSimilarityMatrix
 
 class VisualTransformer(torch.nn.Module):
     def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 1, heads = 1, dropout = 0.1, norm = 2) -> None:
@@ -98,8 +99,21 @@ def linear_constructor(topology: list):
 def custom_sigmoid(x, t = 1e-3):
     return 1/(1 + torch.exp( -x / t))
 
+class CosinesimilarityAttn(torch.nn.Module):
+    def __init__(self, sim = CosineSimilarityMatrix()):
+        super(CosinesimilarityAttn, self).__init__()
+        self.sim = sim
+    
+    def forward(self, queries, keys, values):
+        
+        attn_weights = torch.matmul(keys, queries.transpose(1, 0)) # (BS_VIS, BS_TEXT)
+        attn_weights = F.softmax(attn_weights, dim = 0) # (BS_VIS, BS_TEXT)
+
+        weighted = torch.matmul(attn_weights.transpose(1, 0), values)
+        return weighted, attn_weights
+
 class AbstractsTopicSpotter(torch.nn.Module):
-    def __init__(self, visual_extractor, emb_size, out_size, attn, inner_attn = [], bert_size = 768, device = 'cuda') -> None:
+    def __init__(self, visual_extractor, emb_size, out_size, attn = CosinesimilarityAttn(), inner_attn = [], bert_size = 768, device = 'cuda') -> None:
         super(AbstractsTopicSpotter, self).__init__()
         self.visual_extractor = visual_extractor
         self.device = device
@@ -120,11 +134,8 @@ class AbstractsTopicSpotter(torch.nn.Module):
         textual_batch = textual_batch.squeeze()
         textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
 
-        dim = 0
-
         # TODO: Visual keys are not being used, this may cause heavy overfit
-        weighted, attn = self.attention_layer(textual_queries.unsqueeze(dim), visual_keys.unsqueeze(dim), visual_values.unsqueeze(dim)) # Is visual keys first or textual queries first?
-        weighted, attn = weighted.squeeze(), attn.squeeze()        
+        weighted, attn = self.attention_layer(textual_queries, visual_keys, visual_values) # Is visual keys first or textual queries first?
 
         if return_values: return weighted, visual_values, attn
         return weighted, None, attn
