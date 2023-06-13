@@ -69,10 +69,11 @@ model_visual = Resnet50(OUT_SIZE, norm = 2) # VisualTransformer(IMSIZE)
 model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, attn=DotProductAttention(224), out_size=224, bert_size=224) # For now we condition with the idf itself
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
-scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, 30, eta_min = 1e-5)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-5)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 closs_function = KullbackDivergenceWrapper()
 task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=4, contrastive = closs_function )
 task.train(epoches = 120)
+
 
 
