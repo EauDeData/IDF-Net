@@ -322,6 +322,7 @@ class TrainDocAbstracts(TrainDoc):
             if (not values is None) and (not self.closs is None): loss = loss *.5 + self.closs(spotted_topics, values) *.5
             if loss != loss:
 
+                print(M(values, values))
                 print("Visual similarity:")
                 print(M(spotted_topics, spotted_topics))
 
