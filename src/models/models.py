@@ -130,8 +130,8 @@ class AbstractsTopicSpotter(torch.nn.Module):
         return weighted, None
     
 class AbstractsMaxPoolTopicSpotter(torch.nn.Module):
-    def __init__(self, visual_extractor, emb_size, out_size, attn, inner_attn = [], bert_size = 768, device = 'cuda') -> None:
-        super(AbstractsTopicSpotter, self).__init__()
+    def __init__(self, visual_extractor, emb_size, out_size, inner_attn = [], bert_size = 768, device = 'cuda') -> None:
+        super(AbstractsMaxPoolTopicSpotter, self).__init__()
         self.visual_extractor = visual_extractor
         self.device = device
 
@@ -140,7 +140,6 @@ class AbstractsMaxPoolTopicSpotter(torch.nn.Module):
         self.visual_values = linear_constructor(hidden_attn)
         
         self.textual_queries = linear_constructor([bert_size] + inner_attn + [out_size])
-        self.attention_layer = attn
     
     def forward(self, visual_batch, textual_batch, return_values = True):
 
@@ -150,5 +149,20 @@ class AbstractsMaxPoolTopicSpotter(torch.nn.Module):
 
         textual_batch = textual_batch.squeeze()
         textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
+
+        # Objective: (BS_VIS, BS_TEXT, OUT_SIZE, OUT_SIZE)
+        bs_vis, emb_size = visual_features.size()
+        bs_text, out_size = textual_queries.size()
+
+        # Expand visual keys and textual queries to match the desired output shape
+        expanded_visual_keys = visual_keys.unsqueeze(1).expand(bs_vis, bs_text, out_size)
+        expanded_textual_queries = textual_queries.unsqueeze(0).expand(bs_vis, bs_text, out_size)
+
+        # Compute attention scores
+        attn_scores = torch.matmul(expanded_visual_keys, expanded_textual_queries.transpose(1, 2)) # SHAPE (BS_VIS, BS_TEXT, OUT_SIZE, OUT_SIZE)
+        print(attn_scores.shape)
+        exit()
+        
+
 
         return None, None
