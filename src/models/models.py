@@ -111,9 +111,22 @@ class CosinesimilarityAttn(torch.nn.Module):
 
         weighted = torch.matmul(attn_weights.transpose(1, 0), values)
         return weighted, attn_weights
+    
+class DotProductAttn(torch.nn.Module):
 
+    def __init__(self):
+        super(DotProductAttn, self).__init__()
+    
+    def forward(self, queries, keys, values):
+
+        dot_products = torch.matmul(keys, queries.transpose(1, 0)) # (BS_VIS, BS_TEXT)
+        attn_weights = F.softmax(dot_products, dim = 0) # (BS_VIS, BS_TEXT)
+
+        weighted = torch.matmul(attn_weights.transpose(1, 0), values) # For each textual query, a topic model formed with visual information.
+        return weighted, attn_weights
+    
 class AbstractsTopicSpotter(torch.nn.Module):
-    def __init__(self, visual_extractor, emb_size, out_size, attn = CosinesimilarityAttn(), inner_attn = [], bert_size = 768, device = 'cuda') -> None:
+    def __init__(self, visual_extractor, emb_size, out_size, attn = DotProductAttn(), inner_attn = [], bert_size = 768, device = 'cuda') -> None:
         super(AbstractsTopicSpotter, self).__init__()
         self.visual_extractor = visual_extractor
         self.device = device
