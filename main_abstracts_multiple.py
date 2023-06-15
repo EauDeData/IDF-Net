@@ -10,7 +10,7 @@ from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, BertTextEncoder
 from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, sim_clr_loss, MSERankLoss, KullbackDivergenceWrapper
-from src.models.models import VisualTransformer, Resnet50, AbstractsTopicSpotter
+from src.models.models import VisualTransformer, Resnet50, AbstractsTopicSpotter, AbstractsMaxPoolTopicSpotter
 from src.models.attentions import ScaledDotProductAttention, AdditiveAttention, DotProductAttention, MultiHeadAttention
 from src.dataloaders.dataloaders import AbstractsDataset, AbstractsAttn
 from src.tasks.evaluation import MAPEvaluation
@@ -22,9 +22,9 @@ torch.manual_seed(42)
 # TODO: Use a config file
 # Some constants
 IMSIZE = 224
-DEVICE = 'cuda' # TODO: Implement cuda execution
+DEVICE = 'cpu' # TODO: Implement cuda execution
 BSIZE = 64
-DEVICE_BERT = 'cuda'
+DEVICE_BERT = 'cpu'
 bert = BertTextEncoder().to(DEVICE_BERT)
 
 try: 
@@ -66,13 +66,13 @@ dataset_test.tokenizer = loader
 OUT_SIZE = 128
 loss_function = MSERankLoss()
 model_visual = Resnet50(OUT_SIZE, norm = 2) # VisualTransformer(IMSIZE)
-model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, out_size=224, bert_size=224) # For now we condition with the idf itself
+model = AbstractsMaxPoolTopicSpotter(model_visual, emb_size = OUT_SIZE, out_size=224, bert_size=224) # For now we condition with the idf itself
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-5)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 closs_function = None # KullbackDivergenceWrapper()
-task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=4, contrastive = closs_function )
+task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device=DEVICE, workers=4, contrastive = closs_function )
 task.train(epoches = 120)
 
 
