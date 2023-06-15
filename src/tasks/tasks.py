@@ -353,7 +353,7 @@ class TrainDocAbstracts(TrainDoc):
             images = images.to(self.device)
 
             with torch.no_grad():
-                spotted_topics, _ = self.model(images, text_emb)
+                spotted_topics, _, a = self.model(images, text_emb)
                 loss = self.loss_f(spotted_topics, text_emb)
                 statistics, pvalues = rank_correlation(spotted_topics, text_emb,)
 

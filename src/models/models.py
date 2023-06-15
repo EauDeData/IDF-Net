@@ -168,13 +168,23 @@ class AbstractsMaxPoolTopicSpotter(torch.nn.Module):
     def forward(self, visual_batch, textual_batch, return_values = True):
 
         visual_features = self.visual_extractor(visual_batch) # SHAPE (BS_VIS, EMB_SIZE)
-        visual_values = self.visual_values(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
-        visual_keys = self.visual_keys(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
+        visual_mean = self.visual_values(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
+        visual_variance = self.visual_keys(visual_features) # SHAPE (BS_VIS, OUT_SIZE)
 
         textual_batch = textual_batch.squeeze()
         textual_queries = self.textual_queries(textual_batch) # SHAPE (BS_TEXT, OUT_SIZE)
 
-        # Objective: (BS_VIS, BS_TEXT, OUT_SIZE, OUT_SIZE)
+        # Objective:
+            # For each BS_VIS obtain its respective N textual queries evaluations:
+            #
+            # mean_1 + query_1 * variance_1
+            # mean_1 + query_2 * variance_1
+            #       ...
+            # Final Shape: [BS_VIS, BS_TEXT, OUT_SIZE]
+        # Then take the maxpool for each BS_TEXT
+        # Final Shape: [BS_VIS, OUT_SIZE]
+
+        return None   
         
         
 
