@@ -184,9 +184,12 @@ class AbstractsMaxPoolTopicSpotter(torch.nn.Module):
         # Then take the maxpool for each BS_TEXT
         # Final Shape: [BS_VIS, OUT_SIZE]
 
-        return None   
-        
-        
+        visual_queries_evaluations = visual_mean.unsqueeze(1) + textual_queries.unsqueeze(0) * visual_variance.unsqueeze(1)
 
+        # Then take the maxpool for each BS_TEXT
+        # Final Shape: [BS_VIS, OUT_SIZE]
+        print(visual_queries_evaluations.shape)
+        maxpool, _ = visual_queries_evaluations.max(dim=1)
+        print(maxpool.shape)
+        exit()
 
-        return None, None
