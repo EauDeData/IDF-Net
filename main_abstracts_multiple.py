@@ -71,13 +71,8 @@ model = AbstractsMaxPoolTopicSpotter(model_visual, emb_size = OUT_SIZE, out_size
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-5)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
-<<<<<<< HEAD
-closs_function = torch.nn.MSELoss() # KullbackDivergenceWrapper()
-task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=4, contrastive = closs_function )
-=======
 closs_function = None # KullbackDivergenceWrapper()
 task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device=DEVICE, workers=4, contrastive = closs_function )
->>>>>>> 33375cf9526b66f8cf271c2398fbd742aa04673e
 task.train(epoches = 120)
 
 
