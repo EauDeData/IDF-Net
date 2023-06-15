@@ -7,7 +7,7 @@ import wandb
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
-from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss
+from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, KullbackDivergenceWrapper
 from src.models.models import VisualTransformer, Resnet50
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test
@@ -37,8 +37,8 @@ dataset.tokenizer = loader
 test_data.tokenizer = loader
 
 ### DL Time: The loss function and model ###
-loss_function = SpearmanRankLoss()
-model = Resnet50(128, norm = 2) # VisualTransformer(IMSIZE)
+loss_function = KullbackDivergenceWrapper()
+model = Resnet50(224, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
