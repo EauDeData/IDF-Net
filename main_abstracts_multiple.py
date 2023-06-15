@@ -71,7 +71,7 @@ model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, out_size=224, b
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-5)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
-closs_function = None # KullbackDivergenceWrapper()
+closs_function = torch.nn.MSELoss() # KullbackDivergenceWrapper()
 task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device='cuda', workers=4, contrastive = closs_function )
 task.train(epoches = 120)
 
