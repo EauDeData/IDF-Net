@@ -30,7 +30,7 @@ class BOEDatasetOCRd:
         self.data = []
         self.text = []
         self.scale = scale
-
+        min_ocr_chars = 32
 
         self.replace = eval(replace_path_expression)            
         
@@ -48,7 +48,7 @@ class BOEDatasetOCRd:
                     for item in datapoint['pages'][page]:
                         x1, y1, x2, y2 = item['bbox']
                         if ((x2 - x1) > self.min_width) and ((y2 - y1) > self.min_height) and 'ocr' in item:
-
+                            if len(item['ocr']) < min_ocr_chars: continue
                             self.data.append({
                                               'file_uuid': datapoint['file'].replace('.pdf', ''), 
                                               'root': datapoint['path'].replace(*self.replace),
@@ -58,11 +58,9 @@ class BOEDatasetOCRd:
                                             })
         print(len(self.data))
         self.device = device
-        
-
-
         self.tokenizer = 0
         self.max_crops = 50
+        self.loader = None
     
     def iter_text(self):
         for datapoint in self.data: yield datapoint['text']
@@ -72,4 +70,13 @@ class BOEDatasetOCRd:
 
 
     def __getitem__(self, idx):
-        pass
+        
+        datapoint = self.data[idx]
+        image = read_img(datapoint['root'])[datapoint['page']] 
+        image = (image - image.mean()) / image.std()
+        if self.loader is not None: 
+            return image, self.loader.predict(datapoint['text'])
+        
+        return image, datapoint['text']
+
+
