@@ -113,7 +113,7 @@ class BOEDatasetOCRd:
             new_h, new_w = int(ratio * self.max_imsize),  self.max_imsize
 
         image = cv2.resize(image, (new_h, new_w)).transpose(2, 0, 1)
-        image = (image - image.mean()) / image.std()
+        image = torch.from_numpy((image - image.mean()) / image.std())
         if self.tokenizer is not None: 
             return image, torch.from_numpy(self.tokenizer.predict(datapoint['text']))
         
