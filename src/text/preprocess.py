@@ -3,7 +3,7 @@ import nltk
 import re
 from typing import *
 from gensim.utils import simple_preprocess
-from nltk.stem.porter import PorterStemmer, SnowballStemmer
+from nltk.stem import SnowballStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from src.utils.errors import *

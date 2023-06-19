@@ -78,20 +78,19 @@ class BOEDatasetOCRd:
     
     def collate_boe(self, batch):
 
-        max_height = max(crop[0].shape[2] for crop in batch)
-        max_width = max(crop[0].shape[3] for crop in batch)
-        max_bunch = max(crop[0].shape[0] for crop in batch)
+        max_height = max(crop[0].shape[1] for crop in batch)
+        max_width = max(crop[0].shape[2] for crop in batch)
 
-        padded_crops = torch.zeros((len(batch), max_bunch, 3, max_height, max_width))
+        padded_crops = torch.zeros((len(batch), 3, max_height, max_width))
         supermask = torch.zeros_like(padded_crops)
 
         embs = []
         for num, (image, emb) in enumerate(batch):
 
-            b, c, w, h = image.shape
+            c, w, h = image.shape
 
-            padded_crops[num, :b, :c, :w, :h] = image
-            supermask[num, :b, :c, :w, :h] = 1
+            padded_crops[num, :c, :w, :h] = image
+            supermask[num, :c, :w, :h] = 1
 
             embs += [emb]
 
