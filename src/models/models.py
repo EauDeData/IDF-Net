@@ -84,6 +84,29 @@ class Resnet50(torch.nn.Module):
         h = self.resnet50(batch)
         if self.norm is not None: h =  torch.nn.functional.normalize(h, p = self.norm, dim = 1)
         return h
+    
+class Resnet(torch.nn.Module):
+    def __init__(self, embedding_size = 128, norm = None, resnet = '152'):
+        super(Resnet, self).__init__()
+
+        if resnet == '152': self.resnet = torchvision.models.resnet152()
+        elif resnet == '101': self.resnet =  torchvision.models.resnet101()
+        elif resnet == '50': self.resnet =  torchvision.models.resnet50()
+        elif resnet == '34': self.resnet =  torchvision.models.resnet34()
+        elif resnet == '18': self.resnet =  torchvision.models.resnet18()
+        else: raise NotImplementedError
+
+
+        self.resnet.fc = torch.nn.Linear(2048 if resnet != "18" else 512, embedding_size)
+        self.norm = norm
+        #self.resnet = torch.nn.DataParallel(self.resnet)
+
+
+    def forward(self, batch):
+        #print(batch.shape)
+        h = self.resnet(batch)
+        if self.norm is not None: h =  torch.nn.functional.normalize(h, p = self.norm, dim = 1)
+        return h
         
 def linear_constructor(topology: list):
 

@@ -21,7 +21,7 @@ torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
-IMSIZE = 256
+IMSIZE = 512
 DEVICE = 'cpu' # TODO: Implement cuda execution
 BSIZE = 64
 SCALE = 0.75
@@ -33,8 +33,8 @@ try:
 
 
 except FileNotFoundError:
-    dataset = BOEDatasetOCRd('/home/amolina/Desktop/santa-lucia-dataset/data/train_facha/', replace_path_expression='("", "")', max_imsize = IMSIZE)
-    test_data = BOEDatasetOCRd('/home/amolina/Desktop/santa-lucia-dataset/data/test_facha/', replace_path_expression='("", "")', max_imsize = IMSIZE)
+    dataset = BOEDatasetOCRd('/data2fast/users/amolina/train_facha/', max_imsize = IMSIZE)
+    test_data = BOEDatasetOCRd('/data2fast/users/amolina/', max_imsize = IMSIZE)
 
     pickle.dump(dataset, open('boe_fachaset.pkl', 'wb'))
     pickle.dump(test_data, open('boe_fachaset_test.pkl', 'wb'))
