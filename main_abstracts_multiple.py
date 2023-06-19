@@ -26,6 +26,7 @@ DEVICE = 'cpu' # TODO: Implement cuda execution
 BSIZE = 64
 DEVICE_BERT = 'cpu'
 bert = BertTextEncoder().to(DEVICE_BERT)
+SCALE = 0.75
 
 try: 
     dataset = pickle.load(open('abstracts_dataset.pkl','rb'))
