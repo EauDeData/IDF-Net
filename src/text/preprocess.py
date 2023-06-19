@@ -3,7 +3,7 @@ import nltk
 import re
 from typing import *
 from gensim.utils import simple_preprocess
-from nltk.stem.porter import PorterStemmer
+from nltk.stem.porter import PorterStemmer, SnowballStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from src.utils.errors import *
@@ -50,7 +50,7 @@ class StringCleanAndTrim:
                 d: documents of batch
         '''
 
-        shorter = PorterStemmer(lang).stem if self.stemm else WordNetLemmatizer(lang).lemmatize
+        shorter = SnowballStemmer(lang).stem if self.stemm else WordNetLemmatizer(lang).lemmatize
         lemma = [shorter(re.sub('[^A-Za-z0-9]+', '', x)) for x in batch.lower().split() if not x in stopwords]
         return lemma
 
