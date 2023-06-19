@@ -58,11 +58,6 @@ test_data.tokenizer = loader
 dataset.scale = SCALE
 test_data.scale = SCALE
 
-img, topic = dataset[0]
-img2, topic2 = dataset[1]
-topic = np.stack([topic, topic2])
-print(CosineSimilarityMatrix()(topic, topic))
-exit()
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss()
 model = Resnet50(224, norm = 2) # VisualTransformer(IMSIZE)

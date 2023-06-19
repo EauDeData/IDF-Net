@@ -66,9 +66,8 @@ class BOEDatasetOCRd:
                                             })
         print(len(self.data))
         self.device = device
-        self.tokenizer = 0
         self.max_crops = 50
-        self.loader = None
+        self.tokenizer = None
     
     def iter_text(self):
         for datapoint in self.data: yield datapoint['text']
@@ -94,7 +93,7 @@ class BOEDatasetOCRd:
 
             embs += [emb]
 
-        return padded_crops, supermask, torch.from_numpy(np.stack(embs))
+        return padded_crops, supermask, torch.stack(embs)
     
     def __getitem__(self, idx):
         
@@ -115,8 +114,8 @@ class BOEDatasetOCRd:
 
         image = cv2.resize(image, (new_h, new_w)).transpose(2, 0, 1)
         image = (image - image.mean()) / image.std()
-        if self.loader is not None: 
-            return image, self.loader.predict(datapoint['text'])
+        if self.tokenizer is not None: 
+            return image, torch.from_numpy(self.tokenizer.predict(datapoint['text']))
         
         return image, datapoint['text']
 
