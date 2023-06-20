@@ -15,6 +15,8 @@ from bs4 import BeautifulSoup
 import torch
 
 from tqdm import tqdm
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
 from src.dataloaders.base import IDFNetDataLoader
 
@@ -77,23 +79,15 @@ class BOEDatasetOCRd:
     
     def collate_boe(self, batch):
 
-        max_height = max(crop[0].shape[1] for crop in batch)
-        max_width = max(crop[0].shape[2] for crop in batch)
+        image_batch, embs = zip(*batch)
+        max_height = max(crop.shape[0] for crop in image_batch)
+        max_width = max(crop.shape[1] for crop in image_batch)
+        transform = A.Compose([
+                A.PadIfNeeded(min_height=max_height, min_width=max_width, border_mode = cv2.BORDER_CONSTANT, value = 0),
+                ToTensorV2()])
 
-        padded_crops = torch.zeros((len(batch), 3, max_height, max_width))
-        supermask = torch.zeros_like(padded_crops)
-
-        embs = []
-        for num, (image, emb) in enumerate(batch):
-
-            c, w, h = image.shape
-
-            padded_crops[num, :c, :w, :h] = image
-            supermask[num, :c, :w, :h] = 1
-
-            embs += [emb]
-
-        return padded_crops, supermask, torch.stack(embs)
+        padded_crops = torch.stack([transform(image = im) for im in image_batch])
+        return padded_crops.permute(0, 3, 1, 2), torch.stack(embs)
     
     def __getitem__(self, idx):
         
@@ -112,7 +106,7 @@ class BOEDatasetOCRd:
             ratio =  new_h / new_w
             new_h, new_w = int(ratio * self.max_imsize),  self.max_imsize
 
-        image = cv2.resize(image, (new_h, new_w)).transpose(2, 0, 1)
+        image = cv2.resize(image, (new_h, new_w))
         image = torch.from_numpy((image - image.mean()) / image.std())
         if self.tokenizer is not None: 
             return image, torch.from_numpy(self.tokenizer.predict(datapoint['text']))
