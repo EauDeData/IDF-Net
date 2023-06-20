@@ -22,7 +22,7 @@ from src.dataloaders.base import IDFNetDataLoader
 
 def read_img(path):
     img = pdf2image.convert_from_path(path.strip())
-    return np.stack([np.array(img[i]) for i in range(len(img))])
+    return {str(i): np.array(img[i]) for i in range(len(img))}
 
 class BOEDatasetOCRd:
 
@@ -53,7 +53,7 @@ class BOEDatasetOCRd:
                     datapoint = json.load(open(fname, 'r'))
                     fullpath = datapoint['path'].replace(*self.replace)
                     nparray = read_img(fullpath)
-                    np.save(fullpath.replace('.pdf', '.npy'), nparray)
+                    np.savez_compressed(fullpath.replace('.pdf', '.npy'), **nparray)
                 except json.JSONDecodeError: continue # TODO: Ensure it happens just a couple of times
                 for page in datapoint['pages']:
                     for item in datapoint['pages'][page]:
@@ -95,7 +95,7 @@ class BOEDatasetOCRd:
     def __getitem__(self, idx):
         
         datapoint = self.data[idx]
-        image = np.load(datapoint['root'].replace('.pdf', '.npy'))[int(datapoint['page'])]
+        image = np.load(datapoint['root'].replace('.pdf', '.npy'))[datapoint['page']]
 
         # resizes
         h, w, _ = image.shape
