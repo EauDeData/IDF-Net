@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 import math
 from src.utils.metrics import CosineSimilarityMatrix
+from src.models.attentions import *
 
 class VisualTransformer(torch.nn.Module):
     def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 1, heads = 1, dropout = 0.1, norm = 2) -> None:
@@ -147,9 +148,24 @@ class DotProductAttn(torch.nn.Module):
 
         weighted = torch.matmul(attn_weights.transpose(1, 0), values) # For each textual query, a topic model formed with visual information.
         return weighted, attn_weights
+
+
+class MultiHeadAttn(torch.nn.Module):
+
+    def __init__(self):
+        super(MultiHeadAttn, self).__init__()
+        self.multihead = MultiHeadAttention() 
+    def forward(self, queries, keys, values):
+
+        #dot_products = torch.matmul(keys, queries.transpose(1, 0)) # (BS_VIS, BS_TEXT)
+        #attn_weights = F.softmax(dot_products, dim = 0) # (BS_VIS, BS_TEXT)
+
+        #weighted = torch.matmul(attn_weights.transpose(1, 0), values) # For each textual query, a topic model formed with visual information.
+        return (x.squeeze() for x in self.multihead(queries.unsqueeze(0), keys.unsqueeze(0), values.unsqueeze(0)))
+
     
 class AbstractsTopicSpotter(torch.nn.Module):
-    def __init__(self, visual_extractor, emb_size, out_size, attn = DotProductAttn(), inner_attn = [], bert_size = 768, device = 'cuda') -> None:
+    def __init__(self, visual_extractor, emb_size, out_size, attn = MultiHeadAttn(), inner_attn = [], bert_size = 768, device = 'cuda') -> None:
         super(AbstractsTopicSpotter, self).__init__()
         self.visual_extractor = visual_extractor
         self.device = device

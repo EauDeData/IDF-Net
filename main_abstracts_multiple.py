@@ -64,17 +64,17 @@ dataset_test.tokenizer = loader
 #dataset_test.cleaner = cleaner
 
 ### DL Time: The loss function and model ###
-OUT_SIZE = 128
+OUT_SIZE = 512
 loss_function = MSERankLoss()
 model_visual = Resnet50(OUT_SIZE, norm = 2) # VisualTransformer(IMSIZE)
-model = AbstractsMaxPoolTopicSpotter(model_visual, emb_size = OUT_SIZE, out_size=224, bert_size=224) # For now we condition with the idf itself
+model = AbstractsTopicSpotter(model_visual, emb_size = OUT_SIZE, out_size=512, bert_size=224) # For now we condition with the idf itself
 
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 5e-5)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-6)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 closs_function = None # KullbackDivergenceWrapper()
 task = TrainDocAbstracts(dataset, dataset_test, model, None, loss_function, None, None, optim, None, bsize=BSIZE, device=DEVICE, workers=4, contrastive = closs_function )
-task.train(epoches = 120)
+task.train(epoches = 300)
 
 
 

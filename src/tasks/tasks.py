@@ -59,7 +59,7 @@ class Train:
         for epoch in range(epoches):
             with torch.no_grad():
                 self.test.epoch(500, epoch)
-                torch.save(self.model, f'output/{epoch}-{self.tokenizer.name}-{self.tokenizer.ntopics}.pkl')
+                torch.save(self.model, f'output/{epoch}-{self.tokenizer.name}-{self.tokenizer.ntopics}_kullback.pkl')
             self.epoch(logger_freq, epoch)
 
         self.test.epoch(500, epoch+1)
