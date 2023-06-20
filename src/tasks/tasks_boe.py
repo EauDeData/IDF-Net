@@ -34,13 +34,12 @@ class TrainBOE:
         print(f"Training... Epoch {epoch}")
         buffer = 0
         self.model.train()
-        for n, (images, supermask, text_emb) in enumerate(self.loader):
+        for n, (images, text_emb) in enumerate(self.loader):
 
             
             images, text_emb = images.to(self.device), text_emb.to(self.device)
             self.optimizer.zero_grad()
             
-            images = images * supermask.to(self.device)
             h = self.model(images)
             loss = self.loss_f(h, text_emb)
             loss.backward()
@@ -88,11 +87,11 @@ class TestBOE:
         print(f"Testing... Epoch {epoch}")
         buffer, pbuffer, stats_buffer = 0, 0, 0
 
-        for n, (images, supermask, text_emb) in enumerate(self.loader):
+        for n, (images, text_emb) in enumerate(self.loader):
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
-            images = images * supermask.to(self.device)
             h = self.model(images)
+            print(h.device)
             loss = self.loss_f(h, text_emb)
             buffer += loss.item()
 
