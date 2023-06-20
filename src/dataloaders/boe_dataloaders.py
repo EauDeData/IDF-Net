@@ -52,7 +52,7 @@ class BOEDatasetOCRd:
                 try:
                     datapoint = json.load(open(fname, 'r'))
                     fullpath = datapoint['path'].replace(*self.replace)
-                    nparray = read_img()
+                    nparray = read_img(fullpath)
                     np.save(fullpath.replace('.pdf', '.npy'), nparray)
                 except json.JSONDecodeError: continue # TODO: Ensure it happens just a couple of times
                 for page in datapoint['pages']:
