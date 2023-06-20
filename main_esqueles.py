@@ -9,7 +9,7 @@ import numpy as np
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader
-from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, KullbackDivergenceWrapper
+from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, KullbackDivergenceWrapper, MSERankLoss
 from src.models.models import VisualTransformer, Resnet50
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.dataloaders.esqueles_dataloaders import EsquelaSet
@@ -25,7 +25,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 64
+BSIZE = 32
 SCALE = 1 
 
 ### First we select the dataset ###
@@ -51,7 +51,7 @@ dataset.scale = SCALE
 test_data.scale = SCALE
 
 ### DL Time: The loss function and model ###
-loss_function = SpearmanRankLoss()
+loss_function = MSERankLoss()
 model = Resnet50(224, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###

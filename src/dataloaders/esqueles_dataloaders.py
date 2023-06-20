@@ -28,7 +28,7 @@ class EsquelaSet:
         super(EsquelaSet, self).__init__()
 
         # TODO: Test this class
-        self.jsons = [json.load(os.path.join(base_folder, x.strip())) for x in open(jsons_list, 'r').readlines()]
+        self.jsons = [json.load(open(os.path.join(base_folder, x.strip()))) for x in open(os.path.join(base_folder, jsons_list), 'r').readlines()]
 
 
         self.scale = scale
@@ -51,8 +51,8 @@ class EsquelaSet:
                 A.PadIfNeeded(min_height=max_height, min_width=max_width, border_mode = cv2.BORDER_CONSTANT, value = 0),
                 ToTensorV2()])
 
-        padded_crops = torch.stack([transform(image = im) for im in image_batch])
-        return padded_crops.permute(0, 3, 1, 2), torch.stack(embs) 
+        padded_crops = torch.stack([transform(image = im)['image'] for im in image_batch])
+        return padded_crops.float(), torch.stack(embs) 
     
     def __getitem__(self, idx):
         datapoint = self.jsons[idx]
@@ -72,8 +72,8 @@ class EsquelaSet:
             new_h, new_w = int(ratio * self.max_imsize),  self.max_imsize
 
         image = cv2.resize(image, (new_h, new_w))
-        image = torch.from_numpy((image - image.mean()) / image.std())
-        if self.tokenizer is not None: 
-            return image, torch.from_numpy(self.tokenizer.predict(datapoint['text']))
+        image = (image - image.mean()) / image.std()
+        if self.tokenizer is not None:
+            return image, torch.from_numpy(self.tokenizer.predict(datapoint['ocr']))
         
-        return image, datapoint['text']
+        return image, datapoint['ocr']

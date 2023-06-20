@@ -91,7 +91,7 @@ class TestBOE:
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
             h = self.model(images)
-            print(h.device)
+
             loss = self.loss_f(h, text_emb)
             buffer += loss.item()
 
