@@ -8,7 +8,6 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from src.utils.errors import *
 nltk.download('punkt')
-stopwords = nltk.corpus.stopwords.words('spanish') # TODO, wtf hardcoded this, for real???
 
 # https://open.spotify.com/track/31i56LZnwE6uSu3exoHjtB?si=1e5e0d5080404042
 
@@ -31,10 +30,13 @@ class StringCleaner:
         return [simple_preprocess(doc) for doc in batch]
 
 class StringCleanAndTrim:
-    def __init__(self, stemm = True) -> None:
+    def __init__(self, stemm = True, lang = 'spanish') -> None:
         self.stemm = stemm
+        self.lang = lang
+        self.stopwords = nltk.corpus.stopwords.words(lang) # TODO, wtf hardcoded this, for real???
 
-    def __call__(self, batch, lang = 'spanish', *args: Any, **kwds: Any) -> Any:
+
+    def __call__(self, batch, *args: Any, **kwds: Any) -> Any:
         '''
         Call function for string cleaner and trimmer. Receives a batch of strings and cleanses them.
         Steps: 
@@ -50,7 +52,7 @@ class StringCleanAndTrim:
                 d: documents of batch
         '''
 
-        shorter = SnowballStemmer(lang).stem if self.stemm else WordNetLemmatizer(lang).lemmatize
-        lemma = [shorter(re.sub('[^A-Za-z0-9]+', '', x)) for x in batch.lower().split() if not x in stopwords]
+        shorter = SnowballStemmer(self.lang).stem if self.stemm else WordNetLemmatizer(self.lang).lemmatize
+        lemma = [shorter(re.sub('[^A-Za-z0-9]+', '', x)) for x in batch.lower().split() if not x in self.stopwords]
         return lemma
 

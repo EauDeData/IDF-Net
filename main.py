@@ -28,7 +28,7 @@ test_data = AbstractsDataset('test_set.csv', 'dataset/arxiv_images_test/', imsiz
 
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
-cleaner = StringCleanAndTrim()
+cleaner = StringCleanAndTrim(lang='english')
 loader = LSALoader(dataset, cleaner, ntopics = 224)
 loader.fit()
 
