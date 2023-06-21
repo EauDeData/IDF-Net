@@ -18,7 +18,7 @@ class TrainBOE:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, collate_fn = dataset.collate_boe, num_workers = 2)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, collate_fn = dataset.collate_boe, num_workers = 0)
         self.bs = bsize
         self.model = model
         self.loss_f = loss_function
@@ -88,16 +88,16 @@ class TestBOE:
         buffer, pbuffer, stats_buffer = 0, 0, 0
 
         for n, (images, text_emb) in enumerate(self.loader):
+            with torch.no_grad():
+                images, text_emb = images.to(self.device), text_emb.to(self.device)
+                h = self.model(images)
 
-            images, text_emb = images.to(self.device), text_emb.to(self.device)
-            h = self.model(images)
+                loss = self.loss_f(h, text_emb)
+                buffer += loss.item()
 
-            loss = self.loss_f(h, text_emb)
-            buffer += loss.item()
-
-            statistics, pvalues = rank_correlation(h, text_emb,)
-            stats_buffer += statistics
-            pbuffer += pvalues
+                statistics, pvalues = rank_correlation(h, text_emb,)
+                stats_buffer += statistics
+                pbuffer += pvalues
 
             if not (n*self.bs) % logger_freq:
                 
