@@ -25,13 +25,13 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 32
+BSIZE = 224
 SCALE = 1 
 
 ### First we select the dataset ###
 
-dataset = EsquelaSet('train.txt', '/home/amolina/Desktop/datasets/esqueleset/', max_imsize = IMSIZE)
-test_data = EsquelaSet('test.txt', '/home/amolina/Desktop/datasets/esqueleset', max_imsize = IMSIZE)
+dataset = EsquelaSet('train.txt', '/data3fast/users/amolina/esqueleset/', max_imsize = IMSIZE)
+test_data = EsquelaSet('test.txt', '/data3fast/users/amolina/esqueleset', max_imsize = IMSIZE)
 
 print(f"Dataset loader with {len(dataset)} samples...")
 ### On which we clean the text and load the tokenizer ###
@@ -40,7 +40,7 @@ cleaner = StringCleanAndTrim()
 try: 
     loader = pickle.load(open('lsa_loader_esqueles.pkl', 'rb'))
 except:
-    loader = LSALoader(dataset, cleaner, ntopics = 224)
+    loader = LSALoader(dataset, cleaner, ntopics = 8)
     loader.fit()
     pickle.dump(loader, open('lsa_loader_esqueles.pkl', 'wb'))
 
@@ -52,7 +52,7 @@ test_data.scale = SCALE
 
 ### DL Time: The loss function and model ###
 loss_function = MSERankLoss()
-model = Resnet50(224, norm = 2) # VisualTransformer(IMSIZE)
+model = Resnet50(8, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(model.parameters(), lr = 5e-4)

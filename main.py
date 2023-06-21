@@ -18,9 +18,9 @@ torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
-IMSIZE = 256
+IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 64
+BSIZE = 128
 
 ### First we select the dataset ###
 dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/', imsize = IMSIZE)
@@ -37,7 +37,7 @@ dataset.tokenizer = loader
 test_data.tokenizer = loader
 
 ### DL Time: The loss function and model ###
-loss_function = KullbackDivergenceWrapper()
+loss_function = SpearmanRankLoss()
 model = Resnet50(224, norm = 2) # VisualTransformer(IMSIZE)
 
 ### Optimizer ###

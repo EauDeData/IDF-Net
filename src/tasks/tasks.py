@@ -20,7 +20,7 @@ class Train:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers=12)
         self.bs = bsize
         self.model = model
         self.loss_f = loss_function
@@ -59,7 +59,7 @@ class Train:
         for epoch in range(epoches):
             with torch.no_grad():
                 self.test.epoch(500, epoch)
-                torch.save(self.model, f'output/{epoch}-{self.tokenizer.name}-{self.tokenizer.ntopics}_kullback.pkl')
+                torch.save(self.model, f'output/{epoch}-{self.tokenizer.name}-{self.tokenizer.ntopics}_USE_THIS_BIG_BATCH.pkl')
             self.epoch(logger_freq, epoch)
 
         self.test.epoch(500, epoch+1)
@@ -73,7 +73,7 @@ class Test:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers=6)
         self.bs = bsize
         self.model = model
         self.loss_f = loss_function
