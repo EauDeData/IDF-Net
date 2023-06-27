@@ -274,7 +274,7 @@ class AbstractsDataset:
             return image, text
         
         if self.twin: return image, self.tokenizer[index], self.twin_dataset[index]
-        return image, self.tokenizer.predict(text)
+        return image, self.tokenizer.predict(text), text
     
 
 

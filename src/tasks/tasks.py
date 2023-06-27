@@ -36,10 +36,67 @@ class Train:
         print(f"Training... Epoch {epoch}")
         buffer = 0
         self.model.train()
-        for n, (images, text_emb) in enumerate(self.loader):
+        for n, (images, text_emb, text) in enumerate(self.loader):
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
             self.optimizer.zero_grad()
+            h = self.model(images)
+            loss = self.loss_f(h, text_emb)
+            loss.backward()
+            self.optimizer.step()
+            buffer += loss.item()
+
+            if not (n*self.bs) % logger_freq:
+                
+                print(f"Current loss: {loss.item()}")
+
+        WRITER.add_scalar('Loss/train', buffer/n, epoch)
+        wandb.log({'train-loss': buffer / n})
+
+
+    def run(self, epoches = 60, logger_freq = 1000):
+
+        for epoch in range(epoches):
+            with torch.no_grad():
+                self.test.epoch(500, epoch)
+                torch.save(self.model, f'output/epoch[{epoch}]-topic[{self.tokenizer.name}]-ntopics[{self.tokenizer.ntopics}]-lang[{self.tokenizer.lang}]-BS[{self.bs}]_USE_THIS_BIG_BATCH.pkl')
+            self.epoch(logger_freq, epoch)
+
+        self.test.epoch(500, epoch+1)
+
+
+class TrainCLIPishWithTopic:
+
+    def __init__(self, dataset, model, model_textual, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize = 5, device = 'cuda',):
+        
+        if isinstance(dataset.tokenizer, int): 
+            raise NotImplementedError(
+
+                'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
+
+            )
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers=12)
+        self.model_textual = model_textual
+        self.bs = bsize
+        self.model = model
+        self.loss_f = loss_function
+        self.tokenizer = tokenizer
+        self.text_prep = text_prepocess
+        self.optimizer = optimizer
+        self.test = test_task
+        self.device = device
+        self.model.to(self.device)
+    
+    def epoch(self, logger_freq, epoch):
+        
+        print(f"Training... Epoch {epoch}")
+        buffer = 0
+        self.model.train()
+        for n, (images, text_emb, text) in enumerate(self.loader):
+
+            images, text_emb = images.to(self.device), text_emb.to(self.device)
+            self.optimizer.zero_grad()
+            text_emb = self.model_textual(text_emb)
             h = self.model(images)
             loss = self.loss_f(h, text_emb)
             loss.backward()
@@ -88,7 +145,7 @@ class Test:
         print(f"Testing... Epoch {epoch}")
         buffer, pbuffer, stats_buffer = 0, 0, 0
 
-        for n, (images, text_emb) in enumerate(self.loader):
+        for n, (images, text_emb, text) in enumerate(self.loader):
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
             h = self.model(images)

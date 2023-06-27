@@ -232,3 +232,9 @@ class AbstractsMaxPoolTopicSpotter(torch.nn.Module):
         print(maxpool.shape)
         exit()
 
+class SimpleEmbedding(torch.nn.Module):
+    def __init__(self, in_size, out_size, projector = []):
+        self.projected = linear_constructor([in_size] + projector + [out_size])
+
+    def forward(self, x):
+        return self.projected(x)
