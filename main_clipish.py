@@ -20,7 +20,7 @@ torch.manual_seed(42)
 # Some constants
 IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 128
+BSIZE = 64
 
 ### First we select the dataset ###
 dataset = AbstractsDataset('train_set.csv', 'dataset/arxiv_images_train/', imsize = IMSIZE)
