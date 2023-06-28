@@ -20,7 +20,7 @@ class Train:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers=12)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers=4)
         self.bs = bsize
         self.model = model
         self.loss_f = loss_function
@@ -75,7 +75,7 @@ class TrainCLIPishWithTopic:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers=12)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, num_workers=4)
         self.model_textual = model_textual
         self.bs = bsize
         self.model = model
@@ -116,7 +116,7 @@ class TrainCLIPishWithTopic:
         for epoch in range(epoches):
             with torch.no_grad():
                 self.test.epoch(500, epoch)
-                torch.save(self.model, f'output/epoch[{epoch}]-topic[{self.tokenizer.name}]-ntopics[{self.tokenizer.ntopics}]-lang[{self.tokenizer.lang}]-BS[{self.bs}]_USE_THIS_BIG_BATCH.pkl')
+                torch.save(self.model, f'output/epoch[{epoch}]-topic[{self.tokenizer.name}]-ntopics[{self.tokenizer.ntopics}]-BS[{self.bs}]_USE_THIS_BIG_BATCH.pkl')
             self.epoch(logger_freq, epoch)
 
         self.test.epoch(500, epoch+1)
