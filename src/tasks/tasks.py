@@ -122,7 +122,7 @@ class TrainCLIPishWithTopic:
         self.test.epoch(500, epoch+1)
 
 class Test:
-    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, bsize = 5, scheduler = False, device = 'cuda'):
+    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, model_text = None, bsize = 5, scheduler = False, device = 'cuda'):
         
         if isinstance(dataset.tokenizer, int): 
             raise NotImplementedError(
@@ -139,6 +139,7 @@ class Test:
         self.optimizer = optimizer
         self.device = device
         self.scheduler = scheduler
+        self.model_text = model_text
         self.model.to(device)
     
     def epoch(self, logger_freq, epoch):
@@ -149,6 +150,7 @@ class Test:
 
             images, text_emb = images.to(self.device), text_emb.to(self.device)
             h = self.model(images)
+            if self.model_text is not None: text_emb = self.model_text(text_emb)
             loss = self.loss_f(h, text_emb)
             buffer += loss.item()
 
