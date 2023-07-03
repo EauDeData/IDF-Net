@@ -163,7 +163,30 @@ class MultiHeadAttn(torch.nn.Module):
         #weighted = torch.matmul(attn_weights.transpose(1, 0), values) # For each textual query, a topic model formed with visual information.
         return (x.squeeze() for x in self.multihead(queries.unsqueeze(0), keys.unsqueeze(0), values.unsqueeze(0)))
 
+
+class ProjectionHead(nn.Module):
+    def __init__(
+        self,
+        embedding_dim,
+        projection_dim=252,
+        dropout=0.1
+    ):
+        super().__init__()
+        self.projection = nn.Linear(embedding_dim, projection_dim)
+        self.gelu = nn.GELU()
+        self.fc = nn.Linear(projection_dim, projection_dim)
+        self.dropout = nn.Dropout(dropout)
+        self.layer_norm = nn.LayerNorm(projection_dim)
     
+    def forward(self, x):
+        projected = self.projection(x)
+        x = self.gelu(projected)
+        x = self.fc(x)
+        x = self.dropout(x)
+        x = x + projected
+        x = self.layer_norm(x)
+        return x
+
 class AbstractsTopicSpotter(torch.nn.Module):
     def __init__(self, visual_extractor, emb_size, out_size, attn = MultiHeadAttn(), inner_attn = [], bert_size = 768, device = 'cuda') -> None:
         super(AbstractsTopicSpotter, self).__init__()

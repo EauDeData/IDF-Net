@@ -6,6 +6,7 @@ import torch.nn as nn
 from typing import *
 from torch.linalg import norm
 import numpy as np
+import torch.nn.functional as F
 
 class CustomLoss:
     def __init__(self) -> None:
@@ -74,6 +75,37 @@ class KullbackDivergenceWrapper(CustomLoss):
         gt = gt / torch.sum(gt, 0)
 
         return self.loss(h, gt)
+
+
+class CLIPLoss(CustomLoss):
+    def __init__(self, temperature = 0.5) -> None:
+        super().__init__()
+        self.logsoftmax = nn.LogSoftmax(dim=-1)
+        self.temperature = temperature
+
+    def forward(self, h, gt):
+        return clip_loss(h, gt, self.temperature, self.logsoftmax)
+
+def cross_entropy(preds, targets, reduction='none', log_softmax = nn.LogSoftmax(dim=-1)):
+
+    loss = (-targets * log_softmax(preds)).sum(1)
+    if reduction == "none":
+        return loss
+    elif reduction == "mean":
+        return loss.mean()
+
+def clip_loss(text_embeddings, image_embeddings, temperature, log_softmax):
+    # Calculating the Loss
+    logits = (text_embeddings @ image_embeddings.T) / temperature
+    images_similarity = image_embeddings @ image_embeddings.T
+    texts_similarity = text_embeddings @ text_embeddings.T
+    targets = F.softmax(
+        (images_similarity + texts_similarity) / 2 * temperature, dim=-1
+    )
+    texts_loss = cross_entropy(logits, targets, reduction='none', log_softmax=log_softmax)
+    images_loss = cross_entropy(logits.T, targets.T, reduction='none', log_softmax=log_softmax)
+    loss =  (images_loss + texts_loss) / 2.0 # shape: (batch_size)
+    return loss.mean()
 
 def sim_clr_loss(h, h_corr, temperature = .5, distance_function = CosineSimilarityMatrix(), device = 'cuda', max_clr = 4.53):
     # TODO: Don't hardcode the max: Infer from batch size (log2(exp(0)/((BS-1) * exp(1))))

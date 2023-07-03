@@ -8,8 +8,8 @@ import itertools
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, TextTokenizer
-from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, KullbackDivergenceWrapper, SimCLRLoss
-from src.models.models import VisualTransformer, Resnet50, SimpleEmbedding
+from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, KullbackDivergenceWrapper, CLIPLoss, SimCLRLoss
+from src.models.models import VisualTransformer, Resnet50, SimpleEmbedding, ProjectionHead
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.tasks.tasks import Train, Test, TrainCLIPishWithTopic
 from src.tasks.evaluation import MAPEvaluation
@@ -41,9 +41,12 @@ dataset.tokenizer = loader
 test_data.tokenizer = loader
 
 ### DL Time: The loss function and model ###
-loss_function = SimCLRLoss()
-model = Resnet50(224, norm = 2) # VisualTransformer(IMSIZE)
-model_textual = SimpleEmbedding(224, 224, [224]).to(DEVICE)
+loss_function = CLIPLoss()
+model = torch.nn.Sequential(
+    Resnet50(224, norm = 2),
+    ProjectionHead(224, 252, 0.1)
+        ) # VisualTransformer(IMSIZE)
+model_textual = ProjectionHead(224, 252, dropout=0).to(DEVICE)
 
 ### Optimizer ###
 optim = torch.optim.Adam(list(model.parameters()) + list(model_textual.parameters()), lr = 5e-4)
