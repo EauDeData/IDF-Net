@@ -23,9 +23,9 @@ torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
-IMSIZE = 512
+IMSIZE = 224
 DEVICE = 'cuda' # TODO: Implement cuda execution
-BSIZE = 64
+BSIZE = 32
 SCALE = 1
 base_jsons = '/data3fast/users/amolina/BOE/'
 
@@ -39,11 +39,11 @@ print(f"Dataset loader with {len(dataset)} samples...")
 print("Tokenizing text!")
 cleaner = StringCleanAndTrim()
 try: 
-    loader = pickle.load(open('lsa_loader_boe.pkl', 'rb'))
+    loader = pickle.load(open('lsa_loader_boe_ok.pkl', 'rb'))
 except:
     loader = LSALoader(dataset, cleaner, ntopics = 224)
     loader.fit()
-    pickle.dump(loader, open('lsa_loader_boe.pkl', 'wb'))
+    pickle.dump(loader, open('lsa_loader_boe_ok.pkl', 'wb'))
 
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader

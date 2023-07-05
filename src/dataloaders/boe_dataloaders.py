@@ -70,8 +70,8 @@ class BOEDatasetOCRd:
                 A.PadIfNeeded(min_height=max_height, min_width=max_width, border_mode = cv2.BORDER_CONSTANT, value = 0),
                 ToTensorV2()])
 
-        padded_crops = torch.stack([transform(image = im) for im in image_batch])
-        return padded_crops.permute(0, 3, 1, 2), torch.stack(embs), text
+        padded_crops = torch.stack([transform(image = im)['image'] for im in image_batch])
+        return padded_crops.float(), torch.stack(embs), text
 
     def get_un_tastet(self, idx):
         image, _, text = self[idx]
@@ -92,7 +92,7 @@ class BOEDatasetOCRd:
         # resizes
         h, w, _ = image.shape
         new_h, new_w = int(h * self.scale), int(w * self.scale)
-        new_h = min(new_h, self.max_imsize), min(new_w, self.max_imsize)
+        new_h, new_w = int(min(new_h, self.max_imsize)), int(min(new_w, self.max_imsize))
         image = cv2.resize(image, (new_h, new_w))
         image = (image - image.mean()) / image.std()
         text = datapoint['query'] if self.mode == 'query' else datapoint['ocr_gt']
