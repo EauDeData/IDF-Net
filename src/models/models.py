@@ -262,3 +262,15 @@ class SimpleEmbedding(torch.nn.Module):
 
     def forward(self, x):
         return self.projected(x)
+
+class TransformerTextEncoder(torch.nn.Module):
+    def __init__(self, vocab_size, token_size = 224, nheads = 16, num_encoder_layers = 12):
+
+        self.embedding = nn.Embedding(vocab_size, token_size)
+        self.layer = nn.TransformerEncoderLayer(d_model=token_size, nhead=nheads)
+        self.encoder = nn.TransformerEncoder(self.layer, num_layers = num_encoder_layers)
+    
+    def forward(self, x):
+        # x: (BS, SEQ_SIZE, TOKEN_SIZE)
+        tokens = self.embedding(x)
+        return self.encoder(tokens)

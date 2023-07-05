@@ -33,7 +33,8 @@ dataset = BOEDatasetOCRd(base_jsons+'train.txt', scale = SCALE, base_jsons=base_
 test_data = BOEDatasetOCRd(base_jsons+'test.txt', scale = SCALE, base_jsons=base_jsons, max_imsize=IMSIZE,mode='query')
 test_data.get_un_tastet(0)
 dataset.get_un_tastet(1)
-
+for i in range(10): test_data.get_un_tastet(i)
+exit()
 print(f"Dataset loader with {len(dataset)} samples...")
 ### On which we clean the text and load the tokenizer ###
 print("Tokenizing text!")
