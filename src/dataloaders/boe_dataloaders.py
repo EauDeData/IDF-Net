@@ -12,6 +12,7 @@ import string
 import re
 import pdf2image
 from bs4 import BeautifulSoup 
+import matlpotlib.pyplot as plt
 import torch
 
 from tqdm import tqdm
@@ -27,62 +28,42 @@ def read_img(path):
 class BOEDatasetOCRd:
 
     name = 'boe_dataset'
-    def __init__(self, jsons_data_folder, min_height = 224, min_width = 224, scale = 0.5,device = 'cuda', max_imsize = 64, replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')") -> None:
+    def __init__(self, jsons_paths, base_jsons, min_height = 224, min_width = 224, scale = 0.5,device = 'cuda', max_imsize = 64, replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')", mode = 'query') -> None:
         super(BOEDatasetOCRd, self).__init__()
-        self.data = []
-        self.text = []
+        self.mode = mode # 'query' or 'ocr'.
+        # For test should always be 'query'
+
         self.scale = scale
-        min_ocr_chars = 500
 
         self.scale = scale
         self.max_imsize = max_imsize
         
 
-        self.replace = eval(replace_path_expression)            
+        self.replace = eval(replace_path_expression)           
         
         self.min_width = min_width
         self.min_height = min_height
         self.data = []
+        for line in open(jsons_paths).readlines():
+            document = json.load(open(os.path.join(base_jsons, line.strip())))
+            document['root'] = document['root'].replace(*self.replace).replace('images', 'numpy').replace('.pdf', '.npy')
+            self.data.append(document)
 
-        for root, _, files in os.walk(jsons_data_folder):
-            for file in tqdm(files, desc=f"Processing dataset..."):
-                if not os.path.splitext(file)[1].lower() in ['.json']: continue
-
-                fname = os.path.join(root, file)
-                try:
-                    datapoint = json.load(open(fname, 'r'))
-                    fullpath = datapoint['path'].replace(*self.replace)
-                    nparray = read_img(fullpath)
-                    np.savez_compressed(fullpath.replace('.pdf', '.npy'), **nparray)
-                except json.JSONDecodeError: continue # TODO: Ensure it happens just a couple of times
-                for page in datapoint['pages']:
-                    for item in datapoint['pages'][page]:
-                        x1, y1, x2, y2 = item['bbox']
-                        if ((x2 - x1) > self.min_width) and ((y2 - y1) > self.min_height) and 'ocr' in item:
-                            item['ocr'] = item['ocr'].replace('\n', ' ')
-                            item['ocr'] = re.sub(r"\s{2,}", " ", item['ocr'])
-                            if len(item['ocr']) < min_ocr_chars: continue
-                            self.data.append({
-                                              'file_uuid': datapoint['file'].replace('.pdf', ''), 
-                                              'root': datapoint['path'].replace(*self.replace),
-                                               'page': page,
-                                               'bbx': item['bbox'],
-                                               'text': item['ocr']
-                                            })
         print(len(self.data))
         self.device = device
         self.max_crops = 50
         self.tokenizer = None
     
     def iter_text(self):
-        for datapoint in self.data: yield datapoint['text']
+        for datum in self.data:
+            yield datum['query'] if self.mode == 'query' else datum['ocr_gt']
     
     def __len__(self):
         return len(self.data)
     
     def collate_boe(self, batch):
 
-        image_batch, embs = zip(*batch)
+        image_batch, embs, text = zip(*batch)
         max_height = max(crop.shape[0] for crop in image_batch)
         max_width = max(crop.shape[1] for crop in image_batch)
         transform = A.Compose([
@@ -90,12 +71,21 @@ class BOEDatasetOCRd:
                 ToTensorV2()])
 
         padded_crops = torch.stack([transform(image = im) for im in image_batch])
-        return padded_crops.permute(0, 3, 1, 2), torch.stack(embs)
+        return padded_crops.permute(0, 3, 1, 2), torch.stack(embs), text
+
+    def get_un_tastet(self, idx):
+        image, _, text = self[idx]
+        plt.imshow(image.numpy())
+        plt.title(text)
+        plt.savefig(f'tmp_{idx}.png')
+        plt.clf()
     
     def __getitem__(self, idx):
         
         datapoint = self.data[idx]
-        image = np.load(datapoint['root'].replace('.pdf', '.npy'))[datapoint['page']]
+        page = datapoint['topic_gt']["page"]
+        x, y, x2, y2 = datapoint['pages'][page][datapoint["topic_gt"]['idx_segment']]['bbox']
+        image = np.load(datapoint['root'])[y:y2, x:x2]
 
         # resizes
         h, w, _ = image.shape
@@ -112,8 +102,8 @@ class BOEDatasetOCRd:
         image = cv2.resize(image, (new_h, new_w))
         image = torch.from_numpy((image - image.mean()) / image.std())
         if self.tokenizer is not None: 
-            return image, torch.from_numpy(self.tokenizer.predict(datapoint['text']))
+            return image, torch.from_numpy(self.tokenizer.predict(datapoint['text'])), datapoint['text']
         
-        return image, datapoint['text']
+        return image, datapoint['text'], datapoint['text']
 
 
