@@ -44,15 +44,15 @@ test_data.tokenizer = loader
 loss_function = CLIPLoss()
 model = torch.nn.Sequential(
     Resnet50(224, norm = 2),
-    ProjectionHead(224, 252, 0.1)
+    ProjectionHead(224, 252, 0)
         ) # VisualTransformer(IMSIZE)
 model_textual = ProjectionHead(224, 252, dropout=0).to(DEVICE)
 
 ### Optimizer ###
-optim = torch.optim.Adam(list(model.parameters()) + list(model_textual.parameters()), lr = 5e-4)
+optim = torch.optim.Adam(list(model.parameters()) + list(model_textual.parameters()), lr = 5e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
-test_task = Test(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE, bsize = BSIZE)
+test_task = Test(test_data, model, loss_function, loader, cleaner, optim, model_text=model_textual, scheduler = scheduler, device = DEVICE, bsize = BSIZE)
 train_task = TrainCLIPishWithTopic(dataset, model, model_textual, loss_function, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE)
 
 train_task.run(epoches = 120)
