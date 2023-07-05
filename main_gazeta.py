@@ -26,20 +26,13 @@ torch.manual_seed(42)
 IMSIZE = 512
 DEVICE = 'cuda' # TODO: Implement cuda execution
 BSIZE = 64
-SCALE = 0.75
+SCALE = 1
+base_jsons = '/data3fast/users/amolina/BOE/'
 
-### First we select the dataset ###
-try:
-    dataset = pickle.load(open('boe_fachaset.pkl', 'rb'))
-    test_data = pickle.load(open('boe_fachaset_test.pkl', 'rb'))
-
-
-except FileNotFoundError:
-    dataset = BOEDatasetOCRd('/data2fast/users/amolina/train_facha/', max_imsize = IMSIZE)
-    test_data = BOEDatasetOCRd('/data2fast/users/amolina/', max_imsize = IMSIZE)
-
-    pickle.dump(dataset, open('boe_fachaset.pkl', 'wb'))
-    pickle.dump(test_data, open('boe_fachaset_test.pkl', 'wb'))
+dataset = BOEDatasetOCRd(base_jsons+'train.txt', scale = SCALE, base_jsons=base_jsons, max_imsize=IMSIZE,mode='query')
+test_data = BOEDatasetOCRd(base_jsons+'test.txt', scale = SCALE, base_jsons=base_jsons, max_imsize=IMSIZE,mode='query')
+test_data.get_un_tastet(0)
+dataset.get_un_tastet(1)
 
 print(f"Dataset loader with {len(dataset)} samples...")
 ### On which we clean the text and load the tokenizer ###
@@ -55,8 +48,7 @@ except:
 ### Now we setup the tokenizer on the dataset ###
 dataset.tokenizer = loader
 test_data.tokenizer = loader
-dataset.scale = SCALE
-test_data.scale = SCALE
+
 
 ### DL Time: The loss function and model ###
 loss_function = SpearmanRankLoss()

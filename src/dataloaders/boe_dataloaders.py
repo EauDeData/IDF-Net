@@ -12,7 +12,7 @@ import string
 import re
 import pdf2image
 from bs4 import BeautifulSoup 
-import matlpotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import torch
 
 from tqdm import tqdm
@@ -46,7 +46,7 @@ class BOEDatasetOCRd:
         self.data = []
         for line in open(jsons_paths).readlines():
             document = json.load(open(os.path.join(base_jsons, line.strip())))
-            document['root'] = document['root'].replace(*self.replace).replace('images', 'numpy').replace('.pdf', '.npy')
+            document['root'] = document['path'].replace(*self.replace).replace('images', 'numpy').replace('.pdf', '.npz')
             self.data.append(document)
 
         print(len(self.data))
@@ -75,7 +75,8 @@ class BOEDatasetOCRd:
 
     def get_un_tastet(self, idx):
         image, _, text = self[idx]
-        plt.imshow(image.numpy())
+        print(text)
+        plt.imshow(image)
         plt.title(text)
         plt.savefig(f'tmp_{idx}.png')
         plt.clf()
@@ -85,25 +86,19 @@ class BOEDatasetOCRd:
         datapoint = self.data[idx]
         page = datapoint['topic_gt']["page"]
         x, y, x2, y2 = datapoint['pages'][page][datapoint["topic_gt"]['idx_segment']]['bbox']
-        image = np.load(datapoint['root'])[y:y2, x:x2]
+
+        image = np.load(datapoint['root'])[page][y:y2, x:x2]
 
         # resizes
         h, w, _ = image.shape
         new_h, new_w = int(h * self.scale), int(w * self.scale)
-        if new_h > new_w and new_h > self.max_imsize:
-            ratio = new_w / new_h
-            new_h, new_w = self.max_imsize, int(ratio * self.max_imsize)
-        
-        elif new_h < new_w and new_w > self.max_imsize:
-
-            ratio =  new_h / new_w
-            new_h, new_w = int(ratio * self.max_imsize),  self.max_imsize
-
+        new_h = min(new_h, self.max_imsize), min(new_w, self.max_imsize)
         image = cv2.resize(image, (new_h, new_w))
-        image = torch.from_numpy((image - image.mean()) / image.std())
+        image = (image - image.mean()) / image.std()
+        text = datapoint['query'] if self.mode == 'query' else datapoint['ocr_gt']
         if self.tokenizer is not None: 
-            return image, torch.from_numpy(self.tokenizer.predict(datapoint['text'])), datapoint['text']
+            return image, torch.from_numpy(self.tokenizer.predict(text)), text
         
-        return image, datapoint['text'], datapoint['text']
+        return image, text, text
 
 
