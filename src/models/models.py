@@ -13,7 +13,7 @@ from src.utils.metrics import CosineSimilarityMatrix
 from src.models.attentions import *
 
 class VisualTransformer(torch.nn.Module):
-    def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 1, heads = 1, dropout = 0.1, norm = 2) -> None:
+    def __init__(self, image_size, patch_size = 32, embedding_size = 128, depth = 16, heads = 8, dropout = 0.1, norm = 2) -> None:
         super(VisualTransformer, self).__init__()
         self.extractor = ViT(
             image_size = image_size,

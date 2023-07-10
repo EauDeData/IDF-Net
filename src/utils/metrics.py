@@ -4,6 +4,7 @@ from torch import Tensor
 from typing import *
 import numpy as np
 from scipy import stats
+import torchmetrics
 
 class CosineSimilarityMatrix(nn.Module):
     name = 'cosine_matrix'
@@ -125,3 +126,20 @@ def corrcoef(x, y):
     c = c.div(stddev)
     c = c.div(torch.transpose(stddev, 1, 2))
     return c[:, 1, 0]
+
+def batched_matrix(x, y, dist = cosine_similarity_matrix):
+    return dist(x, y), torch.arange(x.shape[0]).unsqueeze(0).expand(y.shape[0], -1).T, torch.eye(x.shape[0], dtype = bool)
+
+
+def batched_precision(distance_matrix, indices):
+    return torchmetrics.retrieval.RetrievalMAP()
+
+def batched_recall(distance_matrix, indices):
+    pass
+
+def batched_top_k(distance_matrix, indices):
+    pass
+
+def get_retrieval_metrix(x, y, dist = cosine_similarity_matrix):
+    matrix, indices, labels = batched_matrix(x, y, dist)
+

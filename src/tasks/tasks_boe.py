@@ -18,7 +18,7 @@ class TrainBOE:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, collate_fn = dataset.collate_boe, num_workers = 6)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, collate_fn = dataset.collate_boe, num_workers = 12, drop_last=True)
         self.bs = bsize
         self.model = model
         self.loss_f = loss_function
@@ -72,7 +72,7 @@ class TestBOE:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, collate_fn = dataset.collate_boe, num_workers = 2)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, collate_fn = dataset.collate_boe, num_workers = 2, drop_last=True)
         self.bs = bsize
         self.model = model
         self.loss_f = loss_function
