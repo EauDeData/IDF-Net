@@ -128,18 +128,32 @@ def corrcoef(x, y):
     return c[:, 1, 0]
 
 def batched_matrix(x, y, dist = cosine_similarity_matrix):
-    return dist(x, y), torch.arange(x.shape[0]).unsqueeze(0).expand(y.shape[0], -1).T, torch.eye(x.shape[0], dtype = bool)
+    return dist(x, y), torch.arange(x.shape[0]).unsqueeze(0).expand(y.shape[0], -1).T.to(x.device), torch.eye(x.shape[0], dtype = bool).to(x.device)
 
 
-def batched_precision(distance_matrix, indices):
-    return torchmetrics.retrieval.RetrievalMAP()
+def batched_precision(distance_matrix, gt, indices, metric = torchmetrics.retrieval.RetrievalMAP()):
+    return metric(distance_matrix, gt, indexes=indices)
 
 def batched_recall(distance_matrix, indices):
     pass
 
-def batched_top_k(distance_matrix, indices):
-    pass
+def batched_top_k(distance_matrix, gt, k = 1):
+    sorted, _ = torch.sort(distance_matrix, dim = 1, descending = True)
+    return sum(sorted[:, k - 1] <= distance_matrix[gt]) / sorted.shape[0]
 
-def get_retrieval_metrix(x, y, dist = cosine_similarity_matrix):
-    matrix, indices, labels = batched_matrix(x, y, dist)
+def get_retrieval_metrics(x, y, dist = cosine_similarity_matrix):
+    distances, indexes, gt =  batched_matrix(x, y, dist)
+    metrics = {
+        'map': batched_precision(distances, gt, indexes),
+        'p@1': batched_top_k(distances, gt, k = 1),
+        'p@5': batched_top_k(distances, gt, k = 5),
+        'p@10': batched_top_k(distances, gt, k = 10)
+    } 
 
+    return metrics
+
+if __name__ == '__main__':
+    a = torch.rand(5, 10)
+    b = torch.rand(5, 10)
+    uwu =  get_retrieval_metrics(a, a)
+    print(uwu)

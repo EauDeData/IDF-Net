@@ -17,6 +17,7 @@ import torch
 
 from tqdm import tqdm
 import albumentations as A
+from torch.nn.utils.rnn import pad_sequence
 from albumentations.pytorch import ToTensorV2
 
 from src.dataloaders.base import IDFNetDataLoader
@@ -46,6 +47,7 @@ class BOEDatasetOCRd:
         self.data = []
         for line in open(jsons_paths).readlines():
             document = json.load(open(os.path.join(base_jsons, line.strip())))
+            if document['score'] < .4: continue
             document['root'] = document['path'].replace(*self.replace).replace('images', 'numpy').replace('.pdf', '.npz')
             self.data.append(document)
 
@@ -53,6 +55,7 @@ class BOEDatasetOCRd:
         self.device = device
         self.max_crops = 50
         self.tokenizer = None
+        self.text_tokenizer = None
     
     def iter_text(self):
         for datum in self.data:
@@ -71,6 +74,7 @@ class BOEDatasetOCRd:
                 ToTensorV2()])
 
         padded_crops = torch.stack([transform(image = im)['image'] for im in image_batch])
+        text = pad_sequence(text)
         return padded_crops.float(), torch.stack(embs), text
 
     def get_un_tastet(self, idx):
@@ -96,8 +100,9 @@ class BOEDatasetOCRd:
         image = cv2.resize(image, (new_h, new_w))
         image = (image - image.mean()) / image.std()
         text = datapoint['query'] if self.mode == 'query' else datapoint['ocr_gt']
+        if self.text_tokenizer is not None: text_tokens = self.text_tokenizer.predict(text)
         if self.tokenizer is not None: 
-            return image, torch.from_numpy(self.tokenizer.predict(text)), text
+            return image, torch.from_numpy(self.tokenizer.predict(text)), torch.tensor(text_tokens, dtype = torch.int32)
         
         return image, text, text
 

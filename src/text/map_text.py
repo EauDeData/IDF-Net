@@ -123,17 +123,18 @@ class TextTokenizer:
     eos = '< EOS >'
     unk = '< UNK >'
     pad = '< PAD >'
+    ret = '< RET >'
 
     def __init__(self, cleaner) -> None:
         self.cleaner = cleaner
         self.tokens = None
 
-    def predict(self, text: str, padding = 'default'):
-        tokens = self.cleaner(text)
-        tokens = [self.bos] + tokens + [self.eos]
-        num_tokens = len(tokens) # TODO: Implement padding
+    def predict(self, text: str):
 
-        vector = [None for _ in tokens]
+        tokens = self.cleaner(text)
+        tokens = [self.ret] + [self.bos] + tokens + [self.eos]
+
+        vector = np.zeros(len(tokens))
         for n, token in enumerate(tokens): vector[n] = self.tokens[token] if token in self.tokens else self.tokens[self.unk]
 
         return vector
@@ -151,5 +152,6 @@ class TextTokenizer:
         freqs[self.bos] = np.inf
         freqs[self.eos] = np.inf
         freqs[self.unk] = np.inf
+        freqs[self.ret] = np.inf
         
         self.tokens = {y: n for n, y in enumerate(sorted(freqs, key = lambda x: -freqs[x]))}
