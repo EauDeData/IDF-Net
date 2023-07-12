@@ -131,6 +131,19 @@ class CLIPLoss(CustomLoss):
     def forward(self, h, gt):
         return clip_loss(h, gt, self.temperature, self.logsoftmax)
 
+class BatchedTripletMargin(CustomLoss):
+    def __init__(self) -> None:
+        super().__init__()
+        self.triplet_loss = torch.nn.TripletMarginLoss()
+    
+    def forward(self, h, gt):
+        return batched_triplet_margin(h, gt, self.triplet_loss)
+
+def batched_triplet_margin(x,y, triplet_loss):
+    negative = torch.roll(y, -1, dims = 0)
+    return triplet_loss(x, y, negative)
+
+
 def cross_entropy(preds, targets, reduction='none', log_softmax = nn.LogSoftmax(dim=-1)):
 
     loss = (-targets * log_softmax(preds)).sum(1)

@@ -273,5 +273,5 @@ class TransformerTextEncoder(torch.nn.Module):
     def forward(self, x):
         # x: (BS, SEQ_SIZE, TOKEN_SIZE)
         tokens = self.embedding(x)
-        emb = self.encoder(tokens).transpose(1, 0)[:, 0, :]
+        emb = self.encoder(tokens)[0] # (SEQ_SIZE, BSIZE, TOKEN_SIZE)
         return emb

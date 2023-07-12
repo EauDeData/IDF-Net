@@ -118,7 +118,6 @@ class TestBOE:
         for n, (images, text_emb, text) in enumerate(self.loader):
             with torch.no_grad():                
                 images = images.to(self.device)
-                loss = 0
                 image_embedding = self.model(images)
                 statistics, pvalues = rank_correlation(image_embedding, text_emb.to(self.device))
                 metrics['p-vaue topic-image'].append(pvalues)
@@ -157,6 +156,8 @@ class TestBOE:
                 print(f"Current loss: {metrics['test-loss'][-1]}")
 
         metrics = {x: sum(y)/len(y) for x,y in zip(metrics, metrics.values())}
+        metrics['lr'] =  self.optimizer.param_groups[0]['lr']
+        print("metrics:", metrics)
         wandb.log(metrics)
         if not isinstance(self.scheduler, bool): self.scheduler.step(metrics['test-loss'])
 

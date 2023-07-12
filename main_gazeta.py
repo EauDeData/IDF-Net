@@ -9,7 +9,7 @@ import numpy as np
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
 from src.text.map_text import LSALoader, TF_IDFLoader, LDALoader, TextTokenizer
-from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, KullbackDivergenceWrapper, MSERankLoss, ContrastiveLoss
+from src.loss.loss import PairwisePotential, NNCLR, SpearmanRankLoss, KullbackDivergenceWrapper, MSERankLoss, ContrastiveLoss, CLIPLoss, BatchedTripletMargin
 from src.models.models import VisualTransformer, Resnet50, ProjectionHead, Resnet, TransformerTextEncoder
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.dataloaders.boe_dataloaders import BOEDatasetOCRd
@@ -53,17 +53,17 @@ test_data.text_tokenizer = text_tokenizer
 dataset.tokenizer = loader
 test_data.tokenizer = loader
 ### DL Time: The loss function and model ###
-closs = ContrastiveLoss(BSIZE)
+closs = BatchedTripletMargin()
 loss_function = SpearmanRankLoss()
 
 model = torch.nn.Sequential(Resnet(embedding_size=224, resnet = '50'), ProjectionHead(224, 64))
 text_model = torch.nn.Sequential(TransformerTextEncoder(len(text_tokenizer.tokens), token_size=224, nheads=16, num_encoder_layers=12), ProjectionHead(224, 64)).to(DEVICE)
 ### Optimizer ###
-optim = torch.optim.RMSprop(model.parameters(), lr = 5e-3)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 test_task = TestBOE(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE, bsize = BSIZE, text_model=text_model, contrastive_loss=closs)
-train_task = TrainBOE(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE, text_model=text_model, contrastive_loss=closs)
+train_task = TrainBOE(dataset, model, None, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE, text_model=text_model, contrastive_loss=closs)
 
 train_task.run(epoches = 420)
 
