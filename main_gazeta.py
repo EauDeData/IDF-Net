@@ -31,7 +31,9 @@ base_jsons = '/data3fast/users/amolina/BOE/'
 
 dataset = BOEDatasetOCRd(base_jsons+'train.txt', scale = SCALE, base_jsons=base_jsons, max_imsize=IMSIZE,mode='query')
 test_data = BOEDatasetOCRd(base_jsons+'test.txt', scale = SCALE, base_jsons=base_jsons, max_imsize=IMSIZE,mode='query')
-
+test_data.get_un_tastet(0)
+test_data.get_un_tastet(1)
+test_data.get_un_tastet(2)
 
 print(f"Dataset loader with {len(dataset)} samples...")
 ### On which we clean the text and load the tokenizer ###
@@ -53,13 +55,14 @@ test_data.text_tokenizer = text_tokenizer
 dataset.tokenizer = loader
 test_data.tokenizer = loader
 ### DL Time: The loss function and model ###
-closs = BatchedTripletMargin()
+closs = CLIPLoss()
 loss_function = SpearmanRankLoss()
-
-model = torch.nn.Sequential(Resnet(embedding_size=224, resnet = '50'), ProjectionHead(224, 64))
-text_model = torch.nn.Sequential(TransformerTextEncoder(len(text_tokenizer.tokens), token_size=224, nheads=16, num_encoder_layers=12), ProjectionHead(224, 64)).to(DEVICE)
+#a = Resnet(embedding_size=224, resnet = '50')
+resnet_pretrained =  Resnet(embedding_size=224, resnet = '50')
+model = torch.nn.Sequential(resnet_pretrained, ProjectionHead(224, 256))
+text_model = torch.nn.Sequential(TransformerTextEncoder(len(text_tokenizer.tokens), token_size=224, nheads=8, num_encoder_layers=6), torch.nn.Dropout(p=0.5), ProjectionHead(224, 256)).to(DEVICE)
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 5e-3)
+optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 test_task = TestBOE(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE, bsize = BSIZE, text_model=text_model, contrastive_loss=closs)

@@ -123,7 +123,11 @@ class TextTokenizer:
     eos = '< EOS >'
     unk = '< UNK >'
     pad = '< PAD >'
-    ret = '< RET >'
+    ret = '< RET >' # The retrieval token is god
+    per = '< PER >'
+    org = '< ORG >'
+    misc = '< MISC >'
+    loc = '< LOC >'
 
     def __init__(self, cleaner) -> None:
         self.cleaner = cleaner
@@ -153,5 +157,9 @@ class TextTokenizer:
         freqs[self.eos] = np.inf
         freqs[self.unk] = np.inf
         freqs[self.ret] = np.inf
+        freqs[self.per] = np.inf
+        freqs[self.org] = np.inf
+        freqs[self.misc] = np.inf
+        freqs[self.loc] = np.inf
         
         self.tokens = {y: n for n, y in enumerate(sorted(freqs, key = lambda x: -freqs[x]))}

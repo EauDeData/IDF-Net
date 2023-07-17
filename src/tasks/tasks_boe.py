@@ -37,6 +37,7 @@ class TrainBOE:
         print(f"Training... Epoch {epoch}")
         buffer = 0
         self.model.train()
+        self.text_encoder.train()
         for n, (images, text_emb, text) in enumerate(self.loader):
             self.optimizer.zero_grad()
 
@@ -44,14 +45,14 @@ class TrainBOE:
             images = images.to(self.device)
             loss = 0
             image_embedding = self.model(images)
-
+            scale = 0.5 if (self.text_encoder is not None) and (self.loss_f is not None) else 1
             if self.text_encoder is not None:
 
                 topic_embedding = self.text_encoder(text.to(self.device))
-                loss += self.contrastive(image_embedding, topic_embedding)
+                loss += self.contrastive(image_embedding, topic_embedding) * scale
             
             if self.loss_f is not None:
-                loss += self.loss_f(image_embedding, text_emb.to(self.device))
+                loss += self.loss_f(image_embedding, text_emb.to(self.device)) * scale
 
             loss.backward()
             self.optimizer.step()
@@ -114,7 +115,7 @@ class TestBOE:
             'mAP': []
 
         }
-
+        self.text_encoder.eval()
         for n, (images, text_emb, text) in enumerate(self.loader):
             with torch.no_grad():                
                 images = images.to(self.device)
@@ -160,6 +161,8 @@ class TestBOE:
         print("metrics:", metrics)
         wandb.log(metrics)
         if not isinstance(self.scheduler, bool): self.scheduler.step(metrics['test-loss'])
+        torch.save(self.model, f'output/epoch[{epoch}]-topic[{self.tokenizer.name}]-ntopics[{self.tokenizer.ntopics}]-BS[{self.bs}]-visual_encoder.pkl')
+        torch.save(self.text_encoder, f'output/epoch[{epoch}]-topic[{self.tokenizer.name}]-ntopics[{self.tokenizer.ntopics}]-BS[{self.bs}]-text_encoder.pkl')
 
     def run(self, epoches = 30, logger_freq = 500):
 
