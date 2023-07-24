@@ -23,7 +23,7 @@ class Annoyer:
 
         # FIXME: Dataloader assumes 1 - Batch Size
         self.dataset = dataset
-        self.dataloader = torch.utils.data.DataLoader(dataset, batch_size = 1, num_workers = 6, shuffle = False)
+        self.dataloader = torch.utils.data.DataLoader(dataset, batch_size = 1, num_workers = 6, shuffle = False, collate_fn = dataset.collate_boe)
         self.device = device
 
         os.makedirs(out_dir, exist_ok=True)
