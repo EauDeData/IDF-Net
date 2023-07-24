@@ -45,7 +45,7 @@ class TrainBOE:
             images = images.to(self.device)
             loss = 0
             image_embedding = self.model(images)
-            scale = 0.5 if (self.text_encoder is not None) and (self.loss_f is not None) else 1
+            scale = 1 # 0.3 if (self.text_encoder is not None) and (self.loss_f is not None) else 1
             if self.text_encoder is not None:
 
                 topic_embedding = self.text_encoder(text.to(self.device))
@@ -53,7 +53,8 @@ class TrainBOE:
             
             if self.loss_f is not None:
                 loss += self.loss_f(image_embedding, text_emb.to(self.device)) * scale
-
+            #if self.loss_f is not None and self.text_encoder is not None:
+                #loss += self.loss_f(text_emb.to(self.device), topic_embedding)
             loss.backward()
             self.optimizer.step()
             buffer += loss.item()
@@ -61,7 +62,7 @@ class TrainBOE:
             if not (n*self.bs) % logger_freq:
                 
                 print(f"Current loss: {loss.item()}")
-
+        if not isinstance(self.test.scheduler, bool): self.test.scheduler.step(buffer / n)
         wandb.log({'train-loss': buffer / n})
 
 
@@ -84,7 +85,7 @@ class TestBOE:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, collate_fn = dataset.collate_boe, num_workers = 2, drop_last=True)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, collate_fn = dataset.collate_boe, num_workers = 6, drop_last=True)
         self.bs = bsize
         self.model = model
         
@@ -160,7 +161,7 @@ class TestBOE:
         metrics['lr'] =  self.optimizer.param_groups[0]['lr']
         print("metrics:", metrics)
         wandb.log(metrics)
-        if not isinstance(self.scheduler, bool): self.scheduler.step(metrics['test-loss'])
+        # if not isinstance(self.scheduler, bool): self.scheduler.step(metrics['test-loss'])
         torch.save(self.model, f'output/epoch[{epoch}]-topic[{self.tokenizer.name}]-ntopics[{self.tokenizer.ntopics}]-BS[{self.bs}]-visual_encoder.pkl')
         torch.save(self.text_encoder, f'output/epoch[{epoch}]-topic[{self.tokenizer.name}]-ntopics[{self.tokenizer.ntopics}]-BS[{self.bs}]-text_encoder.pkl')
 
