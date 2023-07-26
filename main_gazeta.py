@@ -23,7 +23,7 @@ torch.manual_seed(42)
 
 # TODO: Use a config file
 # Some constants
-IMSIZE = 256
+IMSIZE = 512
 DEVICE = 'cuda' # TODO: Implement cuda execution
 BSIZE = 64
 SCALE = 1
@@ -60,13 +60,13 @@ loss_function = SpearmanRankLoss()
 #a = Resnet(embedding_size=224, resnet = '50')
 resnet_pretrained =  Resnet(embedding_size=224, resnet = '50')
 model = torch.nn.Sequential(resnet_pretrained, ProjectionHead(224, 256))
-text_model = torch.nn.Sequential(TransformerTextEncoder(len(text_tokenizer.tokens), token_size=224, nheads=8, num_encoder_layers=6), torch.nn.Dropout(p=0.5), ProjectionHead(224, 256)).to(DEVICE)
+text_model = torch.nn.Sequential(TransformerTextEncoder(len(text_tokenizer.tokens), token_size=224, nheads=8, num_encoder_layers=6), torch.nn.Dropout(p=0), ProjectionHead(224, 256)).to(DEVICE)
 ### Optimizer ###
-optim = torch.optim.Adam(model.parameters(), lr = 5e-4)
+optim = torch.optim.Adam(model.parameters(), lr = 1e-6)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
 
 test_task = TestBOE(test_data, model, loss_function, loader, cleaner, optim, scheduler = scheduler, device = DEVICE, bsize = BSIZE, text_model=text_model, contrastive_loss=closs)
-train_task = TrainBOE(dataset, model, None, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE, text_model=text_model, contrastive_loss=closs)
+train_task = TrainBOE(dataset, model, loss_function, loader, cleaner, optim, test_task, device= DEVICE, bsize = BSIZE, text_model=text_model, contrastive_loss=closs)
 
-train_task.run(epoches = 420)
+train_task.run(epoches = 520)
 

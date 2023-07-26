@@ -47,7 +47,7 @@ class BOEDatasetOCRd:
         self.data = []
         for line in open(jsons_paths).readlines():
             document = json.load(open(os.path.join(base_jsons, line.strip())))
-            if document['score'] < .50: continue
+            if document['score'] < .5: continue
             document['root'] = document['path'].replace(*self.replace).replace('images', 'numpy').replace('.pdf', '.npz')
             self.data.append(document)
 
