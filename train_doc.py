@@ -12,7 +12,6 @@ from src.loss.loss import *
 from src.models.models import *
 from src.dataloaders.dataloaders import AbstractsDataset
 from src.dataloaders.boe_dataloaders import BOEDatasetOCRd
-from src.tasks.tasks import Train, Test
 from src.tasks.tasks_boe import TrainBOE, TestBOE
 from src.tasks.evaluation import MAPEvaluation
 from src.dataloaders.annoyify import Annoyifier
@@ -80,8 +79,7 @@ def main(args):
 
     dataset.tokenizer = loader
     test_data.tokenizer = loader
-
-    model, text_model = setup_models(text_tokenizer, args.model_tag, args.device, args.TOKEN_SIZE)
+    model, text_model = setup_models(text_tokenizer, args.model_tag, args.device, args.TOKEN_SIZE, args.text_encoder_heads, args.text_encoder_layers, args.output_space)
 
     parameters = list(model.parameters()) + list(text_model.parameters())
     optim, scheduler = setup_optimizer(parameters, args.lr)
@@ -89,7 +87,7 @@ def main(args):
     loss_function = get_loss_function(args.loss_function)
     closs = get_loss_function(args.closs)
     model_name = f"{args.model_tag}_lr{args.lr}_loss{args.loss_function}_closs{args.closs}_token{args.TOKEN_SIZE}_accept{args.acceptance}_bsize{args.BSIZE}_heads{args.text_encoder_heads}_layers{args.text_encoder_layers}_output{args.output_space}"
-    wandb.init(project="IDFNet-Logger", name=model_name)
+    wandb.init(project="neoIDF-Net Gazeta", name=model_name)
     wandb.config.update(args)
 
     test_task = TestBOE(test_data, model, loss_function, loader, cleaner, optim, scheduler=scheduler, device=args.device, bsize=args.BSIZE, text_model=text_model, contrastive_loss=closs, model_name=model_name)

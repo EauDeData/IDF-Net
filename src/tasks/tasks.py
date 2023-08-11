@@ -7,7 +7,6 @@ from src.loss.loss import rank_correlation, raw_accuracy
 from src.utils.metrics import CosineSimilarityMatrix
 
 M = CosineSimilarityMatrix()
-wandb.init(project="IDF-NET Logger")
 WRITER = SummaryWriter()
 
 class Train:
