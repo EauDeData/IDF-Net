@@ -86,7 +86,7 @@ def main(args):
 
     loss_function = get_loss_function(args.loss_function, args.BSIZE)
     closs = get_loss_function(args.closs, args.BSIZE)
-    model_name = f"{args.model_tag}_lr{args.lr}_loss{args.loss_function}_closs{args.closs}_token{args.TOKEN_SIZE}_accept{args.acceptance}_bsize{args.BSIZE}_heads{args.text_encoder_heads}_layers{args.text_encoder_layers}_output{args.output_space}"
+    model_name = f"{args.model_tag}_lr_{args.lr}_loss_{args.loss_function}_closs_{args.closs}_token_{args.TOKEN_SIZE}_accept_{args.acceptance}_bsize_{args.BSIZE}_heads_{args.text_encoder_heads}_layers{args.text_encoder_layers}_output_{args.output_space}"
     wandb.init(project="neoIDF-Net Gazeta", name=model_name)
     wandb.config.update(args)
 
