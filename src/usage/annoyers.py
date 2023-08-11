@@ -51,7 +51,7 @@ class Annoyer:
 
     def save(self, *args):
         for tree, arg in enumerate(args):
-            self.trees[tree].save(arg + self.path)
+            self.trees[tree].save(self.path+arg)
 
     def fit(self):
         if self.state_variables['built']:
@@ -64,9 +64,9 @@ class Annoyer:
                 f'Building KNN... {idx} / {len(self.dataloader)}\t', end='\r')
 
             with torch.no_grad():
-                vis_emb = self.model_visual(images).squeeze( )  # Ensure batch_size = 1
-                text_emb_extracted = self.model_textual(text).squeeze( )  # Ensure batch_size = 1
-            self.add_to_trees(vis_emb, text_emb_extracted, text_emb, idx = idx)
+                vis_emb  = self.model_visual(images.cuda())[0].squeeze( )  # Ensure batch_size = 1
+                text_emb_extracted  = self.model_textual(text.cuda())[0].squeeze( )  # Ensure batch_size = 1
+            self.add_to_trees(vis_emb, text_emb_extracted, text_emb.squeeze( ), idx = idx)
 
         self.build(10)  # 10 trees
         self.save('visual', 'textual', 'topic')
@@ -78,7 +78,7 @@ class Annoyer:
             self.state_variables['built'] = True
 
         for tree, arg in enumerate(args):
-            self.trees[tree].load(arg + self.path)
+            self.trees[tree].load(self.path+arg)
 
     def retrieve_by_idx(self, idx, n=50, idx_tree = 0, **kwargs):
 

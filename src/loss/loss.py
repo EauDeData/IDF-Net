@@ -6,6 +6,7 @@ import torch.nn as nn
 from typing import *
 from torch.linalg import norm
 import numpy as np
+from pytorch_metric_learning import losses, miners
 import torch.nn.functional as F
 
 class CustomLoss:
@@ -96,6 +97,48 @@ class SimCLRLoss(CustomLoss):
 
     def forward(self, h, gt):
         return sim_clr_loss(h, gt, self.t, self.sim)
+
+
+class HardMinerTripletLoss(CustomLoss):
+    def __init__(self, batch_size) -> None:
+
+        self.loss = losses.TripletMarginLoss()
+        self.miner = miners.BatchHardMiner()
+        proto_labels = torch.arange(batch_size)
+        self.proto_labels = torch.cat((proto_labels, proto_labels), dim = 0) # 2BS
+
+    def forward(self, h, gt):
+        input_embeddings = torch.cat((h, gt), dim = 0)
+        miner_out = self.miner(input_embeddings, self.proto_labels)
+        return self.loss(input_embeddings, self.proto_labels, miner_out)
+
+
+class HardMinerCLR(CustomLoss):
+    def __init__(self, batch_size) -> None:
+
+        self.loss = losses.NTXentLoss(temperature = 0.1)
+        self.miner = miners.BatchEasyHardMiner()
+        proto_labels = torch.arange(batch_size)
+        self.proto_labels = torch.cat((proto_labels, proto_labels), dim = 0) # 2BS
+
+    def forward(self, h, gt):
+        input_embeddings = torch.cat((h, gt), dim = 0)
+        miner_out = self.miner(input_embeddings, self.proto_labels)
+        return self.loss(input_embeddings, self.proto_labels, miner_out)
+
+
+class HardMinerCircle(CustomLoss):
+    def __init__(self, batch_size) -> None:
+
+        self.loss = losses.CircleLoss()
+        self.miner = miners.BatchHardMiner()
+        proto_labels = torch.arange(batch_size)
+        self.proto_labels = torch.cat((proto_labels, proto_labels), dim = 0) # 2BS
+
+    def forward(self, h, gt):
+        input_embeddings = torch.cat((h, gt), dim = 0)
+        miner_out = self.miner(input_embeddings, self.proto_labels)
+        return self.loss(input_embeddings, self.proto_labels, miner_out)
 
 class MSERankLoss(CustomLoss):
     def __init__(self, indicator_function = sigmoid, similarity = CosineSimilarityMatrix(), scale = True, k = 1e-3, k_gt = 1e-5):

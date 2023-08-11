@@ -123,7 +123,10 @@ class TextTokenizer:
     eos = '< EOS >'
     unk = '< UNK >'
     pad = '< PAD >'
+
     ret = '< RET >' # The retrieval token is god
+    rank = '< RNK >'
+
     per = '< PER >'
     org = '< ORG >'
     misc = '< MISC >'
@@ -136,7 +139,7 @@ class TextTokenizer:
     def predict(self, text: str):
 
         tokens = self.cleaner(text)
-        tokens = [self.ret] + [self.bos] + tokens + [self.eos]
+        tokens = [self.ret] + [self.rank] + [self.bos] + tokens + [self.eos]
 
         vector = np.zeros(len(tokens))
         for n, token in enumerate(tokens): vector[n] = self.tokens[token] if token in self.tokens else self.tokens[self.unk]
@@ -156,7 +159,10 @@ class TextTokenizer:
         freqs[self.bos] = np.inf
         freqs[self.eos] = np.inf
         freqs[self.unk] = np.inf
+
         freqs[self.ret] = np.inf
+        freqs[self.rank] = np.inf
+
         freqs[self.per] = np.inf
         freqs[self.org] = np.inf
         freqs[self.misc] = np.inf

@@ -29,7 +29,7 @@ def read_img(path):
 class BOEDatasetOCRd:
 
     name = 'boe_dataset'
-    def __init__(self, jsons_paths, base_jsons, min_height = 224, min_width = 224, scale = 0.5,device = 'cuda', max_imsize = 64, replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')", mode = 'query') -> None:
+    def __init__(self, jsons_paths, base_jsons, min_height = 125, min_width = 125, scale = 0.5, device = 'cuda', max_imsize = 64, acceptance = .5, replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')", mode = 'query', resize = None) -> None:
         super(BOEDatasetOCRd, self).__init__()
         self.mode = mode # 'query' or 'ocr'.
         # For test should always be 'query'
@@ -47,8 +47,12 @@ class BOEDatasetOCRd:
         self.data = []
         for line in open(jsons_paths).readlines():
             document = json.load(open(os.path.join(base_jsons, line.strip())))
-            if document['score'] < .5: continue
+            if document['score'] < acceptance: continue
             document['root'] = document['path'].replace(*self.replace).replace('images', 'numpy').replace('.pdf', '.npz')
+            page = document['topic_gt']["page"]
+            x, y, x2, y2 = document['pages'][page][document["topic_gt"]['idx_segment']]['bbox']
+            if (x2 - x) < min_height or (y2 - y) < min_width: continue 
+
             self.data.append(document)
 
         print(len(self.data))
@@ -56,6 +60,7 @@ class BOEDatasetOCRd:
         self.max_crops = 50
         self.tokenizer = None
         self.text_tokenizer = None
+        self.resize = resize
     
     def iter_text(self):
         for datum in self.data:
@@ -94,15 +99,18 @@ class BOEDatasetOCRd:
         image = np.load(datapoint['root'])[page][y:y2, x:x2]
 
         # resizes
-        h, w, _ = image.shape
-        new_h, new_w = int(h * self.scale), int(w * self.scale)
-        new_h, new_w = int(min(new_h, self.max_imsize)), int(min(new_w, self.max_imsize))
+        if self.resize is not None:
+            new_h = new_w = self.resize
+        else:
+            h, w, _ = image.shape
+            new_h, new_w = int(h * self.scale), int(w * self.scale)
+            new_h, new_w = int(min(new_h, self.max_imsize)), int(min(new_w, self.max_imsize))
         image = cv2.resize(image, (new_h, new_w))
         image = (image - image.mean()) / image.std()
-        text = datapoint['query'] if self.mode == 'query' else datapoint['ocr_gt']
+        text = datapoint['query']
         if self.text_tokenizer is not None: text_tokens = self.text_tokenizer.predict(text)
         if self.tokenizer is not None: 
-            return image, torch.from_numpy(self.tokenizer.predict(text)), torch.tensor(text_tokens, dtype = torch.int32)
+            return image, torch.from_numpy(self.tokenizer.predict(datapoint['ocr_gt'])), torch.tensor(text_tokens, dtype = torch.int32)
         
         return image, text, text
 

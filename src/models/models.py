@@ -9,6 +9,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import torch.nn.functional as F
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 import math
+import math
 from src.utils.metrics import CosineSimilarityMatrix
 from src.models.attentions import *
 
@@ -179,12 +180,15 @@ class ProjectionHead(nn.Module):
         self.layer_norm = nn.LayerNorm(projection_dim)
     
     def forward(self, x):
+
         projected = self.projection(x)
         x = self.gelu(projected)
         x = self.fc(x)
         x = self.dropout(x)
         x = x + projected
         x = self.layer_norm(x)
+
+
         return x
 
 class AbstractsTopicSpotter(torch.nn.Module):
@@ -263,15 +267,58 @@ class SimpleEmbedding(torch.nn.Module):
     def forward(self, x):
         return self.projected(x)
 
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
+        super().__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+        div_term = div_term.float()
+        pe = torch.zeros(max_len, 1, d_model).float()
+        pe[:, 0, 0::2] = torch.sin(position * div_term).float()
+        pe[:, 0, 1::2] = torch.cos(position * div_term).float()
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        """
+        Arguments:
+            x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
+        """
+        x = x + self.pe[:x.size(0)]
+        return self.dropout(x)
+
 class TransformerTextEncoder(torch.nn.Module):
     def __init__(self, vocab_size, token_size = 224, nheads = 16, num_encoder_layers = 12):
         super(TransformerTextEncoder, self).__init__()
+        self.d_model = token_size
         self.embedding = nn.Embedding(vocab_size, token_size)
         self.layer = nn.TransformerEncoderLayer(d_model=token_size, nhead=nheads)
         self.encoder = nn.TransformerEncoder(self.layer, num_layers = num_encoder_layers)
+        self.pos = PositionalEncoding(token_size)
     
     def forward(self, x):
         # x: (BS, SEQ_SIZE, TOKEN_SIZE)
-        tokens = self.embedding(x)
-        emb = self.encoder(tokens)[0] # (SEQ_SIZE, BSIZE, TOKEN_SIZE)
-        return emb
+        tokens = self.embedding(x) # * self.d_model ** .5
+        # tokens = self.pos(tokens)
+        encoded = self.encoder(tokens) # (SEQ_SIZE, BSIZE, TOKEN_SIZE)
+        return encoded[0], encoded[1] # (contrastive, rank)
+
+class TwoBranchesWrapper(torch.nn.Module):
+    def __init__(self, model, in_size, out_size) -> None:
+        super(TwoBranchesWrapper, self).__init__()
+        self.model = model
+        self.ranking = ProjectionHead(in_size, out_size)
+        self.contrastive = ProjectionHead(in_size, out_size)
+    
+    def forward(self, x):
+        h = self.model(x)
+        if len(h) == 2:
+            h1 = h[0]
+            h2 = h[1]
+        else:
+            h1 = h2 = h
+        rank = self.ranking(h1)
+        cont = self.contrastive(h2)
+        return cont, rank #rank JUST QUICK EXPERIMENT
