@@ -44,7 +44,7 @@ def setup_optimizer(parameters, lr):
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
     return optim, scheduler
 
-def get_loss_function(loss_name):
+def get_loss_function(loss_name, batch_size):
     if loss_name == "SpearmanRankLoss":
         return SpearmanRankLoss()
     elif loss_name == "KullbackDivergenceWrapper":
@@ -52,17 +52,17 @@ def get_loss_function(loss_name):
     elif loss_name == "MSERankLoss":
         return MSERankLoss()
     elif loss_name == "ContrastiveLoss":
-        return ContrastiveLoss()
+        return ContrastiveLoss(batch_size)
     elif loss_name == "CLIPLoss":
         return CLIPLoss()
     elif loss_name == "HardMinerCircle":
-        return HardMinerCircle()
+        return HardMinerCircle(batch_size)
     elif loss_name == "BatchedTripletMargin":
         return BatchedTripletMargin()
     elif loss_name == "HardMinerTripletLoss":
-        return HardMinerTripletLoss()
+        return HardMinerTripletLoss(batch_size)
     elif loss_name == "HardMinerCLR":
-        return HardMinerCLR()
+        return HardMinerCLR(batch_size)
     else:
         raise ValueError(f"Unknown loss function: {loss_name}")
 
@@ -84,8 +84,8 @@ def main(args):
     parameters = list(model.parameters()) + list(text_model.parameters())
     optim, scheduler = setup_optimizer(parameters, args.lr)
 
-    loss_function = get_loss_function(args.loss_function)
-    closs = get_loss_function(args.closs)
+    loss_function = get_loss_function(args.loss_function, args.BSIZE)
+    closs = get_loss_function(args.closs, args.BSIZE)
     model_name = f"{args.model_tag}_lr{args.lr}_loss{args.loss_function}_closs{args.closs}_token{args.TOKEN_SIZE}_accept{args.acceptance}_bsize{args.BSIZE}_heads{args.text_encoder_heads}_layers{args.text_encoder_layers}_output{args.output_space}"
     wandb.init(project="neoIDF-Net Gazeta", name=model_name)
     wandb.config.update(args)
