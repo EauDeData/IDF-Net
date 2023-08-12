@@ -20,9 +20,9 @@ from src.utils.metrics import CosineSimilarityMatrix
 nltk.download('stopwords')
 torch.manual_seed(42)
 
-def load_datasets(base_jsons, scale, max_imsize, mode, acceptace):
+def load_datasets(base_jsons, scale, max_imsize, mode, acceptace, test_acceptance):
     dataset = BOEDatasetOCRd(base_jsons+'train.txt', scale=scale, base_jsons=base_jsons, max_imsize=max_imsize, acceptance=acceptace, mode=mode, resize=max_imsize)
-    test_data = BOEDatasetOCRd(base_jsons+'test.txt', scale=scale, base_jsons=base_jsons, max_imsize=max_imsize, mode=mode, acceptance=acceptace, resize=max_imsize)
+    test_data = BOEDatasetOCRd(base_jsons+'test.txt', scale=scale, base_jsons=base_jsons, max_imsize=max_imsize, mode=mode, acceptance=test_acceptance, resize=max_imsize)
     return dataset, test_data
 
 def tokenize_text(dataset, cleaner, ntopics):
@@ -41,7 +41,7 @@ def setup_models(text_tokenizer, model_tag, device, token_size, text_encoder_hea
 
 def setup_optimizer(parameters, lr):
     optim = torch.optim.Adam(parameters, lr=lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min')
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'max', threshold = 1e-3) # Maybe this should be hyperparameters
     return optim, scheduler
 
 def get_loss_function(loss_name, batch_size):
@@ -64,10 +64,10 @@ def get_loss_function(loss_name, batch_size):
     elif loss_name == "HardMinerCLR":
         return HardMinerCLR(batch_size)
     else:
-        raise ValueError(f"Unknown loss function: {loss_name}")
+        raise ValueError(f"Unknown loss function: {loss_name}") 
 
 def main(args):
-    dataset, test_data = load_datasets(args.base_jsons, args.scale, args.IMSIZE, 'text', args.acceptance)
+    dataset, test_data = load_datasets(args.base_jsons, args.scale, args.IMSIZE, 'text', args.acceptance, args.test_acceptance)
 
     print(f"Dataset loader with {len(dataset)} samples...")
 
@@ -86,7 +86,7 @@ def main(args):
 
     loss_function = get_loss_function(args.loss_function, args.BSIZE)
     closs = get_loss_function(args.closs, args.BSIZE)
-    model_name = f"{args.model_tag}_lr_{args.lr}_loss_{args.loss_function}_closs_{args.closs}_token_{args.TOKEN_SIZE}_accept_{args.acceptance}_bsize_{args.BSIZE}_heads_{args.text_encoder_heads}_layers{args.text_encoder_layers}_output_{args.output_space}"
+    model_name = f"{args.model_tag.replace('/', '-|-')}_lr_{args.lr}_loss_{args.loss_function}_closs_{args.closs}_token_{args.TOKEN_SIZE}_accept_{args.acceptance}_bsize_{args.BSIZE}_heads_{args.text_encoder_heads}_layers{args.text_encoder_layers}_output_{args.output_space}"
     wandb.init(project="neoIDF-Net Gazeta", name=model_name)
     wandb.config.update(args)
 
@@ -118,7 +118,8 @@ if __name__ == "__main__":
     training_group.add_argument("--TOKEN_SIZE", type=int, default=64, help="Token size")
     training_group.add_argument("--lr", type=float, default=1e-6, help="Learning rate")
     training_group.add_argument("--epochs", type=int, default=600, help="Number of epochs")
-    training_group.add_argument("--acceptance", type=float, default=0.5, help="Acceptance threshold for dataloader")
+    training_group.add_argument("--acceptance", type=float, default=0.5, help="Acceptance threshold for train dataloader")
+    training_group.add_argument("--test_acceptance", type=float, default=0.5, help="Acceptance threshold for test dataloader")
 
     # Text encoder settings
     text_encoder_group = parser.add_argument_group("Text Encoder Settings")

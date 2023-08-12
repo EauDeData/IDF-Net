@@ -58,7 +58,7 @@ class TrainBOE:
             if not (n*self.bs) % logger_freq:
                 
                 print(f"Current loss: {loss.item()}")
-        if not isinstance(self.test.scheduler, bool): self.test.scheduler.step(buffer / n)
+        # if not isinstance(self.test.scheduler, bool): self.test.scheduler.step(buffer / n)
         wandb.log({'train-loss': buffer / n})
 
 
@@ -157,8 +157,9 @@ class TestBOE:
         metrics = {x: sum(y)/len(y) for x,y in zip(metrics, metrics.values())}
         metrics['lr'] =  self.optimizer.param_groups[0]['lr']
         print("metrics:", metrics)
+        if not isinstance(self.scheduler, bool): self.scheduler.step(metrics['acc@1'])
+
         wandb.log(metrics)
-        # if not isinstance(self.scheduler, bool): self.scheduler.step(metrics['test-loss'])
         torch.save(self.model, f'output/{self.model_name}_visual_encoder.pkl')
         torch.save(self.text_encoder, f'output/{self.model_name}_text_encoder.pkl')
 
