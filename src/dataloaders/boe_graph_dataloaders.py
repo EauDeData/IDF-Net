@@ -29,7 +29,7 @@ def read_img(path):
 class BOEDatasetGraph:
 
     name = 'boe_dataset'
-    def __init__(self, jsons_paths, base_jsons, min_nodes = 3, min_height = 125, min_width = 125, scale = 0.5, device = 'cuda', max_imsize = 64, acceptance = .5, replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')", mode = 'query', resize = None) -> None:
+    def __init__(self, jsons_paths, base_jsons, processor = None, min_nodes = 3, min_height = 125, min_width = 125, scale = 0.5, device = 'cuda', max_imsize = 64, acceptance = .5, replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')", mode = 'query', resize = None) -> None:
         super(BOEDatasetGraph, self).__init__()
         self.mode = mode # 'query' or 'ocr'.
         # For test should always be 'query'
@@ -63,6 +63,7 @@ class BOEDatasetGraph:
         self.tokenizer = None
         self.graph_tokenizer = None
         self.resize = resize
+        self.prop = processor
     
     def iter_text(self):
         for datum in self.data:
@@ -101,24 +102,26 @@ class BOEDatasetGraph:
         image = np.load(datapoint['root'])[page][y:y2, x:x2]
 
         # resizes
-        if self.resize is not None:
+        '''
+        
+            if self.resize is not None:
             new_h = new_w = self.resize
         else:
             h, w, _ = image.shape
             new_h, new_w = int(h * self.scale), int(w * self.scale)
-            new_h, new_w = int(min(new_h, self.max_imsize)), int(min(new_w, self.max_imsize))
-            
+            new_h, new_w = int(min(new_h, self.max_imsize)), int(min(new_w, self.max_imsize))    
+        
+                    
         image = cv2.resize(image, (new_h, new_w))
         image = (image - image.mean()) / image.std()
-        
+        '''
+
         
         graph, entities = datapoint['graph'], datapoint['NEs']
         tokens, text = self.graph_tokenizer.predict(graph, entities)
-        return {
-            'pixel_values': image,
-            'labels': tokens,
-            'text_labels': text,
-            'query': datapoint['query']
-        }
+        encoding = self.prop(images=image, text=' '.join(text), padding="max_length", return_tensors="pt")
+        encoding = {k:v.squeeze() for k,v in encoding.items()}
+
+        return encoding
 
 

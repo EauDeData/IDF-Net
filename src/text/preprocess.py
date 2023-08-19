@@ -36,7 +36,7 @@ class StringCleanAndTrim:
         self.stopwords = nltk.corpus.stopwords.words(lang) # TODO, wtf hardcoded this, for real???
 
 
-    def __call__(self, batch, *args: Any, **kwds: Any) -> Any:
+    def __call__(self, batch, get_through_it = True, *args: Any, **kwds: Any) -> Any:
         '''
         Call function for string cleaner and trimmer. Receives a batch of strings and cleanses them.
         Steps: 
@@ -52,7 +52,10 @@ class StringCleanAndTrim:
                 d: documents of batch
         '''
 
-        shorter = SnowballStemmer(self.lang).stem if self.stemm else WordNetLemmatizer(self.lang).lemmatize
+        shorter = SnowballStemmer(self.lang).stem if self.stemm else WordNetLemmatizer().lemmatize
         lemma = [shorter(re.sub('[^A-Za-z0-9]+', '', x)) for x in batch.lower().split() if not x in self.stopwords]
+        if not len(lemma) and get_through_it:
+            print(f"Found: {batch} which has no meaning, returning [{batch}]")
+            return [batch.lower()]
         return lemma
 

@@ -119,18 +119,18 @@ class BertTextEncoder:
         return self
 
 class TextTokenizer:
-    bos = '< BOS >'
-    eos = '< EOS >'
-    unk = '< UNK >'
-    pad = '< PAD >'
+    bos = '<BOS>'
+    eos = '<EOS>'
+    unk = '<UNK>'
+    pad = '<PAD>'
 
-    ret = '< RET >' # The retrieval token is god
-    rank = '< RNK >'
+    ret = '<RET>' # The retrieval token is god
+    rank = '<RNK>'
 
-    per = '< PER >'
-    org = '< ORG >'
-    misc = '< MISC >'
-    loc = '< LOC >'
+    per = '<PER>'
+    org = '<ORG>'
+    misc = '<MISC>'
+    loc = '<LOC>'
 
     def __init__(self, cleaner) -> None:
         self.cleaner = cleaner
@@ -173,12 +173,12 @@ class TextTokenizer:
 class GraphTokenizzer:
     
     is_edge = 'is' # For dealing with Named Entities
-    word_token = '< WORD >'
-    begin_edge = '< BED >'
-    end_edge = '< EED >'
+    word_token = '<WORD>'
+    begin_edge = '<BED>'
+    end_edge = '<EED>'
     def __init__(self, text_tokenizer) -> None:
         self.tokens = text_tokenizer.tokens
-        self.cleaner = text_tokenizer.cleaner
+        self.cleaner = lambda x: [x] # text_tokenizer.cleaner
         self.edge_tokens = {edge_name: edge_num + len(self.tokens) for edge_num, edge_name in enumerate(['has_attribute', 'in_context_of', 'has_quantity',  'performs_action',  'receives_action', self.word_token, self.is_edge, self.begin_edge, self.end_edge])}
         self.nes_lut = {
             'per': TextTokenizer.per,
@@ -189,33 +189,33 @@ class GraphTokenizzer:
         }
     
     def predict(self, graph, named_entities):
-        entities = {word: self.nes_lut[entity_type] for word, entity_type in named_entities} # named_entities_are [[WORD; POS], [WORD; POS], ...]
+        entities = {word: self.nes_lut[entity_type] if entity_type in self.nes_lut else self.word_token for word, entity_type in named_entities} # named_entities_are [[WORD; POS], [WORD; POS], ...]
         nodes, edges = {x['id']: x['text'] for x in graph['nodes']}, graph['links']
         
-        tokens = [self.tokens[TextTokenizer.bos]]
+        # tokens = [self.tokens[TextTokenizer.bos]]
         tokens_string = [TextTokenizer.bos]
         for edge in edges:
             source, target, label = edge['source'], edge['target'], edge['label']
             # Todo: A representation NER-Friendly that can separated named entities with maybe position or distinct tokens
             
-            if nodes[source] in entities: ent_token_source = self.nes_lut[entities[nodes[source]]]
-            else: ent_token_source = self.edge_tokens[self.nes_lut['word']]
-            cleaned_source = self.cleaner(nodes[source])[0]
+            if nodes[source] in entities: ent_token_source = entities[nodes[source]]
+            else: ent_token_source = self.nes_lut['word']
             
+            cleaned_source = self.cleaner(nodes[source])[0]
             if cleaned_source in self.tokens: token_source = self.tokens[cleaned_source]
             else: token_source = self.tokens[TextTokenizer.unk]
             
             
-            if nodes[target] in entities: ent_token_target = self.nes_lut[entities[nodes[target]]]
-            else: ent_token_target = self.edge_tokens[self.nes_lut['word']]
-            cleaned_target = self.cleaner(nodes[target])[0]
+            if nodes[target] in entities: ent_token_target = entities[nodes[target]]
+            else: ent_token_target = self.nes_lut['word']
             
-            if cleaned_source in self.tokens: token_target = self.tokens[cleaned_target]
+            cleaned_target = self.cleaner(nodes[target])[0]
+            if cleaned_target in self.tokens: token_target = self.tokens[cleaned_target]
             else: token_target = self.tokens[TextTokenizer.unk]
             
             token_edge = self.edge_tokens[label]
             
-            tokens.extend([self.edge_tokens[self.begin_edge], token_source, ent_token_source, token_edge, token_target, ent_token_target, self.edge_tokens[self.end_edge]])
+            # tokens.extend([self.edge_tokens[self.begin_edge], token_source, self.edge_tokens[ent_token_source], token_edge, token_target, self.edge_tokens[ent_token_target], self.edge_tokens[self.end_edge]])
             tokens_string.extend([self.begin_edge, cleaned_source, ent_token_source, label, cleaned_target, ent_token_target, self.end_edge])
         
-        return tokens + [self.tokens[TextTokenizer.eos]], tokens_string + [TextTokenizer.eos]
+        return None, tokens_string + [TextTokenizer.eos]
