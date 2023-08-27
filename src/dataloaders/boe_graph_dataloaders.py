@@ -29,7 +29,7 @@ def read_img(path):
 class BOEDatasetGraph:
 
     name = 'boe_dataset'
-    def __init__(self, jsons_paths, base_jsons, processor = None, min_nodes = 3, min_height = 125, min_width = 125, scale = 0.5, device = 'cuda', max_imsize = 64, acceptance = .5, replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')", mode = 'query', resize = None) -> None:
+    def __init__(self, jsons_paths, base_jsons, processor = None, min_nodes = 3, min_height = 125, min_width = 125, min_conf = 0.9, scale = 0.5, device = 'cuda', max_imsize = 64, acceptance = .5, replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')", mode = 'query', resize = None) -> None:
         super(BOEDatasetGraph, self).__init__()
         self.mode = mode # 'query' or 'ocr'.
         # For test should always be 'query'
@@ -45,6 +45,7 @@ class BOEDatasetGraph:
         self.min_width = min_width
         self.min_height = min_height
         self.data = []
+        self.acceptance = acceptance
         for line in open(jsons_paths).readlines():
             path = os.path.join(base_jsons, line.strip()).replace('jsons_gt', 'graphs_gt')
             if os.path.exists(path):
@@ -52,10 +53,22 @@ class BOEDatasetGraph:
                 if document['score'] < acceptance or len(document['graph']['nodes']) < min_nodes: continue
                 document['root'] = document['path'].replace(*self.replace).replace('images', 'numpy').replace('.pdf', '.npz')
                 page = document['topic_gt']["page"]
-                x, y, x2, y2 = document['pages'][page][document["topic_gt"]['idx_segment']]['bbox']
-                if (x2 - x) < min_height or (y2 - y) < min_width: continue 
+                min_x, min_y, max_x, max_y = np.inf, np.inf, 0, 0
+        
+                for region in document['pages'][page]:
+                    if not 'similarity' in region: continue
+                    if region['similarity'] >= self.acceptance:
+                        x, y, x2, y2 = region['bbox']
 
-                self.data.append(document)
+                        min_x = min(min_x, x)
+                        max_x = max(max_x, x2)
+                        
+                        
+                        min_y = min(min_y, y)
+                        max_y = max(max_y, y2)
+                
+                if (max_x - min_x) >= min_width and (max_y - min_y) >= min_height:
+                    self.data.append(document)
 
         print(len(self.data))
         self.device = device
@@ -97,9 +110,31 @@ class BOEDatasetGraph:
         
         datapoint = self.data[idx]
         page = datapoint['topic_gt']["page"]
-        x, y, x2, y2 = datapoint['pages'][page][datapoint["topic_gt"]['idx_segment']]['bbox']
+        image = np.load(datapoint['root'])[page]
+        mask = np.zeros_like(image)
+        min_x, min_y, max_x, max_y = np.inf, np.inf, 0, 0
+        
+        for region in datapoint['pages'][page]:
+            if not 'similarity' in region: continue
+            if region['similarity'] >= self.acceptance:
+                x, y, x2, y2 = region['bbox']
+                mask[y:y2, x:x2] = 1
+                
 
-        image = np.load(datapoint['root'])[page][y:y2, x:x2]
+                min_x = min(min_x, x)
+                max_x = max(max_x, x2)
+                
+                
+                min_y = min(min_y, y)
+                max_y = max(max_y, y2)
+
+
+        np_input = (image * mask)
+        image = np_input[ min_y:max_y, min_x:max_x, :] 
+            
+        
+        
+        # [y:y2, x:x2]
 
         # resizes
         '''
@@ -119,8 +154,9 @@ class BOEDatasetGraph:
         
         graph, entities = datapoint['graph'], datapoint['NEs']
         tokens, text = self.graph_tokenizer.predict(graph, entities)
-        encoding = self.prop(images=image, text=' '.join(text), padding="max_length", return_tensors="pt")
+        encoding = self.prop(images=image, text=' '.join(text), padding='max_length', truncation=True, max_length=512, return_tensors="pt") # Don't hardcode this
         encoding = {k:v.squeeze() for k,v in encoding.items()}
+        encoding['labels'] = encoding['input_ids']
 
         return encoding
 
