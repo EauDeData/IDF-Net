@@ -9,7 +9,7 @@ M = CosineSimilarityMatrix()
 
 class TrainBOE:
 
-    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, test_task, bsize = 5, device = 'cuda', text_model = None, contrastive_loss = None):
+    def __init__(self, dataset, model, loss_function, tokenizer, text_prepocess, optimizer, test_task, use_topic =True, bsize = 5, device = 'cuda', topic_on_image = None, text_model = None, contrastive_loss = None):
         
         if isinstance(dataset.tokenizer, int): 
             raise NotImplementedError(
@@ -17,7 +17,7 @@ class TrainBOE:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, collate_fn = dataset.collate_boe, num_workers = 12, drop_last=True)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, collate_fn = dataset.collate_boe, num_workers = 8, drop_last=True)
         self.bs = bsize
         self.model = model
         self.text_encoder = text_model
@@ -29,6 +29,8 @@ class TrainBOE:
         self.optimizer = optimizer
         self.test = test_task
         self.device = device
+        self.use_topic = use_topic
+        self.topic_on_image = topic_on_image
         self.model.to(self.device)
     
     def epoch(self, logger_freq, epoch):
@@ -48,8 +50,13 @@ class TrainBOE:
 
             topic_embedding, rank_embedding = self.text_encoder(query_tokens.to(self.device))
 
-            loss += self.contrastive(image_embedding, topic_embedding) * scale
-            loss += self.loss_f(topic_lda.to(self.device), topic_embedding) * scale
+            loss += self.contrastive(image_embedding, topic_embedding) * (scale if self.use_topic else 1)
+            if self.use_topic:
+                if not self.topic_on_image:
+                    loss += self.loss_f(topic_lda.to(self.device), topic_embedding) * scale
+                else:
+                    loss += self.loss_f(topic_lda.to(self.device), image_embedding) * scale
+            
 
             loss.backward()
             self.optimizer.step()
@@ -81,7 +88,7 @@ class TestBOE:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, collate_fn = dataset.collate_boe, num_workers = 6, drop_last=True)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, collate_fn = dataset.collate_boe, num_workers = 2, drop_last=True)
         self.bs = bsize
         self.model = model
         
@@ -114,6 +121,7 @@ class TestBOE:
 
         }
         self.text_encoder.eval()
+        self.model.eval()
         for n, (images, text_emb, text) in enumerate(self.loader):
             with torch.no_grad():                
                 images = images.to(self.device)
@@ -160,8 +168,8 @@ class TestBOE:
         if not isinstance(self.scheduler, bool): self.scheduler.step(metrics['acc@1'])
 
         wandb.log(metrics)
-        torch.save(self.model, f'output/{self.model_name}_visual_encoder.pkl')
-        torch.save(self.text_encoder, f'output/{self.model_name}_text_encoder.pkl')
+        torch.save(self.model.state_dict(), f'/data3fast/users/amolina/leviatan/{self.model_name}_visual_encoder.pth')
+        torch.save(self.text_encoder.state_dict(), f'/data3fast/users/amolina/leviatan/{self.model_name}_text_encoder.pth')
 
     def run(self, epoches = 30, logger_freq = 500):
 

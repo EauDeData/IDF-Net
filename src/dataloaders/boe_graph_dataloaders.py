@@ -130,7 +130,8 @@ class BOEDatasetGraph:
 
 
         np_input = (image * mask)
-        image = np_input[ min_y:max_y, min_x:max_x, :] 
+        image = np_input[ min_y:max_y, min_x:max_x, :]
+        image = cv2.resize(image, (self.resize, self.resize))
             
         
         
@@ -154,9 +155,12 @@ class BOEDatasetGraph:
         
         graph, entities = datapoint['graph'], datapoint['NEs']
         tokens, text = self.graph_tokenizer.predict(graph, entities)
-        encoding = self.prop(images=image, text=' '.join(text), padding='max_length', truncation=True, max_length=512, return_tensors="pt") # Don't hardcode this
+        encoding = self.prop(images=image, text=' '.join(text), padding='max_length', truncation=True, max_length=512, return_tensors="pt") # More efficient pls, just change here the image processor
         encoding = {k:v.squeeze() for k,v in encoding.items()}
         encoding['labels'] = encoding['input_ids']
+        encoding['pixel_values'] = torch.from_numpy(image.transpose(2, 0, 1) / 255)
+        
+        
 
         return encoding
 

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import wandb
 import pickle
 import numpy as np
+import os
 import clip
 from src.text.preprocess import StringCleanAndTrim, StringCleaner
 from src.utils.errors import *
@@ -25,15 +26,20 @@ def load_datasets(base_jsons, scale, max_imsize, mode, acceptace, test_acceptanc
     test_data = BOEDatasetOCRd(base_jsons+'test.txt', scale=scale, base_jsons=base_jsons, max_imsize=max_imsize, mode=mode, acceptance=test_acceptance, resize=max_imsize)
     return dataset, test_data
 
-def tokenize_text(dataset, cleaner, ntopics):
+def tokenize_text(dataset, cleaner, ntopics, model_name):
     loader = LSALoader(dataset, cleaner, ntopics=ntopics)
     loader.fit()
     text_tokenizer = TextTokenizer(cleaner)
     text_tokenizer.fit(dataset)
+    pickle.dump(text_tokenizer.tokens, open(f'/data3fast/users/amolina/leviatan/{model_name}_tokenizer.pth', 'wb'))
+
     return loader, text_tokenizer
 
 def setup_models(text_tokenizer, model_tag, device, token_size, text_encoder_heads, text_encoder_layers, output_space):
-    model_clip = clip.load(model_tag, device='cpu')[0].visual
+    if not 'resnet' in model_tag:
+        model_clip = clip.load(model_tag, device='cpu')[0].visual
+    else:
+        model_clip = Resnet(1024, resnet=model_tag.split('_')[-1])
     model = TwoBranchesWrapper(model_clip, 512 if 'ViT' in model_tag else 1024, output_space)
     text_model = TwoBranchesWrapper(TransformerTextEncoder(len(text_tokenizer.tokens), token_size=token_size, nheads=text_encoder_heads, num_encoder_layers=text_encoder_layers), token_size, output_space).to(device)
     return model, text_model
@@ -67,12 +73,16 @@ def get_loss_function(loss_name, batch_size):
         raise ValueError(f"Unknown loss function: {loss_name}") 
 
 def main(args):
+    print("Use topic:", args.use_topic)
+    model_name = f"use_topic_{args.use_topic}_topic_on_image_{args.topic_on_image}_{args.model_tag.replace('/', '-|-')}_lr_{args.lr}_loss_{args.loss_function}_closs_{args.closs}_token_{args.TOKEN_SIZE}_accept_{args.acceptance}_bsize_{args.BSIZE}_heads_{args.text_encoder_heads}_layers{args.text_encoder_layers}_output_{args.output_space}"
+    if os.path.exists(f'/data3fast/users/amolina/leviatan/{model_name}_text_encoder.pth'): exit()
     dataset, test_data = load_datasets(args.base_jsons, args.scale, args.IMSIZE, 'text', args.acceptance, args.test_acceptance)
 
+    print(model_name)
     print(f"Dataset loader with {len(dataset)} samples...")
 
     cleaner = StringCleanAndTrim()
-    loader, text_tokenizer = tokenize_text(dataset, cleaner, args.ntopics)
+    loader, text_tokenizer = tokenize_text(dataset, cleaner, args.ntopics, model_name)
 
     dataset.text_tokenizer = text_tokenizer
     test_data.text_tokenizer = text_tokenizer
@@ -86,12 +96,11 @@ def main(args):
 
     loss_function = get_loss_function(args.loss_function, args.BSIZE)
     closs = get_loss_function(args.closs, args.BSIZE)
-    model_name = f"{args.model_tag.replace('/', '-|-')}_lr_{args.lr}_loss_{args.loss_function}_closs_{args.closs}_token_{args.TOKEN_SIZE}_accept_{args.acceptance}_bsize_{args.BSIZE}_heads_{args.text_encoder_heads}_layers{args.text_encoder_layers}_output_{args.output_space}"
     wandb.init(project="neoIDF-Net Gazeta", name=model_name)
     wandb.config.update(args)
 
     test_task = TestBOE(test_data, model, loss_function, loader, cleaner, optim, scheduler=scheduler, device=args.device, bsize=args.BSIZE, text_model=text_model, contrastive_loss=closs, model_name=model_name)
-    train_task = TrainBOE(dataset, model, loss_function, loader, cleaner, optim, test_task, device=args.device, bsize=args.BSIZE, text_model=text_model, contrastive_loss=closs)
+    train_task = TrainBOE(dataset, model, loss_function, loader, cleaner, optim, test_task, device=args.device, bsize=args.BSIZE, text_model=text_model, contrastive_loss=closs,topic_on_image=args.topic_on_image, use_topic = args.use_topic)
 
     train_task.run(epoches=args.epochs)
 
@@ -120,6 +129,8 @@ if __name__ == "__main__":
     training_group.add_argument("--epochs", type=int, default=600, help="Number of epochs")
     training_group.add_argument("--acceptance", type=float, default=0.5, help="Acceptance threshold for train dataloader")
     training_group.add_argument("--test_acceptance", type=float, default=0.5, help="Acceptance threshold for test dataloader")
+    training_group.add_argument("--use_topic", action="store_false", help="Use topic model as auxiliar label")
+    training_group.add_argument("--topic_on_image", action="store_true", help="Use topic model in image encoder")
 
     # Text encoder settings
     text_encoder_group = parser.add_argument_group("Text Encoder Settings")

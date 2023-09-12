@@ -19,7 +19,7 @@ from src.dataloaders.dataloaders import AbstractsDataset
 from src.dataloaders.boe_graph_dataloaders import BOEDatasetGraph
 
 
-def load_datasets(base_jsons, scale, max_imsize, acceptace, test_acceptance, model_name, tokenizer = 'graph_tokenizer', train_tokenizer = False):
+def load_datasets(base_jsons, scale, max_imsize, acceptace, test_acceptance, model_name, imsize = None, tokenizer = 'graph_tokenizer', train_tokenizer = False):
     processor = AutoProcessor.from_pretrained("microsoft/git-base")
     # processor.tokenizer =  AutoTokenizer.from_pretrained(model_name)
     print('train tokenizer:', train_tokenizer)
@@ -65,8 +65,8 @@ def load_datasets(base_jsons, scale, max_imsize, acceptace, test_acceptance, mod
         processor.tokenizer = tokenizer
             
     
-    dataset = BOEDatasetGraph(base_jsons+'train.txt', processor=processor, scale=scale, base_jsons=base_jsons, max_imsize=max_imsize,min_height=512, min_width=512, acceptance=acceptace, resize=max_imsize)
-    test_data = BOEDatasetGraph(base_jsons+'test.txt', processor=processor, scale=scale, base_jsons=base_jsons, max_imsize=max_imsize, acceptance=test_acceptance, min_height=512, min_width=512, resize=max_imsize)
+    dataset = BOEDatasetGraph(base_jsons+'train.txt', processor=processor, scale=scale, base_jsons=base_jsons, resize=imsize, max_imsize=max_imsize,min_height=512, min_width=512, acceptance=acceptace)
+    test_data = BOEDatasetGraph(base_jsons+'test.txt', processor=processor, scale=scale, base_jsons=base_jsons, resize=imsize, max_imsize=max_imsize, acceptance=test_acceptance, min_height=512, min_width=512)
     return dataset, test_data
 
 
@@ -94,6 +94,14 @@ if __name__ == "__main__":
     dataset_group.add_argument('--textual_encoder', type=str, default="gpt2")
     dataset_group.add_argument('--epoches', type=int, default=200)
     dataset_group.add_argument('--lr', type=float, default=1e-5)
+    dataset_group.add_argument('--visual_depth', type=int, default=6)
+    dataset_group.add_argument('--visual_width', type=int, default=6)
+    
+    dataset_group.add_argument('--textual_depth', type=int, default=6)
+    dataset_group.add_argument('--textual_width', type=int, default=6)    
+    
+    dataset_group.add_argument('--dropout', type=float, default=0.1)
+    
     
     
     
@@ -101,7 +109,7 @@ if __name__ == "__main__":
     batch_size, shuffle, workers = args.batch_size, True, 12
     
     
-    data, test = load_datasets(args.base_jsons, args.scale, args.IMSIZE, args.acceptance, args.test_acceptance, args.textual_encoder, tokenizer=args.tokenizer_path, train_tokenizer=True)
+    data, test = load_datasets(args.base_jsons, args.scale, args.IMSIZE, args.acceptance, args.test_acceptance, args.textual_encoder, imsize=args.IMSIZE,tokenizer=args.tokenizer_path, train_tokenizer=True)
     text_tokenizer = TextTokenizer(StringCleanAndTrim())
     text_tokenizer.tokens = json.load(open(os.path.join(args.tokenizer_path, 'proto_tokenizer.json')))
     tokenizer = data.prop.tokenizer
@@ -139,19 +147,24 @@ if __name__ == "__main__":
     print(data.prop.decode(data[0]["input_ids"]))
     #### SILLY EXPERIMENT PART FOR CHECKING IF AUTOTRAIN WORKS; DELETE LATER #####
     import torch
-    from transformers import ViTImageProcessor, BertTokenizer, VisionEncoderDecoderModel
+    from transformers import ViTImageProcessor, BertTokenizer, VisionEncoderDecoderModel, VisionEncoderDecoderConfig
     from transformers import VisionEncoderDecoderModel , ViTFeatureExtractor
     import wandb
     from tqdm import tqdm
     from transformers import get_scheduler, get_linear_schedule_with_warmup
     import transformers
+    from transformers import ViTConfig, ViTModel
+    
     
     ENCODER = args.visual_encoder
     DECODER = args.textual_encoder
-    outname = f"doc2graph_{ENCODER.split('/')[-1]}_{DECODER.split('/')[-1]}_epoches_{args.epoches}_ACCEPTANCE_{args.acceptance}_{args.lr}"
+    outname = f"doc2graph_{ENCODER.split('/')[-1]+'_tmpname_'}_{DECODER.split('/')[-1]+'_tmpname_'}_epoches_{args.epoches}_ACCEPTANCE_{args.acceptance}_{args.lr}"
     
-    model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained(ENCODER, DECODER)
-    model.decoder.resize_token_embeddings(len(data.prop.tokenizer))
+    configuration = ViTConfig(image_size=args.IMSIZE, num_hidden_layers=args.visual_depth, num_attention_heads=args.visual_width, hidden_dropout_prob=args.dropout  )
+    decoder_config = GPT2Config(embd_pdrop = args.dropout, n_layer = args.textual_depth, n_head = args.textual_width, vocab_size = len(data.prop.tokenizer))
+    
+    conf = VisionEncoderDecoderConfig.from_encoder_decoder_configs(configuration, decoder_config)
+    model = VisionEncoderDecoderModel(config=conf)
     
     model.config.decoder_start_token_id = data.prop.tokenizer.cls_token_id
     model.config.pad_token_id = data.prop.tokenizer.pad_token_id

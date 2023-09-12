@@ -45,15 +45,36 @@ class BOEDatasetOCRd:
         self.min_width = min_width
         self.min_height = min_height
         self.data = []
+        self.acceptance = acceptance
         for line in open(jsons_paths).readlines():
-            document = json.load(open(os.path.join(base_jsons, line.strip())))
-            if document['score'] < acceptance: continue
-            document['root'] = document['path'].replace(*self.replace).replace('images', 'numpy').replace('.pdf', '.npz')
-            page = document['topic_gt']["page"]
-            x, y, x2, y2 = document['pages'][page][document["topic_gt"]['idx_segment']]['bbox']
-            if (x2 - x) < min_height or (y2 - y) < min_width: continue 
+            path = os.path.join(base_jsons, line.strip()).replace('jsons_gt', 'graphs_gt')
+            if os.path.exists(path):
+                document = json.load(open(path))
+                if document['score'] < acceptance: continue
+                document['root'] = document['path'].replace(*self.replace).replace('images', 'numpy').replace('.pdf', '.npz')
+                # page = document['topic_gt']["page"]
+                self.data.append(document)
+                '''
+                
+                min_x, min_y, max_x, max_y = np.inf, np.inf, 0, 0
+        
+                for region in document['pages'][page]:
+                    if not 'similarity' in region: continue
+                    if region['similarity'] >= self.acceptance:
+                        x, y, x2, y2 = region['bbox']
 
-            self.data.append(document)
+                        min_x = min(min_x, x)
+                        max_x = max(max_x, x2)
+                        
+                        
+                        min_y = min(min_y, y)
+                        max_y = max(max_y, y2)         
+                
+                '''
+
+                
+                #if (max_x - min_x) >= min_width and (max_y - min_y) >= min_height:
+                    
 
         print(len(self.data))
         self.device = device
@@ -61,6 +82,8 @@ class BOEDatasetOCRd:
         self.tokenizer = None
         self.text_tokenizer = None
         self.resize = resize
+        self.return_meta = False
+        self.load_image_debug = True # debug flag im lazy now
     
     def iter_text(self):
         for datum in self.data:
@@ -94,23 +117,53 @@ class BOEDatasetOCRd:
         
         datapoint = self.data[idx]
         page = datapoint['topic_gt']["page"]
-        x, y, x2, y2 = datapoint['pages'][page][datapoint["topic_gt"]['idx_segment']]['bbox']
+        segment = datapoint['topic_gt']["idx_segment"]
+        if self.load_image_debug:
+            image = np.load(datapoint['root'])[page]
+            # mask = np.zeros_like(image)
+            x, y, x2, y2 = datapoint['pages'][page][segment]['bbox']
 
-        image = np.load(datapoint['root'])[page][y:y2, x:x2]
 
-        # resizes
-        if self.resize is not None:
-            new_h = new_w = self.resize
-        else:
-            h, w, _ = image.shape
-            new_h, new_w = int(h * self.scale), int(w * self.scale)
-            new_h, new_w = int(min(new_h, self.max_imsize)), int(min(new_w, self.max_imsize))
-        image = cv2.resize(image, (new_h, new_w))
-        image = (image - image.mean()) / image.std()
+
+            # np_input = (image * mask)
+            image = image[y:y2, x:x2]
+
+            '''
+            
+            min_x, min_y, max_x, max_y = np.inf, np.inf, 0, 0
+            
+            for region in datapoint['pages'][page]:
+                if not 'similarity' in region: continue
+                if region['similarity'] >= self.acceptance:
+                    x, y, x2, y2 = region['bbox']
+                    mask[y:y2, x:x2] = 1
+                    
+
+                    min_x = min(min_x, x)
+                    max_x = max(max_x, x2)
+                    
+                    
+                    min_y = min(min_y, y)
+                    max_y = max(max_y, y2)   
+            
+            '''
+
+            # resizes
+            if self.resize is not None:
+                new_h = new_w = self.resize
+            else:
+                h, w, _ = image.shape
+                new_h, new_w = int(h * self.scale), int(w * self.scale)
+                new_h, new_w = int(min(new_h, self.max_imsize)), int(min(new_w, self.max_imsize))
+            image = cv2.resize(image, (new_h, new_w))
+            image = (image - image.mean()) / image.std()
+        else: image = None
         text = datapoint['query']
         if self.text_tokenizer is not None: text_tokens = self.text_tokenizer.predict(text)
         if self.tokenizer is not None: 
-            return image, torch.from_numpy(self.tokenizer.predict(datapoint['ocr_gt'])), torch.tensor(text_tokens, dtype = torch.int32)
+            if not self.return_meta:
+                return image, torch.from_numpy(self.tokenizer.predict(datapoint['query'])), torch.tensor(text_tokens, dtype = torch.int32)
+            else: return image, torch.from_numpy(self.tokenizer.predict(datapoint['query'])), torch.tensor(text_tokens, dtype = torch.int32), datapoint
         
         return image, text, text
 
