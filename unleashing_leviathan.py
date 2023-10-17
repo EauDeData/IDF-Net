@@ -6,64 +6,37 @@ def run_training(params, gpu_id):
     command = f"CUDA_VISIBLE_DEVICES={gpu_id} python train_doc.py {params}"
     subprocess.run(command, shell=True)
 
-base = '--BSIZE=128 --IMSIZE=224 --TOKEN_SIZE=256 --base_jsons=/data3fast/users/amolina/BOE/ --device=cuda --epochs=20  --lr=1e-05 --model_tag=ViT-B/32 --ntopics=256 --output_space=256 --scale=1 --test_acceptance=0.5 --text_encoder_heads=4 --text_encoder_layers=2'
-params = [
-    f'{base} --acceptance=0.17 --closs=HardMinerCircle --loss_function=HardMinerCircle',
-    f'{base} --acceptance=0.17 --closs=HardMinerCircle --loss_function=HardMinerCircle --topic_on_image',
+base = '--BSIZE=64 --IMSIZE=416 --TOKEN_SIZE=256 --base_jsons=/data2/users/amolina/BOE_original/BOEv2/ --device=cuda --epochs=30  --lr=1e-05 --ntopics=256 --output_space=256 --scale=1 --test_acceptance=0.1 --text_encoder_heads=4 --text_encoder_layers=2'
 
-    f'{base} --acceptance=0.40 --closs=HardMinerCircle --loss_function=HardMinerCircle',
-    f'{base} --acceptance=0.40 --closs=HardMinerCircle --loss_function=HardMinerCircle --topic_on_image',
-    
-    f'{base} --acceptance=0.17 --closs=SpearmanRankLoss --loss_function=HardMinerCircle',
-    f'{base} --acceptance=0.17 --closs=SpearmanRankLoss --loss_function=HardMinerCircle --topic_on_image',
+topic_loss = contrastive_loss = ['HardMinerCircle', 'CLIPLoss', 'HardMinerTripletLoss', 'HardMinerCLR']
+acceptance = [0.4, 0.10]
+use_topic = ['image', '"None"', 'text', 'both']
+model = ['resnet_18', 'ViT-B/32']
+params = set()
+for model_tag in model:
+    for usage_of_topic in use_topic:
+        for accept_rate in acceptance:
+            for closs in contrastive_loss:
 
-    f'{base} --acceptance=0.40 --closs=SpearmanRankLoss --loss_function=HardMinerCircle',
-    f'{base} --acceptance=0.40 --closs=SpearmanRankLoss --loss_function=HardMinerCircle --topic_on_image',
-    
-    f'{base} --acceptance=0.17 --closs=SpearmanRankLoss --loss_function=SpearmanRankLoss',
-    f'{base} --acceptance=0.17 --closs=SpearmanRankLoss --loss_function=SpearmanRankLoss --topic_on_image',
+                if usage_of_topic != 'None':
 
-    f'{base} --acceptance=0.40 --closs=SpearmanRankLoss --loss_function=SpearmanRankLoss',
-    f'{base} --acceptance=0.40 --closs=SpearmanRankLoss --loss_function=SpearmanRankLoss --topic_on_image',
-    
-    f'{base} --acceptance=0.17 --closs=SpearmanRankLoss --loss_function=HardMinerCircle',
-    f'{base} --acceptance=0.17 --closs=SpearmanRankLoss --loss_function=HardMinerCircle --topic_on_image',
+                    for tloss in topic_loss:
 
-    f'{base} --acceptance=0.40 --closs=SpearmanRankLoss --loss_function=HardMinerCircle',
-    f'{base} --acceptance=0.40 --closs=SpearmanRankLoss --loss_function=HardMinerCircle --topic_on_image',  
-    
-    f'{base} --acceptance=0.40 --closs=SpearmanRankLoss --use_topic',
-    f'{base} --acceptance=0.17 --closs=SpearmanRankLoss --use_topic', 
-    
-    f'{base} --acceptance=0.40 --closs=HardMinerCircle --use_topic',
-    f'{base} --acceptance=0.17 --closs=HardMinerCircle --use_topic', 
-    
-    f'{base} --acceptance=0.40 --closs=HardMinerTripletLoss --use_topic',
-    f'{base} --acceptance=0.17 --closs=HardMinerTripletLoss --use_topic',    
-    
-        
-    f'{base} --acceptance=0.40 --closs=HardMinerCLR --use_topic',
-    f'{base} --acceptance=0.17 --closs=HardMinerCLR --use_topic',
-    
-    f'{base} --acceptance=0.40 --closs=CLIPLoss --use_topic',
-    f'{base} --acceptance=0.17 --closs=CLIPLoss --use_topic']
+                        params.add(f"{base} --acceptance={accept_rate} --closs={closs} --use_topic={usage_of_topic} --loss_function={tloss} --model_tag={model_tag}")
+                else:
+                    params.add(
+                        f"{base} --acceptance={accept_rate} --closs={closs} --use_topic={usage_of_topic} --model_tag={model_tag}"
+                    )
+params = list(params)
 
-params = [
-    f'{base} --acceptance=0.17 --closs=HardMinerCircle --loss_function=SpearmanRankLoss',
-    f'{base} --acceptance=0.17 --closs=HardMinerCircle --loss_function=SpearmanRankLoss --topic_on_image',
-
-    f'{base} --acceptance=0.40 --closs=HardMinerCircle --loss_function=SpearmanRankLoss',
-    f'{base} --acceptance=0.40 --closs=HardMinerCircle --loss_function=SpearmanRankLoss --topic_on_image',
-]
-
-def mp_launch(params, num_threads, thread_id):
+def mp_launch(params, num_threads, thread_id, gpu):
     for idx in range(thread_id, len(params), num_threads):
-        run_training(params[idx], thread_id)
+        run_training(params[idx], gpu)
     return None
 
-num_gpus = 7
+num_gpus = [3, 4, 5]
 random.shuffle(params)
-process = [multiprocessing.Process(target=mp_launch, args=(params, num_gpus, idx)) for idx in range(num_gpus)]
+process = [multiprocessing.Process(target=mp_launch, args=(params, len(num_gpus), idx, gpu)) for idx, gpu in enumerate(num_gpus)]
 [p.start() for p in process]
 [p.join() for p in process]
 

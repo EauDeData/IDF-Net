@@ -29,7 +29,7 @@ def read_img(path):
 class BOEDatasetOCRd:
 
     name = 'boe_dataset'
-    def __init__(self, jsons_paths, base_jsons, min_height = 125, min_width = 125, scale = 0.5, device = 'cuda', max_imsize = 64, acceptance = .5, replace_path_expression = "('data1tbsdd', 'data2fast/users/amolina')", mode = 'query', resize = None) -> None:
+    def __init__(self, jsons_paths, base_jsons, min_height = 125, min_width = 125, scale = 0.5, device = 'cuda', max_imsize = 64, acceptance = .5, replace_path_expression = "('/data2fast/users/amolina/BOE/', '/data2/users/amolina/BOE_original/BOE/')", mode = 'query', resize = None) -> None:
         super(BOEDatasetOCRd, self).__init__()
         self.mode = mode # 'query' or 'ocr'.
         # For test should always be 'query'

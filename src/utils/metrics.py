@@ -126,7 +126,12 @@ def corrcoef(x, y):
     c = c.div(torch.transpose(stddev, 1, 2))
     return c[:, 1, 0]
 
-def batched_matrix(x, y, dist = cosine_similarity_matrix):
+def batched_matrix(x, y, dist = cosine_similarity_matrix, img2text = False):
+    if img2text: 
+        tmp_x = x
+        x = y
+        y = tmp_x
+        
     return dist(x, y), torch.arange(x.shape[0]).unsqueeze(0).expand(y.shape[0], -1).T.to(x.device), torch.eye(x.shape[0], dtype = bool).to(x.device)
 
 
@@ -140,8 +145,8 @@ def batched_top_k(distance_matrix, gt, k = 1):
     sorted, _ = torch.sort(distance_matrix, dim = 1, descending = True)
     return sum(sorted[:, k - 1] <= distance_matrix[gt]) / sorted.shape[0]
 
-def get_retrieval_metrics(x, y, dist = cosine_similarity_matrix):
-    distances, indexes, gt =  batched_matrix(x, y, dist)
+def get_retrieval_metrics(x, y, dist = cosine_similarity_matrix, img2text = False):
+    distances, indexes, gt =  batched_matrix(x, y, dist, img2text=img2text)
     metrics = {
         'map': batched_precision(distances, gt, indexes),
         'p@1': batched_top_k(distances, gt, k = 1),

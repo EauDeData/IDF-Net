@@ -150,19 +150,15 @@ BSIZE = 64
 SCALE = 1
 
 idx = 0
-base_jsons = '/data3fast/users/amolina/BOE/'
-models = '/data3fast/users/amolina/leviatan'
+base_jsons = '/data2/users/amolina/BOE_original/BOEv2/'
+models = '/data2/users/amolina/leviatan'
 
 
 dataset =  BOEDatasetOCRd(base_jsons+'test.txt', scale = SCALE, base_jsons=base_jsons, max_imsize=IMSIZE,mode='query', resize = None)
 
-plotable = ['use_topic_True_topic_on_image_False_ViT-B-|-32_lr_1e-05_loss_HardMinerCircle_closs_HardMinerCircle_token_256_accept_0.4_bsize_128_heads_4_layers2_output_256', 
-            'use_topic_True_topic_on_image_True_ViT-B-|-32_lr_1e-05_loss_HardMinerCircle_closs_HardMinerCircle_token_256_accept_0.17_bsize_128_heads_4_layers2_output_256',
-            'use_topic_False_topic_on_image_False_ViT-B-|-32_lr_1e-05_loss_SpearmanRankLoss_closs_HardMinerCLR_token_256_accept_0.17_bsize_128_heads_4_layers2_output_256',
-            'use_topic_True_topic_on_image_True_ViT-B-|-32_lr_1e-05_loss_HardMinerCircle_closs_SpearmanRankLoss_token_256_accept_0.4_bsize_128_heads_4_layers2_output_256',
-            'use_topic_True_topic_on_image_True_ViT-B-|-32_lr_1e-05_loss_HardMinerCircle_closs_HardMinerCircle_token_256_accept_0.17_bsize_128_heads_4_layers2_output_256']
+plotable = ['use_topic_image_ViT-B-|-32_lr_1e-05_loss_HardMinerCircle_closs_HardMinerCLR_token_256_accept_0.1_bsize_128_heads_4_layers2_output_256']
 
-plotable = []
+# plotable = []
 # name = 'use_topic_True_topic_on_image_True_ViT-B-|-32_lr_1e-05_loss_HardMinerCircle_closs_SpearmanRankLoss_token_256_accept_0.4_bsize_128_heads_4_layers2_output_256'
 
 model_clip = clip.load('ViT-B/32', device='cpu')[0].visual
@@ -316,9 +312,9 @@ def plot_idxs(idxs, dataset, name):
     fig.tight_layout()
     plt.savefig(name, transparent = True, dpi = 1000)
     plt.clf()
+    plt.close(fig)
         
 for idx in tqdm(range(len(dataset))):
-
 
     with torch.no_grad():
         image, text, _ = dataset[idx]
@@ -378,7 +374,7 @@ for idx in tqdm(range(len(dataset))):
         try:
             plot_qualitative(image, text, original_image, pretrained, text_model, text_tokenizer, imout)
         except: pass
-    elif (name in plotable) and position <= best and position < 10 and (not random.randint(0, 50)):
+    elif (name in plotable) and position < 11:
 
 
         datapoint = dataset.data[idx]

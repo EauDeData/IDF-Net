@@ -17,7 +17,7 @@ class TrainBOE:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, collate_fn = dataset.collate_boe, num_workers = 8, drop_last=True)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, shuffle = True, collate_fn = dataset.collate_boe, num_workers = 12, pin_memory=False, drop_last=True)
         self.bs = bsize
         self.model = model
         self.text_encoder = text_model
@@ -42,21 +42,26 @@ class TrainBOE:
         for n, (images, topic_lda, query_tokens) in enumerate(self.loader):
             self.optimizer.zero_grad()
 
-            
+            # print(f"Images: {images.shape}, topic: {topic_lda.shape}, text: {query_tokens.shape}")
             images = images.to(self.device)
             loss = 0
-            image_embedding, rank_image_emb = self.model(images)
-            scale = .5 if (self.text_encoder is not None) and (self.loss_f is not None) else 1
+            image_embedding, _ = self.model(images)
+            topic_embedding, _ = self.text_encoder(query_tokens.to(self.device))
 
-            topic_embedding, rank_embedding = self.text_encoder(query_tokens.to(self.device))
-
-            loss += self.contrastive(image_embedding, topic_embedding) * (scale if self.use_topic else 1)
-            if self.use_topic:
-                if not self.topic_on_image:
-                    loss += self.loss_f(topic_lda.to(self.device), topic_embedding) * scale
-                else:
-                    loss += self.loss_f(topic_lda.to(self.device), image_embedding) * scale
+            if self.use_topic != 'None':
+                if self.use_topic != 'both': scale = 0.5
+                else: scale = 0.25
+            else: scale = 1
             
+            loss += self.contrastive(image_embedding, topic_embedding) * (scale if self.use_topic != 'both' else 2 * scale)
+            if self.use_topic == 'text':
+                loss += self.loss_f(topic_lda.to(self.device), topic_embedding) * scale
+            
+            elif self.use_topic == 'image':
+                loss += self.loss_f(topic_lda.to(self.device), image_embedding) * scale
+
+            else:
+                loss += self.loss_f(topic_lda.to(self.device), image_embedding) * scale + self.loss_f(topic_lda.to(self.device), topic_embedding) * scale
 
             loss.backward()
             self.optimizer.step()
@@ -74,7 +79,6 @@ class TrainBOE:
         for epoch in range(epoches):
             with torch.no_grad():
                 self.test.epoch(500, epoch)
-                torch.save(self.model, f'output/{epoch}-{self.tokenizer.name}-{self.tokenizer.ntopics}.pkl')
             self.epoch(logger_freq, epoch)
 
         self.test.epoch(500, epoch+1)
@@ -88,7 +92,7 @@ class TestBOE:
                 'For optimization reasons, ensure your dataset already contains the fitted tokenizer\n dataset.tokenizer = tokenizer will help the dataloader.'
 
             )
-        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, collate_fn = dataset.collate_boe, num_workers = 2, drop_last=True)
+        self.loader = dataloader.DataLoader(dataset, batch_size = bsize, collate_fn = dataset.collate_boe, num_workers = 6, drop_last=True)
         self.bs = bsize
         self.model = model
         
@@ -114,11 +118,15 @@ class TestBOE:
             'test-contrastive-loss': [], #
             'test-ranking-loss': [],#
             'test-loss': [], #
-            'acc@1': [],
-            'acc@5': [],
-            'acc@10': [],
-            'mAP': []
+            'text2img acc@1': [],
+            'text2img acc@5': [],
+            'text2img acc@10': [],
+            'text2img mAP': [],
 
+            'img2text acc@1': [],
+            'img2text acc@5': [],
+            'img2text acc@10': [],
+            'img2text mAP': []
         }
         self.text_encoder.eval()
         self.model.eval()
@@ -141,15 +149,24 @@ class TestBOE:
 
                     statistics, _ = rank_correlation(retrieval_embedding, text_emb)
                     metrics['topic-query rank corr'].append(statistics)
+
+                    ### RETRIEVAL ###
                     batch_metrics = get_retrieval_metrics(image_embedding, retrieval_embedding)
 
-                    metrics['acc@1'].append(batch_metrics['p@1'])
-                    metrics['acc@5'].append(batch_metrics['p@5'])
-                    metrics['acc@10'].append(batch_metrics['p@10'])
+                    metrics['text2img acc@1'].append(batch_metrics['p@1'])
+                    metrics['text2img acc@5'].append(batch_metrics['p@5'])
+                    metrics['text2img acc@10'].append(batch_metrics['p@10'])
 
-                    metrics['mAP'].append(batch_metrics['map'])
+                    metrics['text2img mAP'].append(batch_metrics['map'])
 
+                    #### CAPTIONNING ###
+                    batch_metrics = get_retrieval_metrics(image_embedding, retrieval_embedding, img2text = True)
 
+                    metrics['img2text acc@1'].append(batch_metrics['p@1'])
+                    metrics['img2text acc@5'].append(batch_metrics['p@5'])
+                    metrics['img2text acc@10'].append(batch_metrics['p@10'])
+
+                    metrics['img2text mAP'].append(batch_metrics['map'])
                 
                 if self.loss_f is not None:
                     loss_r = self.loss_f(image_embedding, text_emb.to(self.device)).cpu().item()
@@ -165,11 +182,11 @@ class TestBOE:
         metrics = {x: sum(y)/len(y) for x,y in zip(metrics, metrics.values())}
         metrics['lr'] =  self.optimizer.param_groups[0]['lr']
         print("metrics:", metrics)
-        if not isinstance(self.scheduler, bool): self.scheduler.step(metrics['acc@1'])
+        if not isinstance(self.scheduler, bool): self.scheduler.step(metrics['img2text acc@1'])
 
         wandb.log(metrics)
-        torch.save(self.model.state_dict(), f'/data3fast/users/amolina/leviatan/{self.model_name}_visual_encoder.pth')
-        torch.save(self.text_encoder.state_dict(), f'/data3fast/users/amolina/leviatan/{self.model_name}_text_encoder.pth')
+        torch.save(self.model.state_dict(), f'/data2/users/amolina/leviatan/{self.model_name}_visual_encoder.pth')
+        torch.save(self.text_encoder.state_dict(), f'/data2/users/amolina/leviatan/{self.model_name}_text_encoder.pth')
 
     def run(self, epoches = 30, logger_freq = 500):
 

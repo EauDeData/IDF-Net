@@ -135,6 +135,7 @@ class TextTokenizer:
     def __init__(self, cleaner) -> None:
         self.cleaner = cleaner
         self.tokens = None
+        self.max_seq_size = 3000
 
     def predict(self, text: str):
 
@@ -144,7 +145,7 @@ class TextTokenizer:
         vector = np.zeros(len(tokens))
         for n, token in enumerate(tokens): vector[n] = self.tokens[token] if token in self.tokens else self.tokens[self.unk]
 
-        return vector
+        return vector[:self.max_seq_size]
 
     def fit(self, dataset):
         freqs = {}
