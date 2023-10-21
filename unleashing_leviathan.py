@@ -6,12 +6,12 @@ def run_training(params, gpu_id):
     command = f"CUDA_VISIBLE_DEVICES={gpu_id} python train_doc.py {params}"
     subprocess.run(command, shell=True)
 
-base = '--BSIZE=64 --IMSIZE=416 --TOKEN_SIZE=256 --base_jsons=/data2/users/amolina/BOE_original/BOEv2/ --device=cuda --epochs=30  --lr=1e-05 --ntopics=256 --output_space=256 --scale=1 --test_acceptance=0.1 --text_encoder_heads=4 --text_encoder_layers=2'
+base = '--BSIZE=100 --IMSIZE=224 --TOKEN_SIZE=256 --base_jsons=/data2/users/amolina/BOE_original/BOEv2/ --device=cuda --epochs=30  --lr=1e-05 --ntopics=256 --output_space=256 --scale=1 --test_acceptance=0.1 --text_encoder_heads=4 --text_encoder_layers=2'
 
 topic_loss = contrastive_loss = ['HardMinerCircle', 'CLIPLoss', 'HardMinerTripletLoss', 'HardMinerCLR']
 acceptance = [0.4, 0.10]
 use_topic = ['image', '"None"', 'text', 'both']
-model = ['resnet_18', 'ViT-B/32']
+model = ['ViT-B/32']
 params = set()
 for model_tag in model:
     for usage_of_topic in use_topic:

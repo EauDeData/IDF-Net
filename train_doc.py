@@ -37,7 +37,7 @@ def tokenize_text(dataset, cleaner, ntopics, model_name):
 
 def setup_models(text_tokenizer, model_tag, device, token_size, text_encoder_heads, text_encoder_layers, output_space):
     if 'ViT' in model_tag:
-        model_clip = clip.load(model_tag, device='cpu')[0].visual
+        model_clip =  clip.load(model_tag, device='cpu')[0].visual
         model = TwoBranchesWrapper(model_clip, 512, output_space)
     elif 'resnet' in model_tag:
         model_clip = Resnet(1024, resnet=model_tag.split('_')[-1])
@@ -106,7 +106,7 @@ def main(args):
 
     loss_function = get_loss_function(args.loss_function, args.BSIZE)
     closs = get_loss_function(args.closs, args.BSIZE)
-    wandb.init(project="neoGazeta (3.0 + 1.0)", name=model_name)
+    wandb.init(project="neoGazeta (3.0 + 1.0) - Endgame", name=model_name)
     wandb.config.update(args)
 
     test_task = TestBOE(test_data, model, loss_function, loader, cleaner, optim, scheduler=scheduler, device=args.device, bsize=args.BSIZE, text_model=text_model, contrastive_loss=closs, model_name=model_name)
